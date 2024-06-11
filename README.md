@@ -1,2 +1,2 @@
 # CBudgie
-CPP but tiny but still smart, like Budgie
+CPP but tinier and still smart, like Budgie
