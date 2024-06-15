@@ -1,0 +1,12 @@
+def inc(float num) {
+    num++
+}
+
+def main {
+    let x = 10 as uint8
+    for (uint16 i = 0, i <= x, i++) {
+        if (i % 2 == 0) {
+            cout(i)
+        }
+    }
+}
