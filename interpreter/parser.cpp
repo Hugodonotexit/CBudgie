@@ -4,6 +4,9 @@ Parser::Parser(vector<vector<Token>> &token) : tokens(&token) {
   for (int line = 0; line < tokens->size(); line++) {
     for (int pos = 0; pos < tokens[line].size(); pos++) {
       switch (tokens->at(line).at(pos).type) {
+        case TokenType::FILE:
+          defFile(line, pos);
+          break;
         case TokenType::DEF:
           defScope<Function>(line, pos);
           break;
@@ -24,6 +27,20 @@ Parser::Parser(vector<vector<Token>> &token) : tokens(&token) {
       }
     }
   }
+}
+
+void Parser::defFile(int &line, int &pos) {
+    File file(tokens->at(line).at(pos + 1).value);
+    int i = line;
+    int j = pos;
+    do
+    {
+        if (j == tokens->at(i).size()) {
+            j = 0;
+            i++;
+        }
+    } while (!(tokens->at(i).at(j).value == "`"));
+    file.setEndtPos(i,j);
 }
 
 template <typename T>

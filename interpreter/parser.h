@@ -30,11 +30,13 @@ private:
     vector<std::string> STRING;
     vector<wchar_t> WCHAR;
     vector<bool> BOOL;
+    vector<File> fileScope;
     vector<std::shared_ptr<Scope>> scope;
 public:
     Parser(vector<vector<Token>>& tokens);
     template<typename T>
     void defScope(int &line, int &pos);
+    void defFile(int &line, int &pos);
     ~Parser();
 };
 

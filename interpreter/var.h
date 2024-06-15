@@ -9,7 +9,7 @@ enum class TokenType {
     UINT8,UINT16,UINT32,UINT64,
     CHAR,STRINGTYPE,WCHAR,BOOL,
 
-    INCLUDE,
+    FILE,
 
     IF, ELSE,
 

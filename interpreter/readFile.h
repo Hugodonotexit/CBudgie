@@ -24,9 +24,13 @@ ReadFile::ReadFile(int argc, char* argv[])
         cerr << "Usage: " << argv[0] << " <file_path>" << endl;
         abort();
     }
-
-    string file_path = argv[1];
-    read_File(file_path);
+    for (size_t i = 0; i < argc-1; i++)
+    {
+        string file_path = argv[i];
+        read_File(file_path);
+    }
+    
+    
 }
 
 void ReadFile::read_File(string file_path)
@@ -44,7 +48,8 @@ void ReadFile::read_File(string file_path)
         abort();
     }
     string line;
-
+    
+    input.push_back("`" + path.filename().string());
     while (getline(file, line)) {
       input.push_back(line);
     }

@@ -15,7 +15,7 @@ Lexer::Lexer(const vector<string>& input) : input(input) {
         {TokenType::UINT8, "uint8"}, {TokenType::UINT16, "uint16"}, {TokenType::UINT32, "uint32"} , {TokenType::UINT64, "uint64"},
         {TokenType::CHAR, "char"}, {TokenType::STRINGTYPE, "string"}, {TokenType::WCHAR, "wchar"} , {TokenType::BOOL, "bool"},
 
-        {TokenType::INCLUDE, "include"},
+        {TokenType::FILE, "`"},
 
         {TokenType::IF, "if"}, {TokenType::ELSE, "else"},
         

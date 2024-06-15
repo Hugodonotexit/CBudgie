@@ -35,6 +35,16 @@ public:
     virtual ~Scope() {}
 };
 
+class File : public Scope
+{
+private:
+    std::string &file_name;
+public:
+    File(std::string &newName): file_name(newName) {}
+    void setname(std::string &newName) {file_name = newName;}
+    std::string& getname() {return file_name;}
+};
+
 class Function : public Scope
 {
 private:
