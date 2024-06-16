@@ -20,18 +20,29 @@ public:
 
 class Scope
 {
+protected:
+    struct Location
+    {
+        int temp = -1;
+        int &line;
+        int &pos;
+        Location() : line(temp), pos(temp) {}
+    };
 private:
-    int stratLine, startPos, endLine, endPos;
+    Location start;
+    Location end;
 public:
     Scope() {}
-    void setStartPos(int line, int pos) {
-        stratLine = line;
-        startPos = pos;
+    void setStartPos(int &line, int &pos) {
+        start.line = line;
+        start.pos = pos;
         }
-    void setEndtPos(int line, int pos) {
-        endLine = line;
-        endPos = pos;
+    void setEndtPos(int &line, int &pos) {
+        end.line = line;
+        end.pos = pos;
         }
+    virtual void setConStartPos(int &line, int &pos) {}
+    virtual void setConEndPos(int &line, int &pos) {}
     virtual ~Scope() {}
 };
 
@@ -45,7 +56,24 @@ public:
     std::string& getname() {return file_name;}
 };
 
-class Function : public Scope
+class If : public Scope
+{
+private:
+    Location condition_start;
+    Location condition_end;
+public:
+    If() {}
+    void setConStartPos(int &line, int &pos) {
+        condition_start.line = line;
+        condition_start.pos = pos;
+        }
+    void setConEndPos(int &line, int &pos) {
+        condition_end.line = line;
+        condition_end.pos = pos;
+        }
+};
+
+class Function : public If
 {
 private:
     std::string &name;
@@ -53,14 +81,6 @@ public:
     Function(std::string &newName): name(newName) {}
     void setname(std::string &newName) {name = newName;}
     std::string& getname() {return name;}
-};
-
-class If : public Scope
-{
-private:
-    std::string &condition;
-public:
-    If(std::string &condition) : condition(condition) {}
 };
 
 class Else : public Scope
@@ -74,21 +94,33 @@ class While : public If
 private:
     
 public:
-    While(std::string &condition) : If(condition) {}
+    While() {}
 };
 
 class For : public If
 {
 private:
-    std::string &rule;
+
 public:
-    For(std::string &condition, std::string &rule) : rule(rule), If(condition) {}
+    For() {}
 };
 
 class Switch : public If
 {
 public:
-    Switch(std::string &condition) : If(condition) {}
+    Switch() {}
+};
+
+template<typename T>
+class Variable : public Scope
+{
+private:
+    std::string &name;
+    T value;
+public:
+    Variable(std::string &newName, T value): name(newName), value(value) {}
+    void setname(std::string &newName) {name = newName;}
+    std::string& getname() {return name;}
 };
 
 #endif

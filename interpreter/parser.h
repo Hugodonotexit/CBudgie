@@ -6,7 +6,8 @@
 #include <algorithm>
 #include <type_traits>
 #include <optional>
-
+#include <future>
+#include <omp.h>
 #include "lexer.h"
 #include "ast.h"
 
@@ -37,6 +38,7 @@ public:
     template<typename T>
     void defScope(int &line, int &pos);
     void defFile(int &line, int &pos);
+    void defVar(int &line, int &pos);
     ~Parser();
 };
 

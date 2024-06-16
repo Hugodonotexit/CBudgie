@@ -61,7 +61,7 @@ vector<vector<Token>> Lexer::tokenize() {
     int pos = 0;
     vector<Token> tokens_line;
     while (pos < input[line].size()) {
-      if (pos == input[line].size()) {
+      if (pos >= input[line].size()) {
           break;
       }
       if (isspace(input[line][pos])) {
@@ -71,13 +71,19 @@ vector<vector<Token>> Lexer::tokenize() {
         break;
       }      
 
+      bool isFound = false;
       for (auto& pattern : tokenPatterns) {
             if (input[line].substr(pos,pattern.second.size()) == pattern.second)
             {
               tokens_line.emplace_back(pattern.first, input[line].substr(pos,pattern.second.size()));
               pos += pattern.second.size();
-              continue;
+              isFound = true;
+              break;
             }
+      }
+      if (isFound)
+      {
+        continue;
       }
       
       if (input[line][pos] == '\"')
@@ -125,6 +131,11 @@ vector<vector<Token>> Lexer::tokenize() {
                     throw runtime_error("Multiple Dot at" + to_string(line) + ":" + to_string(_pos_));
                 }
                 _pos_++;
+                if (_pos_ == input[line].size())
+                {
+                  _pos_--;
+                  break;
+                }
                 continue;
             } else {
                 isNum = false;
@@ -145,13 +156,8 @@ vector<vector<Token>> Lexer::tokenize() {
           break;
         } 
       } while (isChar(input[line][i]));
-      if (i - 1 == pos && !isChar(input[line][i]))
-      {
-        break;
-      } else {
-        tokens_line.emplace_back(TokenType::STRING, input[line].substr(pos,i-pos));
-        pos = i;
-      }
+      tokens_line.emplace_back(TokenType::STRING, input[line].substr(pos,i-pos));
+      pos = i; 
     }
     tokens.push_back(tokens_line);
   }
