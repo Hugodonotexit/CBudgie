@@ -1,12 +1,14 @@
-def inc(float num) {
-    num++
+def hugo(int64 @a) {
+    let x = 100
+    a = a + x
+    return x
 }
-
-def main {
-    let x = 10 as uint8
-    for (uint16 i = 0, i <= x, i++) {
-        if (i % 2 == 0) {
-            cout(i)
-        }
+def main() {
+    let a = 0;
+    for (let i = 0, i < 1000, i++) {
+        a++
     }
+    let x = hugo(@a)
+    a = x + a
+    cout(a);
 }

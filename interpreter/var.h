@@ -21,7 +21,7 @@ enum class TokenType {
 
     DEF, LET, AS,
 
-    STRING, NUMBER,
+    TRUESTRING, STRING, NUMBER,
     PLUS, MINUS,
     TIMES, DIVIDE,
     MODE, EQUAL,

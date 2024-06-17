@@ -98,12 +98,12 @@ vector<vector<Token>> Lexer::tokenize() {
             isFound = true;
           } else if (i == input[line].size())
           {
-            throw runtime_error("Missing a closing\" at" + to_string(line) + ":" + to_string(pos));
+            throw runtime_error("Missing a closing \" at" + to_string(line) + ":" + to_string(pos));
             abort();
           }
           
         } while (!isFound);
-        tokens_line.emplace_back(TokenType::STRING, input[line].substr(pos, i - pos + 1));
+        tokens_line.emplace_back(TokenType::TRUESTRING, input[line].substr(pos, i - pos + 1));
         pos = i + 1;
         continue;
       }

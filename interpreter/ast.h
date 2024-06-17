@@ -2,6 +2,7 @@
 #define AST_H
 #include <vector>
 #include <cmath>
+#include <memory>
 #include "var.h"
 
 using namespace std;
@@ -18,6 +19,29 @@ public:
     void mod(T& a, T& b, T& answer) {answer = mod(a,b);}
 };
 
+class Variable
+{
+private:
+    std::string &name;
+public:
+    Variable(std::string &newName): name(newName) {}
+    void setname(std::string &newName) {name = newName;}
+    std::string& getname() {return name;}
+    virtual ~Variable() {}
+};
+
+template<typename T>
+class VariableType : public Variable
+{
+private:
+    T *value;
+public:
+    VariableType(std::string &newName, T val) : Variable(newName), value(new T(val)){}
+    void setvalue(T &newvalue) {value = newvalue;}
+    T& getvalue() {return value;}
+    ~VariableType() {delete value;}
+};
+
 class Scope
 {
 protected:
@@ -31,6 +55,7 @@ protected:
 private:
     Location start;
     Location end;
+    vector<shared_ptr<Variable>> var;
 public:
     Scope() {}
     void setStartPos(int &line, int &pos) {
@@ -40,6 +65,9 @@ public:
     void setEndtPos(int &line, int &pos) {
         end.line = line;
         end.pos = pos;
+        }
+    void pushBackVar(shared_ptr<Variable> a) {
+        var.push_back(a);
         }
     virtual void setConStartPos(int &line, int &pos) {}
     virtual void setConEndPos(int &line, int &pos) {}
@@ -109,18 +137,6 @@ class Switch : public If
 {
 public:
     Switch() {}
-};
-
-template<typename T>
-class Variable : public Scope
-{
-private:
-    std::string &name;
-    T value;
-public:
-    Variable(std::string &newName, T value): name(newName), value(value) {}
-    void setname(std::string &newName) {name = newName;}
-    std::string& getname() {return name;}
 };
 
 #endif
