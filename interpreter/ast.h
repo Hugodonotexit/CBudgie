@@ -3,6 +3,7 @@
 #include <vector>
 #include <cmath>
 #include <memory>
+#include <stdexcept>
 #include "var.h"
 
 using namespace std;
@@ -34,12 +35,42 @@ template<typename T>
 class VariableType : public Variable
 {
 private:
-    T *value;
+    std::vector<T*> *value;
 public:
-    VariableType(std::string &newName, T val) : Variable(newName), value(new T(val)){}
-    void setvalue(T &newvalue) {value = newvalue;}
-    T& getvalue() {return value;}
-    ~VariableType() {delete value;}
+    // Constructor to create a vector of given size and initialize with val
+    VariableType(std::string &newName, size_t newSize, std::vector<T*> val) : Variable(newName) {
+        value = new std::vector<T*>(val); // Copy the vector of pointers
+    }
+
+    // Set the value at a specific index
+    void setvalue(size_t index, T &newvalue) {
+        if (index < value->size()) {
+            *(*value)[index] = newvalue;
+        } else {
+            throw out_of_range("Index out of bounds");
+        }
+    }
+
+    void newvalue(T &newvalue) {
+        value->push_back(new T(newvalue));
+    }
+
+    // Get the value at a specific index
+    T& getvalue(size_t index) const {
+        if (index < value->size()) {
+            return *(*value)[index];
+        } else {
+            throw out_of_range("Index out of bounds");
+        }
+    }
+
+    // Destructor to clean up allocated memory
+    ~VariableType() {
+        for (size_t i = 0; i < value->size(); ++i) {
+            delete (*value)[i];
+        }
+        delete value;
+    }
 };
 
 class Scope
