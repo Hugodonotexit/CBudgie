@@ -4,6 +4,7 @@
 #include <cmath>
 #include <memory>
 #include <stdexcept>
+#include <iostream>
 #include "var.h"
 
 using namespace std;
@@ -23,11 +24,11 @@ public:
 class Variable
 {
 private:
-    std::string &name;
+    std::string name;
 public:
-    Variable(std::string &newName): name(newName) {}
-    void setname(std::string &newName) {name = newName;}
-    std::string& getname() {return name;}
+    Variable(std::string newName): name(newName) {}
+    void setname(std::string newName) {name = newName;}
+    std::string getname() {return name;}
     virtual ~Variable() {}
 };
 
@@ -38,7 +39,7 @@ private:
     std::vector<T*> *value;
 public:
     // Constructor to create a vector of given size and initialize with val
-    VariableType(std::string &newName, size_t newSize, std::vector<T*> val) : Variable(newName) {
+    VariableType(std::string newName, size_t newSize, std::vector<T*> val) : Variable(newName) {
         value = new std::vector<T*>(val); // Copy the vector of pointers
     }
 
@@ -51,18 +52,21 @@ public:
         }
     }
 
-    void newvalue(T &newvalue) {
+    void newvalue(T newvalue) {
+        value->clear();
         value->push_back(new T(newvalue));
     }
 
     // Get the value at a specific index
-    T& getvalue(size_t index) const {
+    T& getvalue(int index) const {
         if (index < value->size()) {
             return *(*value)[index];
         } else {
             throw out_of_range("Index out of bounds");
         }
     }
+
+    int getSize() {return value->size();}
 
     // Destructor to clean up allocated memory
     ~VariableType() {
@@ -75,12 +79,12 @@ public:
 
 class Scope
 {
-protected:
+public:
     struct Location
     {
         int temp = -1;
-        int &line;
-        int &pos;
+        int line;
+        int pos;
         Location() : line(temp), pos(temp) {}
     };
 private:
@@ -89,19 +93,36 @@ private:
     vector<shared_ptr<Variable>> var;
 public:
     Scope() {}
-    void setStartPos(int &line, int &pos) {
+    void setStartPos(int line, int pos) {
         start.line = line;
         start.pos = pos;
         }
-    void setEndtPos(int &line, int &pos) {
+    void setEndtPos(int line, int pos) {
         end.line = line;
         end.pos = pos;
         }
+    Location getStartPos() {return start;}
+    Location getEndPos() {return end;}
     void pushBackVar(shared_ptr<Variable> a) {
         var.push_back(a);
         }
-    virtual void setConStartPos(int &line, int &pos) {}
-    virtual void setConEndPos(int &line, int &pos) {}
+    virtual void setConStartPos(int line, int pos) {}
+    virtual void setConEndPos(int line, int pos) {}
+    bool inScope(int i, int j) {
+        if (i > start.line  && i < end.line)
+        {
+            return true;
+        }
+        else if (i == start.line || i == end.line)
+        {
+            if (j > start.pos  && j < end.pos)
+            {
+            return true;
+            } else {return false;}
+        }
+        return false;
+    }
+    virtual bool inConScope(int i, int j) {return false;}
     virtual ~Scope() {}
 };
 
@@ -122,14 +143,28 @@ private:
     Location condition_end;
 public:
     If() {}
-    void setConStartPos(int &line, int &pos) {
+    void setConStartPos(int line, int pos) {
         condition_start.line = line;
         condition_start.pos = pos;
         }
-    void setConEndPos(int &line, int &pos) {
+    void setConEndPos(int line, int pos) {
         condition_end.line = line;
         condition_end.pos = pos;
         }
+    bool inConScope(int i, int j) {
+        if (i > condition_start.line  && i < condition_end.line)
+        {
+            return true;
+        }
+        else if (i == condition_start.line || i == condition_end.line)
+        {
+            if (j > condition_start.pos  && j < condition_end.pos)
+            {
+            return true;
+            } else {return false;}
+        }
+        return false;
+    }
 };
 
 class Function : public If
@@ -168,6 +203,19 @@ class Switch : public If
 {
 public:
     Switch() {}
+};
+
+class Consule
+{
+public:
+    Consule() {}
+    inline static void output(string out) {cout << out << endl;}
+    inline static string input() {
+        string in; 
+        cin >> in;
+        return in;
+        }
+    ~Consule() {}
 };
 
 #endif

@@ -1,5 +1,4 @@
 #include "parser.h"
-
 Parser::Parser(vector<vector<Token>> &token) : tokens(token) {
   for (int line = 0; line < tokens.size(); line++) {
 #pragma omp parallel for
@@ -11,33 +10,131 @@ Parser::Parser(vector<vector<Token>> &token) : tokens(token) {
         case TokenType::DEF:
           defScope<Function>(line, pos);
           break;
-        case TokenType::FOR:
-          defScope<For>(line, pos);
+          /*
+                  case TokenType::FOR:
+                    defScope<For>(line, pos);
+                    break;
+                  case TokenType::WHILE:
+                    defScope<While>(line, pos);
+                    break;
+                  case TokenType::IF:
+                    defScope<If>(line, pos);
+                    break;
+                  case TokenType::SWITCH:
+                    defScope<Switch>(line, pos);
+                    break;
+                  case TokenType::LET:
+                    defVar(line, pos);
+                    break;
+          */
+      }
+    }
+  }
+  runFunction(mainIndex);
+}
+
+void Parser::runFunction(int index) {
+  const Scope::Location &startPos = scope[index]->getStartPos();
+  const Scope::Location &endPos = scope[index]->getEndPos();
+  for (int i = startPos.line; i <= endPos.line; i++) {
+    for (int j = 0; j < tokens[i].size(); j++) {
+      if (i == startPos.line && j < startPos.pos) {
+        j = startPos.pos;
+      } else if (i == endPos.line && j > endPos.pos) {
+        break;
+      }
+      switch (tokens[i][j].type) {
+        case TokenType::LET:
+          defVar(i, j, endPos.line, endPos.pos);
           break;
-        case TokenType::WHILE:
-          defScope<While>(line, pos);
+        case TokenType::CIN:
+          if (tokens[i][j - 1].type == TokenType::EQUAL) {
+            if (tokens[i][j - 2].type == TokenType::VARIABLISED_STR) {
+              std::shared_ptr<VariableType<string>> var = dynamic_pointer_cast<VariableType<string>>(variable[stoi(tokens[i][j - 2].value)]);
+              coutConfig(i, j);
+              string str = Consule::input();
+              var->newvalue(str);
+            }
+          } else {
+            coutConfig(i, j);
+            Consule::input();
+          }
           break;
-        case TokenType::IF:
-          defScope<If>(line, pos);
-          break;
-        case TokenType::SWITCH:
-          defScope<Switch>(line, pos);
+        case TokenType::COUT:
+          coutConfig(i, j);
           break;
       }
     }
   }
+  return;
 }
 
-std::shared_ptr<Variable> Parser::defVar(int &line, int &pos) {
-  shared_ptr<Variable> var;
-  std::optional<TokenType> type;
-#pragma omp parallel for
-  for (int i = pos; i < tokens[line].size(); i++) {
-    if (tokens[line][i].type == TokenType::AS) {
-      type = tokens[line][i + 1].type;
-      break;
-    }
+void Parser::coutConfig(int &line, int &pos) {
+  int _i = line;
+  int _j = pos + 1;
+  if (_j >= tokens[_i].size() || tokens[_i][_j].type != TokenType::L_RBACKET) {
+    throw runtime_error("Missing bracket at " + to_string(_i) + ":" +
+                        to_string(_j));
   }
+  stringstream ss;
+  bool foundClosingBracket = false;
+  while (!foundClosingBracket) {
+    if (_j >= tokens[_i].size()) {
+      _i++;
+      _j = 0;
+    }
+    if (_i >= tokens.size()) {
+      throw runtime_error("Missing bracket at " + to_string(_i) + ":" +
+                          to_string(_j - 1));
+    }
+
+    switch (tokens[_i][_j].type) {
+      case TokenType::TRUESTRING:
+      case TokenType::NUMBER:
+        ss << tokens[_i][_j].value;
+        break;
+      case TokenType::PLUS:
+        _j++;
+        continue;
+        break;
+      case TokenType::VARIABLISED_NUM: {
+        std::shared_ptr<VariableType<long double>> var =
+            dynamic_pointer_cast<VariableType<long double>>(
+                variable[stoi(tokens[_i][_j].value)]);
+        for (int l = 0; l < var->getSize(); l++) {
+          if (l > 0) {
+            ss << " ";
+          }
+          ss << var->getvalue(l);
+        }
+      } break;
+      case TokenType::VARIABLISED_STR: {
+        std::shared_ptr<VariableType<string>> var =
+            dynamic_pointer_cast<VariableType<string>>(
+                variable[stoi(tokens[_i][_j].value)]);
+        for (int l = 0; l < var->getSize(); l++) {
+
+          if (l > 0) {
+            ss << " ";
+          }
+          ss << var->getvalue(l);
+        }
+      } break;
+      case TokenType::R_RBACKET:
+        foundClosingBracket = true;
+        break;
+    }
+    _j++;
+  }
+  Consule::output(ss.str());
+  line = _i;
+  pos = _j;
+  return;
+}
+
+void Parser::defVar(int line, int pos, int end_line, int end_pos) {
+  shared_ptr<Variable> var;
+  TokenType type;
   int step = 0;
   size_t size = 1;
   if (tokens[line][pos + 2].type == TokenType::L_SQBACKET) {
@@ -50,18 +147,33 @@ std::shared_ptr<Variable> Parser::defVar(int &line, int &pos) {
     }
   }
 
-  if (!type.has_value() &&
-      tokens[line][pos + 2 + step].type != TokenType::EQUAL) {
-    throw runtime_error("not initialise varaible without defining type at " +
-                        to_string(line) + ":" + to_string(pos));
-  } else if (!type.has_value() &&
-             tokens[line][pos + 2 + step].type == TokenType::EQUAL) {
+  if (tokens[line][pos + 2 + step].type == TokenType::EQUAL) {
     int step2 = 0;
     if (tokens[line][pos + 3 + step].type == TokenType::L_SQBACKET) {
       step2++;
     }
     switch (tokens[line][pos + 3 + step + step2].type) {
+      case TokenType::CIN: {
+          type = TokenType::VARIABLISED_STR;
+          vector<string *> array;
+          for (int i = 0; i < size; i++) {
+          int _i = i + pos + 3 + step + step2;
+          coutConfig(line, _i);
+          i = _i - (pos + 3 + step + step2);
+          string str = Consule::input();
+          array.push_back(new string(str));
+          if (pos + 3 + step + step2 + i >= tokens[line].size() || tokens[line][pos + 3 + step + step2 + i].type == TokenType::R_SQBACKET) {
+            break;
+          }
+        }
+        while (array.size() < size) {
+          array.push_back(new (string)(*array[array.size() - 1]));
+        }
+        var = make_shared<VariableType<string>>(tokens[line][pos + 1].value, size, array);
+      }
+          break;
       case TokenType::TRUESTRING: {
+        type = TokenType::VARIABLISED_STR;
         vector<string *> array;
         for (int i = 0; i < size; i++) {
           array.push_back(
@@ -75,10 +187,10 @@ std::shared_ptr<Variable> Parser::defVar(int &line, int &pos) {
         while (array.size() < size) {
           array.push_back(new (string)(*array[array.size() - 1]));
         }
-        var = make_shared<VariableType<string>>(tokens[line][pos + 1].value,
-                                                size, array);
+        var = make_shared<VariableType<string>>(tokens[line][pos + 1].value, size, array);
       } break;
       case TokenType::NUMBER: {
+        type = TokenType::VARIABLISED_NUM;
         long double num = stold(tokens[line][pos + 3 + step + step2].value);
         vector<long double *> array;
         for (int i = 0; i < size; i++) {
@@ -96,122 +208,72 @@ std::shared_ptr<Variable> Parser::defVar(int &line, int &pos) {
         var = make_shared<VariableType<long double>>(
             tokens[line][pos + 1].value, size, array);
       } break;
-    }
-  } else if (type.has_value() &&
-             tokens[line][pos + 2 + step].type == TokenType::EQUAL) {
-  } else if (type.has_value() &&
-             tokens[line][pos + 2 + step].type != TokenType::EQUAL) {
-    switch (type.value()) {
-      case TokenType::STRINGTYPE: {
-        vector<string *> array(size);
-        for (size_t i = 0; i < size; ++i) {
-          array[i] = new std::string("NULL");
+      case TokenType::FALSE:
+      case TokenType::TRUE: {
+        vector<bool *> array;
+        for (int i = 0; i < size; i++) {
+          switch (tokens[line][pos + 3 + step + step2 + i].type) {
+            case TokenType::TRUE:
+              array.push_back(new bool(true));
+              break;
+            case TokenType::FALSE:
+              array.push_back(new bool(false));
+              break;
+          }
+          if (pos + 3 + step + step2 + i >= tokens[line].size() ||
+              tokens[line][pos + 3 + step + step2 + i].type ==
+                  TokenType::R_SQBACKET) {
+            break;
+          }
         }
-        var = make_shared<VariableType<string>>(tokens[line][pos + 1].value,
-                                                size, array);
-      } break;
-      case TokenType::BOOL: {
-        vector<bool *> array(size);
-        for (size_t i = 0; i < size; ++i) {
-          array[i] = new bool("NULL");
+        while (array.size() < size) {
+          array.push_back(new bool(array[array.size() - 1]));
         }
         var = make_shared<VariableType<bool>>(tokens[line][pos + 1].value, size,
                                               array);
       } break;
-      case TokenType::UINT8: {
-        vector<uint_least8_t *> array(size);
-        for (size_t i = 0; i < size; ++i) {
-          array[i] = new uint_least8_t(0);
+      case TokenType::FUNCTIONISED:
+        runFunction(stoi(tokens[line][pos + 3 + step + step2].value));
+        defVar(line, pos, end_line, end_pos);
+        break;
+    }
+  } else {
+    throw runtime_error("Varaible not initialised at " + to_string(line) + ":" +
+                        to_string(pos));
+    abort();
+  }
+#pragma omp parallel for
+  for (int i = line; i <= end_line; i++) {
+#pragma omp parallel for
+    for (int j = 0; j < tokens[i].size(); j++) {
+      if (i == line && j < pos) {
+        j = pos;
+      } else if (i >= end_line && j >= end_pos) {
+        break;
+      }
+
+      if (tokens[i][j].type == TokenType::STRING) {
+        if (j > 0) {
+          if (tokens[i][j - 1].type != TokenType::LET &&
+              var->getname() == tokens[i][j].value) {
+            tokens[i][j].type = type;
+            tokens[i][j].value = to_string(variable.size());
+          }
+        } else {
+          if (var->getname() == tokens[i][j].value) {
+            tokens[i][j].type = type;
+            tokens[i][j].value = to_string(variable.size());
+          }
         }
-        var = make_shared<VariableType<uint_least8_t>>(
-            tokens[line][pos + 1].value, size, array);
-      } break;
-      case TokenType::INT8: {
-        vector<int_least8_t *> array(size);
-        for (size_t i = 0; i < size; ++i) {
-          array[i] = new int_least8_t(0);
-        }
-        var = make_shared<VariableType<int_least8_t>>(
-            tokens[line][pos + 1].value, size, array);
-      } break;
-      case TokenType::UINT16: {
-        vector<uint_least16_t *> array(size);
-        for (size_t i = 0; i < size; ++i) {
-          array[i] = new uint_least16_t(0);
-        }
-        var = make_shared<VariableType<uint_least16_t>>(
-            tokens[line][pos + 1].value, size, array);
-      } break;
-      case TokenType::INT16: {
-        vector<int_least16_t *> array(size);
-        for (size_t i = 0; i < size; ++i) {
-          array[i] = new int_least16_t(0);
-        }
-        var = make_shared<VariableType<int_least16_t>>(
-            tokens[line][pos + 1].value, size, array);
-      } break;
-      case TokenType::UINT32: {
-        vector<uint_least32_t *> array(size);
-        for (size_t i = 0; i < size; ++i) {
-          array[i] = new uint_least32_t(0);
-        }
-        var = make_shared<VariableType<uint_least32_t>>(
-            tokens[line][pos + 1].value, size, array);
-      } break;
-      case TokenType::INT32: {
-        vector<int_least32_t *> array(size);
-        for (size_t i = 0; i < size; ++i) {
-          array[i] = new int_least32_t(0);
-        }
-        var = make_shared<VariableType<int_least32_t>>(
-            tokens[line][pos + 1].value, size, array);
-      } break;
-      case TokenType::UINT64: {
-        vector<uint_least64_t *> array(size);
-        for (size_t i = 0; i < size; ++i) {
-          array[i] = new uint_least64_t(0);
-        }
-        var = make_shared<VariableType<uint_least64_t>>(
-            tokens[line][pos + 1].value, size, array);
-      } break;
-      case TokenType::INT64: {
-        vector<int_least64_t *> array(size);
-        for (size_t i = 0; i < size; ++i) {
-          array[i] = new int_least64_t(0);
-        }
-        var = make_shared<VariableType<int_least64_t>>(
-            tokens[line][pos + 1].value, size, array);
-      } break;
-      case TokenType::FLOAT4: {
-        vector<float *> array(size);
-        for (size_t i = 0; i < size; ++i) {
-          array[i] = new float(0);
-        }
-        var = make_shared<VariableType<float>>(tokens[line][pos + 1].value,
-                                               size, array);
-      } break;
-      case TokenType::FLOAT8: {
-        vector<double *> array(size);
-        for (size_t i = 0; i < size; ++i) {
-          array[i] = new double(0);
-        }
-        var = make_shared<VariableType<double>>(tokens[line][pos + 1].value,
-                                                size, array);
-      } break;
-      case TokenType::FLOAT16: {
-        vector<long double *> array(size);
-        for (size_t i = 0; i < size; ++i) {
-          array[i] = new long double(0);
-        }
-        var = make_shared<VariableType<long double>>(
-            tokens[line][pos + 1].value, size, array);
-      } break;
+      }
     }
   }
-  return var;
+  variable.push_back(var);
+  
+  
 }
 
-void Parser::defFile(int &line, int &pos) {
+void Parser::defFile(int line, int pos) {
   File file(tokens[line][pos + 1].value);
   int i = line;
   int j = pos;
@@ -226,14 +288,13 @@ void Parser::defFile(int &line, int &pos) {
         break;
       }
     }
-
   } while (!(tokens[i][j].value == "`"));
   file.setEndtPos(i, j);
   scope.push_back(make_shared<File>(file));
 }
 
 template <typename T>
-void Parser::defScope(int &line, int &pos) {
+void Parser::defScope(int line, int pos) {
   int openbracket = 0;
   int closebracket = 0;
   int openRoundBracket = 0;
@@ -251,7 +312,7 @@ void Parser::defScope(int &line, int &pos) {
 
   T &sco = scoOpt.value();
 
-  do {
+  while (openbracket != closebracket || openbracket == 0 || closebracket == 0) {
     j++;
     if (j >= tokens[i].size()) {
       i++;
@@ -275,32 +336,47 @@ void Parser::defScope(int &line, int &pos) {
       case TokenType::R_SBACKET:
         closebracket++;
         break;
-      default:
-        break;
     }
     if (openRoundBracket == 1) {
       sco.setConStartPos(i, j);
+      openRoundBracket++;
     } else if (closeRoundBracket == 1) {
       sco.setConEndPos(i, j);
+      closeRoundBracket++;
     } else if (openbracket == 1) {
       sco.setStartPos(i, j);
+      openbracket++;
+      closebracket++;
     }
-
-    if (tokens[i][j].type == TokenType::LET) {
-      sco.pushBackVar(defVar(i, j));
-    }
-
-  } while (!(openbracket == closebracket) || openbracket == 0 ||
-           closebracket == 0);
+  }
   sco.setEndtPos(i, j);
   if constexpr (std::is_same_v<T, Function>) {
-    if (sco.getname() == "main") {
-      scope.insert(scope.begin(), std::make_shared<T>(sco));
+#pragma omp parallel for
+    for (int i = 0; i < tokens.size(); i++) {
+#pragma omp parallel for
+      for (int j = 0; j < tokens[i].size(); j++) {
+        if (tokens[i][j].type == TokenType::STRING) {
+          if (j > 0) {
+            if (tokens[i][j - 1].type != TokenType::DEF &&
+                sco.getname() == tokens[i][j].value) {
+              tokens[i][j].type = TokenType::FUNCTIONISED;
+              tokens[i][j].value = to_string(scope.size());
+            }
+          } else {
+            if (sco.getname() == tokens[i][j].value) {
+              tokens[i][j].type = TokenType::FUNCTIONISED;
+              tokens[i][j].value = to_string(scope.size());
+            }
+          }
+        }
+      }
     }
 
-  } else {
-    scope.push_back(std::make_shared<T>(sco));
+    if (sco.getname() == "main") {
+      mainIndex = scope.size();
+    }
   }
+  scope.push_back(std::make_shared<T>(sco));
 };
 
 Parser::~Parser() {}

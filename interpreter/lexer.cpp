@@ -16,7 +16,7 @@ Lexer::Lexer(const vector<string>& input) : input(input) {
       {TokenType::E_GREATER, ">="},
       {TokenType::E_SMALLER, "<="},  //"long OP with conflict symbol"
 
-      {TokenType::INT8, "int8"},
+      /*{TokenType::INT8, "int8"},
       {TokenType::INT16, "int16"},
       {TokenType::INT32, "int32"},
       {TokenType::INT64, "int64"},
@@ -27,7 +27,7 @@ Lexer::Lexer(const vector<string>& input) : input(input) {
       {TokenType::UINT16, "uint16"},
       {TokenType::UINT32, "uint32"},
       {TokenType::UINT64, "uint64"},
-      {TokenType::STRINGTYPE, "string"},
+      {TokenType::STRINGTYPE, "string"},*/
       {TokenType::BOOL, "bool"},
 
       {TokenType::FILE, "`"},
@@ -49,6 +49,8 @@ Lexer::Lexer(const vector<string>& input) : input(input) {
       {TokenType::DEF, "def"},
       {TokenType::LET, "let"},
       {TokenType::AS, "as"},
+      {TokenType::TRUE, "True"},
+      {TokenType::FALSE, "False"},
 
       //{TokenType::STRING, "\""}, //{TokenType::NUMBER, "."}, // Special case
       {TokenType::PLUS, "+"},
@@ -126,14 +128,14 @@ vector<vector<Token>> Lexer::tokenize() {
           if (input[line][i] == '\"') {
             isFound = true;
           } else if (i == input[line].size()) {
-            throw runtime_error("Missing a closing \" at" + to_string(line) +
-                                ":" + to_string(pos));
+            throw runtime_error("Missing a closing \" at" + to_string(line) + ":" + to_string(pos));
             abort();
           }
 
         } while (!isFound);
-        tokens_line.emplace_back(TokenType::TRUESTRING,
-                                 input[line].substr(pos, i - pos + 1));
+        string str = input[line].substr(pos+1, i - pos - 1);
+        int  x = 0;
+        tokens_line.emplace_back(TokenType::TRUESTRING, str);
         pos = i + 1;
         continue;
       }

@@ -1,18 +1,4 @@
-def hugo(let a as uint16) {
-    let x = 100 % 99 + 300
-    a = a + x
-    return x
-}
 def main() {
-    let a = 0 as float16
-    cin("Input a number: ")
-    for (let i = 0, i < 1000, i++) {
-        a++
-    }
-    while (a <= 999999999) {
-        a++
-    }
-    let x = hugo(@a)
-    a = x + a
-    cout(a + x)
+    let x[5] = cin("Input your name: ")
+    cout("Hello " + x)
 }

@@ -4,10 +4,12 @@
 #define VAR_H
 
 enum class TokenType {
-    INT8,INT16,INT32,INT64,
+    /*INT8,INT16,INT32,INT64,
     FLOAT4,FLOAT8,FLOAT16,
     UINT8,UINT16,UINT32,UINT64,
-    STRINGTYPE,BOOL,
+    STRINGTYPE,*/
+    
+    BOOL,
 
     FILE,
 
@@ -19,7 +21,7 @@ enum class TokenType {
 
     BREAK, CONTINUE, RETURN,
 
-    DEF, LET, AS,
+    DEF, LET, AS, TRUE, FALSE,
 
     TRUESTRING, STRING, NUMBER,
     PLUS, MINUS,
@@ -39,7 +41,9 @@ enum class TokenType {
     L_SQBACKET, R_SQBACKET,
     L_SBACKET, R_SBACKET, 
 
-    CIN, COUT
+    CIN, COUT,
+    
+    VARIABLISED_NUM, VARIABLISED_STR, FUNCTIONISED
 };
 
 struct Token {
