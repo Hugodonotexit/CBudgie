@@ -64,7 +64,7 @@ void Parser::runFunction(int index) {
           coutConfig(i, j);
           break;
         case TokenType::FUNCTIONISED:
-          runFunction(i, j);
+          runFunction(stoi(tokens[i][j].value));
           break;
       }
     }
