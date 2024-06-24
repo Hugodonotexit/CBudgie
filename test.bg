@@ -1,4 +1,8 @@
+def Hugo() {return 3.14-2.71}
 def main() {
-    let x[5] = cin("Input your name: ")
-    cout("Hello " + x)
+    let a = 10
+    a = 3 * Hugo() * a
+    let b = "enter name: "
+    b = cin(b)
+    cout("Hello " + b + a)
 }

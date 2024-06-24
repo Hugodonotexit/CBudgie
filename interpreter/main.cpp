@@ -1,9 +1,9 @@
 #include <vector>
 
-#include "lexer.h"
-#include "var.h"
-#include "readFile.h"
-#include "parser.h"
+#include "lexer/lexer.h"
+#include "depen/var.h"
+#include "lexer/readFile.h"
+#include "parser/parser.h"
 
 using namespace std;
 
@@ -12,7 +12,6 @@ int main(int argc, char* argv[]) {
   //double cpu_time_used;
   
   //start_time = clock();
-
   ReadFile readFile(argc, argv);
   vector<string> input = readFile.getInput();
   vector<vector<Token>> tokens;

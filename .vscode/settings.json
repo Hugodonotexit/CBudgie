@@ -71,6 +71,7 @@
         "typeindex": "cpp",
         "variant": "cpp",
         "codecvt": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "unordered_set": "cpp"
     }
 }

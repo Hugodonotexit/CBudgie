@@ -3,12 +3,15 @@
 #ifndef VAR_H
 #define VAR_H
 
+using namespace std;
+
 enum class TokenType {
     /*INT8,INT16,INT32,INT64,
     FLOAT4,FLOAT8,FLOAT16,
     UINT8,UINT16,UINT32,UINT64,
     STRINGTYPE,*/
-    
+    ASINH,ACOSH,ATANH,ASIN,ACOS,ATAN,SINH,COSH,TANH,SIN,COS,TAN,
+
     BOOL,
 
     FILE,
@@ -24,6 +27,7 @@ enum class TokenType {
     DEF, LET, AS, TRUE, FALSE,
 
     TRUESTRING, STRING, NUMBER,
+    POW, ABS, LN,
     PLUS, MINUS,
     TIMES, DIVIDE,
     MODE, EQUAL,
@@ -48,9 +52,9 @@ enum class TokenType {
 
 struct Token {
     TokenType type;
-    std::string value;
+    string value;
     
-    Token(TokenType type, const std::string value) : type(type), value(value) {}
+    Token(TokenType type, const string value) : type(type), value(value) {}
 };
 
 #endif

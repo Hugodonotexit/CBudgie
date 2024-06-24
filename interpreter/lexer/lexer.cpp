@@ -9,6 +9,11 @@ Lexer::~Lexer() {}
 
 Lexer::Lexer(const vector<string>& input) : input(input) {
   tokenPatterns = {
+      {TokenType::ASINH, "asinh"},{TokenType::ACOSH, "acosh"},{TokenType::ATANH, "atanh"},{TokenType::ASIN, "asin"},{TokenType::ACOS, "acos"},{TokenType::ATAN, "atan"},
+      {TokenType::SINH, "sinh"},{TokenType::COSH, "cosh"},{TokenType::TANH, "tanh"},{TokenType::SIN, "sin"},{TokenType::COS, "cos"},{TokenType::TAN, "tan"},
+
+      {TokenType::ABS, "abs"}, {TokenType::LN, "ln"},
+
       {TokenType::INC, "++"},
       {TokenType::DEC, "--"},
       {TokenType::EQUIVALENT, "=="},
@@ -16,18 +21,6 @@ Lexer::Lexer(const vector<string>& input) : input(input) {
       {TokenType::E_GREATER, ">="},
       {TokenType::E_SMALLER, "<="},  //"long OP with conflict symbol"
 
-      /*{TokenType::INT8, "int8"},
-      {TokenType::INT16, "int16"},
-      {TokenType::INT32, "int32"},
-      {TokenType::INT64, "int64"},
-      {TokenType::FLOAT4, "float4"},
-      {TokenType::FLOAT8, "float8"},
-      {TokenType::FLOAT16, "float16"},
-      {TokenType::UINT8, "uint8"},
-      {TokenType::UINT16, "uint16"},
-      {TokenType::UINT32, "uint32"},
-      {TokenType::UINT64, "uint64"},
-      {TokenType::STRINGTYPE, "string"},*/
       {TokenType::BOOL, "bool"},
 
       {TokenType::FILE, "`"},
@@ -53,6 +46,7 @@ Lexer::Lexer(const vector<string>& input) : input(input) {
       {TokenType::FALSE, "False"},
 
       //{TokenType::STRING, "\""}, //{TokenType::NUMBER, "."}, // Special case
+      {TokenType::POW, "^"},
       {TokenType::PLUS, "+"},
       {TokenType::MINUS, "-"},
       {TokenType::TIMES, "*"},
@@ -161,7 +155,6 @@ vector<vector<Token>> Lexer::tokenize() {
             }
             _pos_++;
             if (_pos_ == input[line].size()) {
-              _pos_--;
               break;
             }
             continue;
@@ -170,8 +163,7 @@ vector<vector<Token>> Lexer::tokenize() {
           }
         }
         int length = _pos_ - start;
-        tokens_line.emplace_back(TokenType::NUMBER,
-                                 input[line].substr(start, length));
+        tokens_line.emplace_back(TokenType::NUMBER, input[line].substr(start, length));
         pos += length;
         continue;
       }
