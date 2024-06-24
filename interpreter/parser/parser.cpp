@@ -22,6 +22,7 @@ void Parser::runFunction(int index, int _line_, int _pos_) {
   const Scope::Location &startPos = scope[index]->getStartPos();
   const Scope::Location &endPos = scope[index]->getEndPos();
   for (int i = startPos.line; i <= endPos.line; i++) {
+    #pragma omp parallel for
     for (int j = 0; j < tokens[i].size(); j++) {
       if (i == startPos.line && j < startPos.pos) {
         j = startPos.pos;
@@ -76,17 +77,24 @@ void Parser::runFunction(int index, int _line_, int _pos_) {
         case TokenType::EQUAL:
           switch (tokens[i][j - 1].type) {
             case TokenType::VARIABLISED_NUM: {
-              shared_ptr<VariableType<long double>> var =
-                  dynamic_pointer_cast<VariableType<long double>>(
-                      variable[stoi(tokens[i][j - 1].value)]);
-              var->newvalue(
-                  doMath<long double>(i, j + 1, i, tokens[i].size() - 1));
+              shared_ptr<VariableType<long double>> var = dynamic_pointer_cast<VariableType<long double>>(variable[stoi(tokens[i][j - 1].value)]);
+              var->newvalue(doMath<long double>(i, j + 1, i, tokens[i].size() - 1));
             } break;
             case TokenType::VARIABLISED_STR: {
               shared_ptr<VariableType<string>> var =
                   dynamic_pointer_cast<VariableType<string>>(
                       variable[stoi(tokens[i][j - 1].value)]);
               var->newvalue(doMath<string>(i, j + 1, i, tokens[i].size() - 1));
+            } break;
+            case TokenType::VARIABLISED_BOOL: {
+              shared_ptr<VariableType<bool>> var = dynamic_pointer_cast<VariableType<bool>>(variable[stoi(tokens[i][j - 1].value)]);
+            if (tokens[i][j + 1].type == TokenType::TRUE)
+            {
+              var->newvalue(true);
+            } else if (tokens[i][j + 1].type == TokenType::FALSE)
+            {
+              var->newvalue(false);
+            } 
             } break;
           }
       }
@@ -95,7 +103,6 @@ void Parser::runFunction(int index, int _line_, int _pos_) {
   return;
 }
 
-#include "parser.h"
 void Parser::defVar(int &line, int &pos, int end_line, int end_pos) {
   shared_ptr<Variable> var;
   TokenType type;
@@ -167,8 +174,14 @@ void Parser::defVar(int &line, int &pos, int end_line, int end_pos) {
         var = make_shared<VariableType<string>>(tokens[line][pos + 1].value,
                                                 size, var->getvector());
       } break;
+      case TokenType::VARIABLISED_BOOL: {
+        type = TokenType::VARIABLISED_BOOL;
+        shared_ptr<VariableType<bool>> var = dynamic_pointer_cast<VariableType<bool>>(variable[stoi(tokens[line][pos + 3 + step + step2].value)]);
+        var = make_shared<VariableType<bool>>(tokens[line][pos + 1].value, size, var->getvector());
+      }break;
       case TokenType::FALSE:
       case TokenType::TRUE: {
+        type = TokenType::VARIABLISED_BOOL;
         vector<bool *> array;
         for (int i = 0; i < size; i++) {
           switch (tokens[line][pos + 3 + step + step2 + i].type) {
@@ -337,12 +350,12 @@ void Parser::defScope(int line, int pos) {
   scope.push_back(make_shared<T>(sco));
 };
 
-#include "parser.h"
 template <typename T>
 T Parser::doMath(int line, int pos, int end_line, int end_pos) {
   T var;
   string str;
   for (int i = line; i <= end_line; i++) {
+    #pragma omp parallel for
     for (int j = 0; j < tokens[i].size(); j++) {
       T localVar;
       if (i == line && j < pos) {
