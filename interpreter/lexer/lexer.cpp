@@ -175,7 +175,10 @@ vector<vector<Token>> Lexer::tokenize() {
                                input[line].substr(pos, i - pos));
       pos = i;
     }
-    tokens.push_back(tokens_line);
+    if (!tokens_line.empty())
+    {
+      tokens.push_back(tokens_line);
+    } 
   }
 
   return tokens;

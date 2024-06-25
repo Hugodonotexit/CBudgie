@@ -123,11 +123,8 @@ class Func : protected Operation {
   // Method to set the function
   void setFunc(std::string _function);
 
-  // Method to get the function
-  std::string getFunc() const;
-
   // Method to print the parsed function !!!DEBUGGING ONLY!!!
-  void printCompiled() const;
+  //void printCompiled() const;
 
   // Method to get the y-value for a given x-value
   long double get_y();
@@ -169,22 +166,21 @@ inline void Func::setFunc(std::string _function) {
   }
 };
 inline Func::~Func(){};
-inline std::string Func::getFunc() const { return _function; };
-inline void Func::printCompiled() const {
+/*inline void Func::printCompiled() const {
   for (int i = 0; i < (int)function.size(); i++) {
     if (std::holds_alternative<long double>(function[i])) {
-      std::cout << std::get<long double>(function[i]);
+      std::cout << std::get<long double>(function[i]) << std::endl;
     } else if (std::holds_alternative<char>(function[i])) {
-      std::cout << std::get<char>(function[i]);
+      std::cout << std::get<char>(function[i]) << std::endl;
     } else if (std::holds_alternative<std::string>(function[i])) {
-      std::cout << std::get<std::string>(function[i]);
+      std::cout << std::get<std::string>(function[i]) << std::endl;
     } else {
       throw std::logic_error("ERROR05");
       return;
     }
   }
   std::cout << std::endl;
-}
+}*/
 
 inline void Func::checkFunc() {
   if (_function[0] == '/' || _function[0] == '*' || _function[0] == '^') {
@@ -233,7 +229,7 @@ inline void Func::cleanNAN() {
 };
 
 inline void Func::cleanBracket() {
-  for (int i = 0; i < (int)function.size(); i++) {
+  for (int i = 0; i < (int)function.size()-2; i++) {
     if (std::holds_alternative<char>(function[i]) &&
         std::holds_alternative<char>(function[i + 2]) &&
         std::holds_alternative<long double>(function[i + 1])) {
@@ -269,7 +265,7 @@ inline void Func::locateBrackets() {
     }
   }
   for (int i = 0; i < (int)openBracket.size(); i++) {
-    for (int j = closeBracket.size(); j >= 0; j--) {
+    for (int j = closeBracket.size() - 1; j >= 0; j--) {
       brackets.push_back(std::make_pair(openBracket[i], closeBracket[j]));
     }
   }

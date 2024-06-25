@@ -1,6 +1,6 @@
 # Compiler
 CXX = g++
-CXXFLAGS = -std=c++20 -Wall -Wextra -I./depen -I./lexer -I./parser
+CXXFLAGS = -std=c++20 -Wall -Wextra -I./depen -I./lexer -I./parser -fsanitize=address
 
 # Directories
 SRCDIR = .

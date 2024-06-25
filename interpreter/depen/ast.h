@@ -23,22 +23,22 @@ class Operation {
     }
     return a / b;
   }
-   long double pow(long double &a, long double &b) { return pow(a, b); }
+   long double pow(long double &a, long double &b) { return std::pow(a, b); }
    long double negative(long double &a) { return -a; }
-   long double abs(long double &a) { return fabs(a); }
-   long double ln(long double &a) { return log(a); }
-   long double sin(long double &a) { return sin(a); }
-   long double asin(long double &a) { return asin(a); }
-   long double sinh(long double &a) { return sinh(a); }
-   long double asinh(long double &a) { return asinh(a); }
-   long double cos(long double &a) { return cos(a); }
-   long double acos(long double &a) { return acos(a); }
-   long double cosh(long double &a) { return cosh(a); }
-   long double acosh(long double &a) { return acosh(a); }
-   long double tan(long double &a) { return tan(a); }
-   long double atan(long double &a) { return atan(a); }
-   long double tanh(long double &a) { return tanh(a); }
-   long double atanh(long double &a) { return atanh(a); }
+   long double abs(long double &a) { return std::fabs(a); }
+   long double ln(long double &a) { return std::log(a); }
+   long double sin(long double &a) { return std::sin(a); }
+   long double asin(long double &a) { return std::asin(a); }
+   long double sinh(long double &a) { return std::sinh(a); }
+   long double asinh(long double &a) { return std::asinh(a); }
+   long double cos(long double &a) { return std::cos(a); }
+   long double acos(long double &a) { return std::acos(a); }
+   long double cosh(long double &a) { return std::cosh(a); }
+   long double acosh(long double &a) { return std::acosh(a); }
+   long double tan(long double &a) { return std::tan(a); }
+   long double atan(long double &a) { return std::atan(a); }
+   long double tanh(long double &a) { return std::tanh(a); }
+   long double atanh(long double &a) { return std::atanh(a); }
 };
 
 class Variable {

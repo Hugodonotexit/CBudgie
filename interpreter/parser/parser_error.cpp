@@ -17,5 +17,8 @@ void Parser_error::error(ERROR type,int line, int pos) {
     case ERROR::OTHER:
         throw logic_error("unexpected error at " + to_string(line) + ":" + to_string(pos));
         break;
+    case ERROR::UNDEF:
+        throw invalid_argument("undefined Varaible/Function error at " + to_string(line) + ":" + to_string(pos));
+        break;
     }
 }

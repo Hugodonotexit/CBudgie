@@ -58,7 +58,7 @@ struct Token {
 };
 
 enum class ERROR {
-    BRACKET, INIT_VAR, ARRAY_ADDING, OTHER
+    BRACKET, INIT_VAR, ARRAY_ADDING, UNDEF, OTHER
 };
 
 #endif
