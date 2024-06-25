@@ -39,7 +39,8 @@ enum class TokenType {
     NOT, XOR,
     EQUIVALENT,
 
-    ADDRESS, COMMA,
+    //ADDRESS,
+    COMMA,
 
     L_RBACKET, R_RBACKET,
     L_SQBACKET, R_SQBACKET,

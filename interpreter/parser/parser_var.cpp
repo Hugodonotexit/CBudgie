@@ -53,6 +53,9 @@ void Parser_var::coutConfig(int &line, int &pos) {
       case TokenType::R_RBACKET:
         foundClosingBracket = true;
         break;
+      case TokenType::STRING:
+        error(ERROR::UNDEF,_i,_j);
+        break;
     }
     _j++;
   }
