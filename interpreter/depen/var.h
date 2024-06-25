@@ -57,4 +57,8 @@ struct Token {
     Token(TokenType type, const string value) : type(type), value(value) {}
 };
 
+enum class ERROR {
+    BRACKET, INIT_VAR, ARRAY_ADDING, OTHER
+};
+
 #endif

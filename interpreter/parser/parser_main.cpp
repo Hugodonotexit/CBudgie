@@ -1,6 +1,6 @@
 #include "parser.h"
-Parser::~Parser() {}
-Parser::Parser(vector<vector<Token>> &token) : tokens(token) {
+Parser_main::~Parser_main() {}
+Parser_main::Parser_main(vector<vector<Token>> &token) : Parser_var(token) {
   for (int line = 0; line < tokens.size(); line++) {
 #pragma omp parallel for
     for (int pos = 0; pos < tokens[line].size(); pos++) {
@@ -17,8 +17,9 @@ Parser::Parser(vector<vector<Token>> &token) : tokens(token) {
   runFunction(mainIndex);
 }
 
-void Parser::runFunction(int index) { runFunction(index, -1, -1); }
-void Parser::runFunction(int index, int _line_, int _pos_) {
+void Parser_main::runFunction(int index) { runFunction(index, -1, -1); }
+void Parser_main::runFunction(int index, int _line_, int _pos_) {
+  int varStartSize = variable.size();
   const Scope::Location &startPos = scope[index]->getStartPos();
   const Scope::Location &endPos = scope[index]->getEndPos();
   for (int i = startPos.line; i <= endPos.line; i++) {
@@ -100,10 +101,15 @@ void Parser::runFunction(int index, int _line_, int _pos_) {
       }
     }
   }
+  if (variable.size() > varStartSize)
+  {
+    variable.erase(variable.begin()+varStartSize,variable.end());
+  }
+  
   return;
 }
 
-void Parser::defVar(int &line, int &pos, int end_line, int end_pos) {
+void Parser_main::defVar(int &line, int &pos, int end_line, int end_pos) {
   shared_ptr<Variable> var;
   TokenType type;
   int step = 0;
@@ -113,8 +119,7 @@ void Parser::defVar(int &line, int &pos, int end_line, int end_pos) {
       step = 3;
       size = stoi(tokens[line][pos + 3].value);
     } else {
-      throw runtime_error("Missing close bracket at " + to_string(line) + ":" +
-                          to_string(pos + 4));
+      error(ERROR::BRACKET,line,pos+4);
     }
   }
 
@@ -124,7 +129,6 @@ void Parser::defVar(int &line, int &pos, int end_line, int end_pos) {
       step2++;
     }
     switch (tokens[line][pos + 3 + step + step2].type) {
-      ;
       case TokenType::TRUESTRING: {
         type = TokenType::VARIABLISED_STR;
         vector<string *> array;
@@ -211,9 +215,7 @@ void Parser::defVar(int &line, int &pos, int end_line, int end_pos) {
         break;
     }
   } else {
-    throw runtime_error("Varaible not initialised at " + to_string(line) + ":" +
-                        to_string(pos));
-    abort();
+    error(ERROR::INIT_VAR,line,pos);
   }
 #pragma omp parallel for
   for (int i = line; i <= end_line; i++) {
@@ -244,7 +246,7 @@ void Parser::defVar(int &line, int &pos, int end_line, int end_pos) {
   variable.push_back(var);
 }
 
-void Parser::defFile(int line, int pos) {
+void Parser_main::defFile(int line, int pos) {
   File file(tokens[line][pos + 1].value);
   int i = line;
   int j = pos;
@@ -265,7 +267,7 @@ void Parser::defFile(int line, int pos) {
 }
 
 template <typename T>
-void Parser::defScope(int line, int pos) {
+void Parser_main::defScope(int line, int pos) {
   int openbracket = 0;
   int closebracket = 0;
   int openRoundBracket = 0;
@@ -289,9 +291,7 @@ void Parser::defScope(int line, int pos) {
       i++;
       j = 0;
       if (i >= tokens.size()) {
-        throw runtime_error("Missing close bracket at " + to_string(i) + ":" +
-                            to_string(j));
-        abort();
+        error(ERROR::BRACKET,i,j);
       }
     }
     switch (tokens[i][j].type) {
@@ -351,7 +351,7 @@ void Parser::defScope(int line, int pos) {
 };
 
 template <typename T>
-T Parser::doMath(int line, int pos, int end_line, int end_pos) {
+T Parser_main::doMath(int line, int pos, int end_line, int end_pos) {
   T var;
   string str;
   for (int i = line; i <= end_line; i++) {
@@ -386,14 +386,12 @@ T Parser::doMath(int line, int pos, int end_line, int end_pos) {
               while (tokens[i][_j].type != TokenType::R_SQBACKET) {
                 _j++;
                 if (_j >= tokens[i].size()) {
-                  throw runtime_error("missing close bracket at " +
-                                      to_string(i) + ":" + to_string(j));
+                  error(ERROR::BRACKET,i,j);
                 }
               }
               index = doMath<int>(i, startPos, i, _j);
             } else {
-              throw runtime_error("adding array not supported at " +
-                                  to_string(i) + ":" + to_string(j));
+              error(ERROR::ARRAY_ADDING,i,j);
             }
           }
           tokens[i][j].value = to_string(_var->getvalue(index));
@@ -415,14 +413,12 @@ T Parser::doMath(int line, int pos, int end_line, int end_pos) {
               while (tokens[i][_j].type != TokenType::R_SQBACKET) {
                 _j++;
                 if (_j >= tokens[i].size()) {
-                  throw runtime_error("missing close bracket at " +
-                                      to_string(i) + ":" + to_string(j));
+                  error(ERROR::BRACKET,i,j);
                 }
               }
               index = doMath<int>(i, startPos, i, _j);
             } else {
-              throw runtime_error("adding array not supported at " +
-                                  to_string(i) + ":" + to_string(j));
+              error(ERROR::ARRAY_ADDING,i,j);
             }
           }
           tokens[i][j].value = _var->getvalue(index);
@@ -455,70 +451,7 @@ T Parser::doMath(int line, int pos, int end_line, int end_pos) {
         }
       }
     } else {
-      throw runtime_error("Unsupport type");
+      error(ERROR::OTHER,-1,-1);
     }
     return var;
-  }
-
-  void Parser::coutConfig(int &line, int &pos) {
-    int _i = line;
-    int _j = pos + 1;
-    if (_j >= tokens[_i].size() ||
-        tokens[_i][_j].type != TokenType::L_RBACKET) {
-      throw runtime_error("Missing bracket at " + to_string(_i) + ":" +
-                          to_string(_j));
-    }
-    stringstream ss;
-    bool foundClosingBracket = false;
-    while (!foundClosingBracket) {
-      if (_j >= tokens[_i].size()) {
-        _i++;
-        _j = 0;
-      }
-      if (_i >= tokens.size()) {
-        throw runtime_error("Missing bracket at " + to_string(_i) + ":" +
-                            to_string(_j - 1));
-      }
-
-      switch (tokens[_i][_j].type) {
-        case TokenType::TRUESTRING:
-        case TokenType::NUMBER:
-          ss << tokens[_i][_j].value;
-          break;
-        case TokenType::PLUS:
-          _j++;
-          continue;
-          break;
-        case TokenType::VARIABLISED_NUM: {
-          shared_ptr<VariableType<long double>> var =
-              dynamic_pointer_cast<VariableType<long double>>(
-                  variable[stoi(tokens[_i][_j].value)]);
-          for (int l = 0; l < var->getSize(); l++) {
-            if (l > 0) {
-              ss << " ";
-            }
-            ss << var->getvalue(l);
-          }
-        } break;
-        case TokenType::VARIABLISED_STR: {
-          shared_ptr<VariableType<string>> var =
-              dynamic_pointer_cast<VariableType<string>>(
-                  variable[stoi(tokens[_i][_j].value)]);
-          for (int l = 0; l < var->getSize(); l++) {
-            if (l > 0) {
-              ss << " ";
-            }
-            ss << var->getvalue(l);
-          }
-        } break;
-        case TokenType::R_RBACKET:
-          foundClosingBracket = true;
-          break;
-      }
-      _j++;
-    }
-    Consule::output(ss.str());
-    line = _i;
-    pos = _j;
-    return;
   }

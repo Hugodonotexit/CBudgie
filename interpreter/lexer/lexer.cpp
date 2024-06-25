@@ -89,9 +89,6 @@ vector<vector<Token>> Lexer::tokenize() {
     int pos = 0;
     vector<Token> tokens_line;
     while (pos < input[line].size()) {
-      if (pos >= input[line].size()) {
-        break;
-      }
       if (isspace(input[line][pos])) {
         pos++;
         continue;
@@ -123,7 +120,6 @@ vector<vector<Token>> Lexer::tokenize() {
             isFound = true;
           } else if (i == input[line].size()) {
             throw runtime_error("Missing a closing \" at" + to_string(line) + ":" + to_string(pos));
-            abort();
           }
 
         } while (!isFound);

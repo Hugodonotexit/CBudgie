@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
   }
   try
   {
-    Parser parser(tokens);
+    Parser_main parser(tokens);
   }
   catch(const runtime_error& e)
   {
