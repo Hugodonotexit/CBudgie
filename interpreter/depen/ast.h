@@ -46,6 +46,7 @@ class Variable {
   string name;
 
  public:
+  Variable() {}
   Variable(string newName) : name(newName) {}
   void setname(string newName) { name = newName; }
   string getname() { return name; }
@@ -55,51 +56,49 @@ class Variable {
 template <typename T>
 class VariableType : public Variable {
  private:
-  vector<T *> *value;
+  vector<T> value;
 
  public:
   // Constructor to create a vector of given size and initialize with val
-  VariableType(string newName, size_t newSize, vector<T *> val)
-      : Variable(newName) {
-    value = new vector<T *>(val);  // Copy the vector of pointers
-  }
+  VariableType() {}
+  VariableType(string newName, vector<T> val) : Variable(newName), value(val) {}
 
   // Set the value at a specific index
   void setvalue(size_t index, T &newvalue) {
-    if (index < value->size()) {
-      *(*value)[index] = newvalue;
+    if (index < value.size()) {
+      value[index] = newvalue;
     } else {
       throw out_of_range("Index out of bounds");
     }
   }
 
   void newvalue(T newvalue) {
-    value->clear();
-    value->push_back(new T(newvalue));
+    value.clear();
+    value.push_back(newvalue);
+  }
+
+  void pushValue(T newvalue) {
+    value.push_back(newvalue);
   }
 
   // Get the value at a specific index
-  T &getvalue(int index) const {
-    if (index < value->size()) {
-      return *(*value)[index];
+  T &getvalue(int index) {
+    if (index < value.size()) {
+      return value[index];
     } else {
       throw out_of_range("Index out of bounds");
     }
   }
+  
 
-  vector<T *> &getvector() const {
-    return *value;
+  vector<T> &getvector() {
+    return value;
   }
 
-  int getSize() { return value->size(); }
+  int getSize() { return value.size(); }
 
   // Destructor to clean up allocated memory
-  ~VariableType() {
-    for (size_t i = 0; i < value->size(); ++i) {
-      delete (*value)[i];
-    }
-    delete value;
-  }
+  ~VariableType() {}
 };
 
 class Scope {
@@ -131,6 +130,8 @@ class Scope {
   void pushBackVar(shared_ptr<Variable> a) { var.push_back(a); }
   virtual void setConStartPos(int line, int pos) {}
   virtual void setConEndPos(int line, int pos) {}
+  virtual Location getConStartPos() {}
+  virtual Location getConEndPos() {}
   bool inScope(int i, int j) {
     if (i > start.line && i < end.line) {
       return true;
@@ -172,6 +173,8 @@ class If : public Scope {
     condition_end.line = line;
     condition_end.pos = pos;
   }
+  Location getConStartPos() {return condition_start;}
+  Location getConEndPos() {return condition_end;}
   bool inConScope(int i, int j) {
     if (i > condition_start.line && i < condition_end.line) {
       return true;
