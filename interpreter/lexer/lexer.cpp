@@ -14,8 +14,8 @@ Lexer::Lexer(const vector<string>& input) : input(input) {
 
       {TokenType::ABS, "abs"}, {TokenType::LN, "ln"},
 
-      {TokenType::INC, "++"},
-      {TokenType::DEC, "--"},
+      //{TokenType::INC, "++"},
+      //{TokenType::DEC, "--"},
       {TokenType::EQUIVALENT, "=="},
       {TokenType::XOR, "!|"},
       {TokenType::E_GREATER, ">="},

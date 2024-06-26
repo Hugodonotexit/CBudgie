@@ -31,7 +31,7 @@ enum class TokenType {
     PLUS, MINUS,
     TIMES, DIVIDE,
     MODE, EQUAL,
-    INC, DEC,
+    //INC, DEC,
 
     GREATER, SMALLER,
     E_GREATER, E_SMALLER,
