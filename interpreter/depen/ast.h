@@ -224,7 +224,7 @@ class Switch : public If {
 class Consule {
  public:
   Consule() {}
-  inline static void output(string out) { cout << out << endl; }
+  inline static void output(string out) { cout << out; }
   inline static string input() {
     string in;
     cin >> in;

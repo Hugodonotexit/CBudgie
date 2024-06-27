@@ -171,8 +171,7 @@ vector<vector<Token>> Lexer::tokenize() {
           break;
         }
       } while (isChar(input[line][i]));
-      tokens_line.emplace_back(TokenType::STRING,
-                               input[line].substr(pos, i - pos));
+      tokens_line.emplace_back(TokenType::STRING,input[line].substr(pos, i - pos));
       pos = i;
     }
     if (!tokens_line.empty())

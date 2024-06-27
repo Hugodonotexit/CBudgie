@@ -2,7 +2,8 @@
 Parser_var::~Parser_var() {}
 Parser_var::Parser_var(vector<vector<Token>> &token) : tokens(token) {}
 
-void Parser_var::coutConfig(int &line, int &pos) {
+void Parser_var::coutConfig(int &line, int &pos) {coutConfig(line,pos,true);}
+void Parser_var::coutConfig(int &line, int &pos, bool isCIN) {
   int _i = line;
   int _j = pos + 1;
   if (_j >= tokens[_i].size() || tokens[_i][_j].type != TokenType::L_RBACKET) {
@@ -60,6 +61,10 @@ void Parser_var::coutConfig(int &line, int &pos) {
     _j++;
   }
   Consule::output(ss.str());
+  if (isCIN)
+  {
+    cout << endl;
+  }
   line = _i;
   pos = _j;
   return;

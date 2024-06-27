@@ -33,6 +33,7 @@ protected:
     ~Parser_var();
 
     void coutConfig(int &line, int &pos);
+    void coutConfig(int &line, int &pos, bool isCIN);
 };
 
 class Parser_main : public Parser_var
@@ -50,7 +51,7 @@ private:
     void runFunction(int index, int __line__, int __pos__, vector<shared_ptr<Variable>> var);
     
     template<typename T>
-    T doMath(int line, int pos, int end_line, int end_pos);
+    T doMath(int& line, int& pos, int end_line, int end_pos);
 public:
     Parser_main(vector<vector<Token>> &tokens);
     ~Parser_main();
