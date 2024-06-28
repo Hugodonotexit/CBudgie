@@ -263,37 +263,6 @@ void Parser_main::defVar(int &line, int &pos, int end_line, int end_pos,
       case TokenType::STRING:
         error(ERROR::UNDEF, line, pos);
         break;
-      case TokenType::CIN:
-          if (tokens[line][pos - 1].type == TokenType::EQUAL) {
-            if (tokens[line][pos - 2].type == TokenType::VARIABLISED_STR) {
-              shared_ptr<VariableType<string>> var =
-                  dynamic_pointer_cast<VariableType<string>>(
-                      variable[stoi(tokens[line][pos - 2].value)]);
-              coutConfig(line, pos, false);
-              string str = Consule::input();
-              var->newvalue(str);
-            } else if (tokens[line][pos - 2].type == TokenType::VARIABLISED_NUM) {
-              shared_ptr<VariableType<long double>> var =
-                  dynamic_pointer_cast<VariableType<long double>>(
-                      variable[stoi(tokens[line][pos - 2].value)]);
-              coutConfig(line, pos, false);
-              string str = Consule::input();
-              var->newvalue(stold(str));
-            } else if (tokens[line][pos - 2].type == TokenType::VARIABLISED_BOOL) {
-              shared_ptr<VariableType<bool>> var =
-                  dynamic_pointer_cast<VariableType<bool>>(
-                      variable[stoi(tokens[line][pos - 2].value)]);
-              coutConfig(line, pos, false);
-              string str = Consule::input();
-              if (str == "yes" || str == "Yes" || str == "true" || str == "True")
-              {
-                var->newvalue(true);
-              } else {
-                var->newvalue(false);
-              }
-            }
-          }
-        break;
       case TokenType::TRUESTRING: {
         type = TokenType::VARIABLISED_STR;
         vector<string> array;

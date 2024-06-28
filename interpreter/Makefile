@@ -18,7 +18,7 @@ SRCS = $(wildcard $(SRCDIR)/*.cpp) \
 OBJS = $(patsubst %.cpp,$(BUILDDIR)/%.o,$(notdir $(SRCS)))
 
 # Target executable
-TARGET = interpreter
+TARGET = interpreter.out
 
 # Create build directory if it doesn't exist
 $(shell mkdir -p $(BUILDDIR))
