@@ -1,18 +1,15 @@
 def main() {
     let diameter = 0
-    let radius = 0
-    let area = 0
-    let circ = 0
     diameter = cin("Enter the diameter: ")
-    radius = diameter / 2
-    area = findArea(radius)
-    circ = findCircumference(diameter)
-    cout("Area: " + area)
-    cout("Circumference: " + circ)
+    let radius = diameter/2 
+    let area = findArea(radius)
+    let circ = findCircumference(diameter)
+    cout("Area: " + area + " cm^2")
+    cout("Circumference: " + circ + " cm")
 }
 def findArea(let radius) {
-    return radius ^ 2 * 3.1415
+    return radius ^ 2 * 3.14159265
 }
 def findCircumference(let diameter) {
-    return diameter * 3.1415
+    return diameter * 3.14159265
 }
