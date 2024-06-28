@@ -57,10 +57,6 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
         case TokenType::LET:
           defVar(i, j, endPos.line, endPos.pos);
           break;
-        case TokenType::CIN:
-          coutConfig(i, j, false);
-          Consule::input();
-          break;
         case TokenType::COUT:
           coutConfig(i, j);
           break;
@@ -73,7 +69,7 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
               vector<shared_ptr<Variable>> passingVars;
               while (tokens[i][j].type != TokenType::R_RBACKET) {
                 switch (tokens[i][j].type) {
-                  case TokenType::BOOL: {
+                  case TokenType::VARIABLISED_BOOL: {
                     VariableType<bool> var;
                     var = *(dynamic_pointer_cast<VariableType<bool>>(
                         variable[stoi(tokens[i][j].value)]));
@@ -114,6 +110,10 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
           }
         case TokenType::RETURN:
           switch (tokens[i][++j].type) {
+            case TokenType::VARIABLISED_BOOL: {
+              tokens[_line_][_pos_].type = TokenType::VARIABLISED_BOOL;
+              tokens[_line_][_pos_].value = tokens[i][j].value;          
+              } break;
             case TokenType::TRUE:
               tokens[_line_][_pos_].type = TokenType::TRUE;
               return;
@@ -141,7 +141,7 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
                   vector<shared_ptr<Variable>> vars;
                   while (tokens[i][j].type != TokenType::R_RBACKET) {
                     switch (tokens[i][j].type) {
-                      case TokenType::BOOL: {
+                      case TokenType::VARIABLISED_BOOL: {
                         VariableType<bool> var;
                         var = *(dynamic_pointer_cast<VariableType<bool>>(
                             variable[stoi(tokens[i][j].value)]));
@@ -380,7 +380,7 @@ void Parser_main::defVar(int &line, int &pos, int end_line, int end_pos,
             vector<shared_ptr<Variable>> vars;
             while (tokens[line][pos].type != TokenType::R_RBACKET) {
               switch (tokens[line][pos].type) {
-                case TokenType::BOOL: {
+                case TokenType::VARIABLISED_BOOL: {
                   VariableType<bool> var;
                   var = *(dynamic_pointer_cast<VariableType<bool>>(
                       variable[stoi(tokens[line][pos].value)]));
@@ -616,7 +616,7 @@ T Parser_main::doMath(int& line, int& pos, int end_line, int end_pos) {
               vector<shared_ptr<Variable>> vars;
               while (tokens[i][j].type != TokenType::R_RBACKET) {
                 switch (tokens[i][j].type) {
-                  case TokenType::BOOL: {
+                  case TokenType::VARIABLISED_BOOL: {
                     VariableType<bool> var;
                     var = *(dynamic_pointer_cast<VariableType<bool>>(
                         variable[stoi(tokens[i][j].value)]));

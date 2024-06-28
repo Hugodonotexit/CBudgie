@@ -21,7 +21,7 @@ Lexer::Lexer(const vector<string>& input) : input(input) {
       {TokenType::E_GREATER, ">="},
       {TokenType::E_SMALLER, "<="},  //"long OP with conflict symbol"
 
-      {TokenType::BOOL, "bool"},
+      //{TokenType::BOOL, "bool"},
 
       {TokenType::FILE, "`"},
 

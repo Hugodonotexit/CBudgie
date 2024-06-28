@@ -1,8 +1,18 @@
-def Hugo() {return 3.14-2.71}
 def main() {
-    let a = 10
-    a = 3 * Hugo() * a
-    let b = "enter name: "
-    b = cin(b)
-    cout("Hello " + b + a)
+    let diameter = 0
+    let radius = 0
+    let area = 0
+    let circ = 0
+    diameter = cin("Enter the diameter: ")
+    radius = diameter / 2
+    area = findArea(radius)
+    circ = findCircumference(diameter)
+    cout("Area: " + area)
+    cout("Circumference: " + circ)
+}
+def findArea(let radius) {
+    return radius ^ 2 * 3.1415
+}
+def findCircumference(let diameter) {
+    return diameter * 3.1415
 }

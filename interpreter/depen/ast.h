@@ -89,6 +89,14 @@ class VariableType : public Variable {
       throw out_of_range("Index out of bounds");
     }
   }
+
+    bool get_value(int index) {
+    if (index < value.size()) {
+      return value[index];
+    } else {
+      throw out_of_range("Index out of bounds");
+    }
+  }
   
 
   vector<T> &getvector() {
