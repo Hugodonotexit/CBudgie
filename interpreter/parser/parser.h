@@ -21,6 +21,8 @@ protected:
     void error(ERROR type,int line, int pos);
 };
 
+
+
 class Parser_var : public Parser_error
 {
 protected:
@@ -36,7 +38,26 @@ protected:
     void coutConfig(int &line, int &pos, bool isCIN);
 };
 
-class Parser_main : public Parser_var
+class BoolSupport : public Parser_var
+{
+private:
+    void cleanBracket();
+    void cleanNAN();
+    void locateBrackets();
+    void locateOps();
+    
+protected:
+    vector<Token> tokens_copy;
+    vector<int> operators[2];
+    vector<std::pair<int, int>> brackets;
+    BoolSupport(vector<vector<Token>> &tokens);
+    ~BoolSupport();
+
+    void scanFunc();
+    void calculate(int index);
+};
+
+class Parser_main : public BoolSupport
 {
 private:
     template<typename T>
@@ -52,9 +73,11 @@ private:
     
     template<typename T>
     T doMath(int& line, int& pos, int end_line, int end_pos);
+    bool boolOP(int& line, int& pos, int end_line, int end_pos);
 public:
     Parser_main(vector<vector<Token>> &tokens);
     ~Parser_main();
 };
+
 
 #endif

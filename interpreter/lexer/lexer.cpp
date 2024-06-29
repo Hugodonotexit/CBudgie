@@ -41,7 +41,7 @@ Lexer::Lexer(const vector<string>& input) : input(input) {
 
       {TokenType::DEF, "def"},
       {TokenType::LET, "let"},
-      {TokenType::AS, "as"},
+      //{TokenType::AS, "as"},
       {TokenType::TRUE, "True"},
       {TokenType::FALSE, "False"},
 

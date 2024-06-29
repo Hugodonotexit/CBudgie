@@ -1,4 +1,5 @@
 def main() {
+    let test = True
     let diameter = 0
     diameter = cin("Enter the diameter: ")
     let radius = diameter/2 
@@ -6,6 +7,9 @@ def main() {
     let circ = findCircumference(diameter)
     cout("Area: " + area + " cm^2")
     cout("Circumference: " + circ + " cm")
+    cout(test)
+    test = radius > diameter
+    cout(test)
 }
 def findArea(let radius) {
     return radius ^ 2 * 3.14159265
