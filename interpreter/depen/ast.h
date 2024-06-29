@@ -13,6 +13,7 @@ using namespace std;
 class Operation {
  protected:
   Operation(){};
+   long double mod(long double &a, long double &b) { return std::fmod(a,b); }
    long double add(long double &a, long double &b) { return a + b; }
    long double minus(long double &a, long double &b) { return a - b; }
    long double times(long double &a, long double &b) { return a * b; }

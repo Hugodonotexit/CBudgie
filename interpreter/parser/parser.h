@@ -11,7 +11,6 @@
 #include <sstream>
 #include <iostream>
 #include "../depen/ast.h"
-#include "function.hpp"
 
 class Parser_error
 {
@@ -57,7 +56,27 @@ protected:
     void calculate(int index);
 };
 
-class Parser_main : public BoolSupport
+class MathSupport : public BoolSupport, public Operation
+{
+private:
+    void cleanBracket();
+    void cleanNAN();
+    void locateBrackets();
+    void locateOps();
+
+protected:
+    vector<Token> math_tokens_copy;
+    vector<int> math_operators[3];
+    vector<std::pair<int, int>> math_brackets;
+    MathSupport(vector<vector<Token>> &tokens);
+    ~MathSupport();
+
+    void math_scanFunc();
+    void math_calculate(int index);
+};
+
+
+class Parser_main : public MathSupport
 {
 private:
     template<typename T>
@@ -74,6 +93,7 @@ private:
     template<typename T>
     T doMath(int& line, int& pos, int end_line, int end_pos);
     bool boolOP(int& line, int& pos, int end_line, int end_pos);
+    long double mathOP(int &line, int &pos, int end_line, int end_pos);
 public:
     Parser_main(vector<vector<Token>> &tokens);
     ~Parser_main();

@@ -1,6 +1,6 @@
 #include "parser.h"
 Parser_main::~Parser_main() {}
-Parser_main::Parser_main(vector<vector<Token>> &token) : BoolSupport(token) {
+Parser_main::Parser_main(vector<vector<Token>> &token) : MathSupport(token) {
   for (int line = 0; line < tokens.size(); line++) {
 #pragma omp parallel for
     for (int pos = 0; pos < tokens[line].size(); pos++) {
@@ -110,7 +110,7 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
               }
               runFunction(stoi(tokens[i][start].value), i, start, passingVars);
               j--;
-            }  
+            }
           } else {
             error(ERROR::BRACKET, i, j + 1);
           }
@@ -648,7 +648,7 @@ int Parser_main::defScope(int line, int pos) {
 template <typename T>
 T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
   T var;
-  string str = "";
+
   int _line_ = line;
   int _pos_ = pos;
   bool stop = false;
@@ -672,12 +672,14 @@ T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
         case TokenType::CIN:
           if constexpr (is_same_v<T, string>) {
             coutConfig(i, j, false);
+            string str;
             line = i;
             pos = j;
             str = Consule::input();
             return str;
           } else if constexpr (is_same_v<T, long double>) {
             coutConfig(i, j, false);
+            string str;
             line = i;
             pos = j;
             str = Consule::input();
@@ -691,6 +693,7 @@ T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
               int start = j++;
               vector<shared_ptr<Variable>> vars;
               while (tokens[i][j].type != TokenType::R_RBACKET) {
+                //cerr << "AT: " << i << ";" << j << endl;
                 switch (tokens[i][j].type) {
                   case TokenType::VARIABLISED_BOOL: {
                     VariableType<bool> var;
@@ -786,7 +789,6 @@ T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
         }
           continue;
         case TokenType::NUMBER:
-          str += tokens[i][j].value;
           if (j + 1 < tokens[i].size()) {
             if (tokens[i][j + 1].type == TokenType::L_RBACKET) {
               j++;
@@ -797,15 +799,11 @@ T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
             }
           }
           continue;
-        default:
-          str += tokens[i][j].value;
-          continue;
       }
     }
   }
   if constexpr (is_same_v<T, long double>) {
-    Func func(str);
-    var = func.get_y();
+    var = mathOP(line, pos, end_line, end_pos);
   } else if constexpr (is_same_v<T, string>) {
     for (int i = line; i <= end_line; i++) {
       for (int j = 0; j < tokens[i].size(); j++) {
@@ -817,7 +815,7 @@ T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
       }
     }
   } else {
-    error(ERROR::OTHER, -2, -1);
+    error(ERROR::OTHER, -1, -1);
   }
   line = _line_;
   pos = _pos_;
@@ -864,7 +862,6 @@ bool Parser_main::boolOP(int &line, int &pos, int end_line, int end_pos) {
           if (tokens[i][j + 1].type == TokenType::L_RBACKET) {
             if (tokens[i][j + 2].type == TokenType::R_RBACKET) {
               runFunction(stoi(tokens[i][j].value), i, j);
-              j++;
             } else {
               int start = j++;
               vector<shared_ptr<Variable>> vars;
@@ -902,10 +899,22 @@ bool Parser_main::boolOP(int &line, int &pos, int end_line, int end_pos) {
                 j++;
               }
               runFunction(stoi(tokens[i][start].value), i, start, vars);
+              j--;
             }
-            j--;
           } else {
             error(ERROR::BRACKET, i, j + 1);
+          }
+        }
+          continue;
+        case TokenType::NUMBER:
+          tokens_copy.push_back(tokens[i][j]);
+          if (j + 1 < tokens[i].size()) {
+            if (tokens[i][j + 1].type == TokenType::L_RBACKET) {
+              j++;
+              while (tokens[i][j].type != TokenType::R_RBACKET) {
+                j++;
+              }
+              j++;
           }
         }
           continue;
@@ -965,4 +974,115 @@ bool Parser_main::boolOP(int &line, int &pos, int end_line, int end_pos) {
     return true;
   }
   return false;
+}
+
+long double Parser_main::mathOP(int &line, int &pos, int end_line, int end_pos) {
+  //cerr << line << ":" << pos << ";" << end_line << ":" << end_pos << endl;
+  math_tokens_copy.erase(math_tokens_copy.begin(), math_tokens_copy.end());
+  bool stopping = false;
+  math_tokens_copy.emplace_back(TokenType::L_RBACKET, "(");
+  for (int i = line; i <= end_line; i++) {
+    if (stopping) break;
+    for (int j = 0; j < tokens[i].size(); j++) {
+      if (i == line && j < pos) {
+        j = pos;
+      } else if (i >= end_line && j > end_pos) {
+        stopping = true;
+        break;
+      }
+      //cerr << i << ":" << j << endl;
+      switch (tokens[i][j].type) {
+        case TokenType::NUMBER:
+          math_tokens_copy.push_back(tokens[i][j]);
+          if (j + 1 < tokens[i].size()) {
+            if (tokens[i][j + 1].type == TokenType::L_RBACKET) {
+              j++;
+              while (tokens[i][j].type != TokenType::R_RBACKET) {
+                j++;
+              }
+              j++;
+            }
+          }
+          continue;
+        default:
+          math_tokens_copy.push_back(tokens[i][j]);
+          continue;
+      }
+    }
+  }
+  math_tokens_copy.emplace_back(TokenType::R_RBACKET, ")");
+  /*
+  for (int i = 0; i < math_tokens_copy.size(); i++)
+  {
+    cerr << math_tokens_copy[i].value << " ";
+  }
+   cerr << endl;
+  math_scanFunc();
+  */
+  while (math_tokens_copy.size() != 1) {
+    math_scanFunc();
+    if (!math_brackets.empty()) {
+      for (int j = math_brackets.size() - 1; j >= 0; j--) {
+        for (int i = (int)math_brackets[j].first + 1;
+             i < (int)math_brackets[j].second - 1; i++) {
+          for (int k = 0; k < (int)math_operators[0].size(); k++) {
+            if (i == math_operators[0][k]) {
+              math_calculate(i);
+              math_scanFunc();
+            }
+          }
+        }
+
+        bool foundInOperators0 = false;
+        for (int i = (int)math_brackets[j].first + 1;
+             i < (int)math_brackets[j].second - 1; i++) {
+          for (int k = 0; k < (int)math_operators[0].size(); k++) {
+            if (i == math_operators[0][k]) {
+              foundInOperators0 = true;
+              break;
+            }
+          }
+          if (foundInOperators0) {break;}
+        }
+
+        if (!foundInOperators0) {
+          for (int i = (int)math_brackets[j].first + 1;
+               i < (int)math_brackets[j].second - 1; i++) {
+            for (int k = 0; k < (int)math_operators[1].size(); k++) {
+              if (i == math_operators[1][k]) {
+                math_calculate(i);
+                math_scanFunc();
+              }
+            }
+          }
+          bool foundInOperators1 = false;
+          for (int i = (int)math_brackets[j].first + 1;
+               i < (int)math_brackets[j].second - 1; i++) {
+            for (int k = 0; k < (int)math_operators[1].size(); k++) {
+              if (i == math_operators[1][k]) {
+                foundInOperators1 = true;
+                break;
+              }
+            }
+            if (foundInOperators1) {break;}
+          }
+
+          if (!foundInOperators1) {
+            for (int i = (int)math_brackets[j].first + 1;
+                 i < (int)math_brackets[j].second - 1; i++) {
+              for (int k = 0; k < (int)math_operators[2].size(); k++) {
+                if (i == math_operators[2][k]) {
+                  math_calculate(i);
+                  math_scanFunc();
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  line = end_line;
+  pos = end_pos;
+  return stold(math_tokens_copy[0].value);
 }

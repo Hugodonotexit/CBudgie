@@ -10,6 +10,7 @@ BoolSupport::~BoolSupport() {}
 }
 
  void BoolSupport::cleanNAN() {
+#pragma omp parallel for
   for (int i = 0; i < (int)tokens_copy.size(); i++) {
         if (tokens_copy[i].type == TokenType::NA)
         {
@@ -20,6 +21,7 @@ BoolSupport::~BoolSupport() {}
 };
 
  void BoolSupport::cleanBracket() {
+ #pragma omp parallel for
   for (int i = 0; i < (int)tokens_copy.size()-2; i++) {
       if (tokens_copy[i].type == TokenType::L_RBACKET &&
           tokens_copy[i + 2].type == TokenType::R_RBACKET) {
