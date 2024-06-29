@@ -29,9 +29,9 @@ Lexer::Lexer(const vector<string>& input) : input(input) {
       {TokenType::IF, "if"},
       {TokenType::ELSE, "else"},
 
-      {TokenType::SWITCH, "switch"},
-      {TokenType::CASE, "case"},
-      {TokenType::DEFAULT, "default"},
+      //{TokenType::SWITCH, "switch"},
+      //{TokenType::CASE, "case"},
+      //{TokenType::DEFAULT, "default"},
 
       {TokenType::FOR, "for"},
       {TokenType::WHILE, "while"},
