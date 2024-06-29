@@ -9,7 +9,12 @@ def main() {
     cout("Circumference: " + circ + " cm")
     cout(test)
     test = radius > diameter
-    cout(test)
+    if (test) {
+       cout("i am hugo") 
+    }
+    if (!test) {
+       cout("i am not hugo") 
+    }
 }
 def findArea(let radius) {
     return radius ^ 2 * 3.14159265

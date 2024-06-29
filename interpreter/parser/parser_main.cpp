@@ -112,8 +112,8 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
           switch (tokens[i][++j].type) {
             case TokenType::VARIABLISED_BOOL: {
               tokens[_line_][_pos_].type = TokenType::VARIABLISED_BOOL;
-              tokens[_line_][_pos_].value = tokens[i][j].value;          
-              } break;
+              tokens[_line_][_pos_].value = tokens[i][j].value;
+            } break;
             case TokenType::TRUE:
               tokens[_line_][_pos_].type = TokenType::TRUE;
               return;
@@ -123,8 +123,8 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
             case TokenType::NUMBER:
             case TokenType::VARIABLISED_NUM:
               tokens[_line_][_pos_].type = TokenType::NUMBER;
-              tokens[_line_][_pos_].value = to_string(
-                  doMath<long double>(i, j, i, tokens[i].size() - 1));
+              tokens[_line_][_pos_].value =
+                  to_string(doMath<long double>(i, j, i, tokens[i].size() - 1));
               return;
             case TokenType::TRUESTRING:
             case TokenType::VARIABLISED_STR:
@@ -184,7 +184,7 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
               error(ERROR::UNDEF, i, j);
               break;
             default:
-              error(ERROR::OTHER,i,j);
+              error(ERROR::OTHER, i, j);
               break;
           }
         case TokenType::EQUAL:
@@ -194,8 +194,7 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
                   dynamic_pointer_cast<VariableType<long double>>(
                       variable[stoi(tokens[i][j - 1].value)]);
               j++;
-              var->newvalue(
-                  doMath<long double>(i, j, i, tokens[i].size() - 1));
+              var->newvalue(doMath<long double>(i, j, i, tokens[i].size() - 1));
             } break;
             case TokenType::VARIABLISED_STR: {
               shared_ptr<VariableType<string>> var =
@@ -212,12 +211,64 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
               var->newvalue(boolOP(i, j, i, tokens[i].size() - 1));
             } break;
             case TokenType::STRING:
-              error(ERROR::UNDEF, i, j-1);
+              error(ERROR::UNDEF, i, j - 1);
               break;
             default:
-              error(ERROR::OTHER,i,j-1);
+              error(ERROR::OTHER, i, j - 1);
               break;
           }
+        break;
+        case TokenType::IF:
+          if (tokens[i][++j].type != TokenType::L_RBACKET) {
+            error(ERROR::BRACKET, i, j);
+          } else {
+            j++;
+          }
+          int startline = i;
+          int startpos = j;
+          while (tokens[i][j].type != TokenType::R_RBACKET) {
+            j++;
+            if (j >= tokens[i].size()) {
+              i++;
+              j = 0;
+              if (i >= tokens.size()) {
+                error(ERROR::BRACKET, i, j);
+              }
+            }
+          }
+          if (j==0)
+          {
+            j=tokens[--i].size()-1;
+          } else j--;
+          if (boolOP(startline,startpos,i,j)) {
+            if (j == tokens[i].size()-1)
+            {
+              i++;
+              j=0;
+            } else {j++;}
+            runFunction(defScope<If>(i,j));
+          } else {
+            if (j == tokens[i].size()-1)
+            {
+              i++;
+              j=0;
+            } else {j++;}
+          }  
+          if (tokens[i][++j].type != TokenType::L_SBACKET)
+            {
+              error(ERROR::BRACKET, i, j);
+            } 
+            while (tokens[i][j].type != TokenType::R_SBACKET) {
+            j++;
+            if (j >= tokens[i].size()) {
+              i++;
+              j = 0;
+              if (i >= tokens.size()) {
+                error(ERROR::BRACKET, i, j);
+              }
+            }
+        }
+         continue;
       }
     }
   }
@@ -266,18 +317,17 @@ void Parser_main::defVar(int &line, int &pos, int end_line, int end_pos,
         type = TokenType::VARIABLISED_STR;
         vector<string> array;
         bool pass = false;
-        while (pos < tokens[line].size())
-        {
+        while (pos < tokens[line].size()) {
           if (pos + 1 < tokens[line].size()) {
             if (tokens[line][pos + 1].type == TokenType::L_RBACKET) {
               pass = true;
             }
-          } else if (tokens[line][pos].type == TokenType::R_SQBACKET)
-          {
+          } else if (tokens[line][pos].type == TokenType::R_SQBACKET) {
             pos++;
             break;
           }
-          array.push_back(doMath<string>(line,pos,line,tokens[line].size()-1));
+          array.push_back(
+              doMath<string>(line, pos, line, tokens[line].size() - 1));
           if (pass) break;
           pos++;
         }
@@ -285,11 +335,9 @@ void Parser_main::defVar(int &line, int &pos, int end_line, int end_pos,
         while (array.size() < size) {
           array.push_back(array[array.size() - 1]);
         }
-        while (pass && tokens[line][pos].type != TokenType::R_RBACKET)
-        {
+        while (pass && tokens[line][pos].type != TokenType::R_RBACKET) {
           pos++;
-          if (pos == tokens[line].size() )
-          {
+          if (pos == tokens[line].size()) {
             error(ERROR::BRACKET, line, pos);
           }
         }
@@ -300,18 +348,17 @@ void Parser_main::defVar(int &line, int &pos, int end_line, int end_pos,
         type = TokenType::VARIABLISED_NUM;
         vector<long double> array;
         bool pass = false;
-        while (pos < tokens[line].size())
-        {
+        while (pos < tokens[line].size()) {
           if (pos + 1 < tokens[line].size()) {
             if (tokens[line][pos + 1].type == TokenType::L_RBACKET) {
               pass = true;
             }
-          } else if (tokens[line][pos].type == TokenType::R_SQBACKET)
-          {
+          } else if (tokens[line][pos].type == TokenType::R_SQBACKET) {
             pos++;
             break;
           }
-          array.push_back(doMath<long double>(line,pos,line,tokens[line].size()-1));
+          array.push_back(
+              doMath<long double>(line, pos, line, tokens[line].size() - 1));
           if (pass) break;
           pos++;
         }
@@ -319,11 +366,9 @@ void Parser_main::defVar(int &line, int &pos, int end_line, int end_pos,
         while (array.size() < size) {
           array.push_back(array[array.size() - 1]);
         }
-        while (pass && tokens[line][pos].type != TokenType::R_RBACKET)
-        {
+        while (pass && tokens[line][pos].type != TokenType::R_RBACKET) {
           pos++;
-          if (pos == tokens[line].size() )
-          {
+          if (pos == tokens[line].size()) {
             error(ERROR::BRACKET, line, pos);
           }
         }
@@ -391,8 +436,7 @@ void Parser_main::defVar(int &line, int &pos, int end_line, int end_pos,
                 case TokenType::NUMBER:
                 case TokenType::VARIABLISED_NUM: {
                   VariableType<long double> var;
-                  var.newvalue(
-                      doMath<long double>(line, pos, line, pos));
+                  var.newvalue(doMath<long double>(line, pos, line, pos));
                   vars.push_back(make_shared<VariableType<long double>>(var));
                 } break;
                 case TokenType::TRUESTRING:
@@ -404,7 +448,8 @@ void Parser_main::defVar(int &line, int &pos, int end_line, int end_pos,
               }
               pos++;
             }
-            runFunction(stoi(tokens[start_line][start_pos].value), start_line, start_pos, vars);
+            runFunction(stoi(tokens[start_line][start_pos].value), start_line,
+                        start_pos, vars);
           }
         } else {
           error(ERROR::BRACKET, line, pos + 1);
@@ -485,7 +530,7 @@ void Parser_main::defFile(int line, int pos) {
 }
 
 template <typename T>
-void Parser_main::defScope(int line, int pos) {
+int Parser_main::defScope(int line, int pos) {
   int openbracket = 0;
   int closebracket = 0;
   int openRoundBracket = 0;
@@ -566,23 +611,27 @@ void Parser_main::defScope(int line, int pos) {
     }
   }
   scope.push_back(make_shared<T>(sco));
+  return(scope.size()-1);
 };
 
 template <typename T>
-T Parser_main::doMath(int& line, int& pos, int end_line, int end_pos) {
+T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
   T var;
   string str = "";
   int _line_ = line;
   int _pos_ = pos;
   bool stop = false;
   for (int i = line; i <= end_line; i++) {
-    #pragma omp parallel for
-    if (stop) {break;}
+#pragma omp parallel for
+    if (stop) {
+      break;
+    }
     for (int j = 0; j < tokens[i].size(); j++) {
       T localVar;
       if (i == line && j < pos) {
         j = pos;
-      } else if ((i >= end_line && j > end_pos) || tokens[i][j].type == TokenType::COMMA) {
+      } else if ((i >= end_line && j > end_pos) ||
+                 tokens[i][j].type == TokenType::COMMA) {
         stop = true;
         break;
       }
@@ -590,19 +639,19 @@ T Parser_main::doMath(int& line, int& pos, int end_line, int end_pos) {
       _pos_ = j;
       switch (tokens[i][j].type) {
         case TokenType::CIN:
-        if constexpr (is_same_v<T, string>) {
-              coutConfig(i, j, false);
-              line = i;
-              pos = j;
-              str = Consule::input();
-              return str;
-        } else if constexpr (is_same_v<T, long double>) {
-              coutConfig(i, j, false);
-              line = i;
-              pos = j;
-              str = Consule::input();
-              return stold(str);
-        }
+          if constexpr (is_same_v<T, string>) {
+            coutConfig(i, j, false);
+            line = i;
+            pos = j;
+            str = Consule::input();
+            return str;
+          } else if constexpr (is_same_v<T, long double>) {
+            coutConfig(i, j, false);
+            line = i;
+            pos = j;
+            str = Consule::input();
+            return stold(str);
+          }
         case TokenType::FUNCTIONISED:
           if (tokens[i][j + 1].type == TokenType::L_RBACKET) {
             if (tokens[i][j + 2].type == TokenType::R_RBACKET) {
@@ -644,7 +693,7 @@ T Parser_main::doMath(int& line, int& pos, int end_line, int end_pos) {
                 j++;
               }
               runFunction(stoi(tokens[i][start].value), i, start, vars);
-              j=start;
+              j = start;
               j--;
             }
           } else {
@@ -744,95 +793,101 @@ T Parser_main::doMath(int& line, int& pos, int end_line, int end_pos) {
   return var;
 }
 
-bool Parser_main::boolOP(int& line, int& pos, int end_line, int end_pos) {
-    tokens_copy.erase(tokens_copy.begin(),tokens_copy.end());
-    bool stopping = false;
-    tokens_copy.emplace_back(TokenType::L_RBACKET, "(");
-  for (int i = line; i <= end_line; i++)
-  {
+bool Parser_main::boolOP(int &line, int &pos, int end_line, int end_pos) {
+  tokens_copy.erase(tokens_copy.begin(), tokens_copy.end());
+  bool stopping = false;
+  tokens_copy.emplace_back(TokenType::L_RBACKET, "(");
+  for (int i = line; i <= end_line; i++) {
     if (stopping) break;
-    for (int j = 0; j < tokens[i].size(); j++)
-    {
-        if (i == line && j < pos) {j = pos;} 
-        else if (i >= end_line && pos >= end_pos) {
-            stopping = true;
-            break;
-        }
-        switch (tokens[i][j].type)
-        {
+    for (int j = 0; j < tokens[i].size(); j++) {
+      if (i == line && j < pos) {
+        j = pos;
+      } else if (i >= end_line && j > end_pos) {
+        stopping = true;
+        break;
+      }
+      switch (tokens[i][j].type) {
         case TokenType::VARIABLISED_BOOL: {
-            shared_ptr<VariableType<bool>> var = dynamic_pointer_cast<VariableType<bool>>(variable[stoi(tokens[i][j].value)]);
-            if (var->get_value(0))
-            {
-                tokens_copy.emplace_back(TokenType::TRUE, "true");
-            } else {tokens_copy.emplace_back(TokenType::FALSE, "false");}
-            }continue;
-        case TokenType::VARIABLISED_NUM: {
-            tokens_copy.emplace_back(TokenType::NUMBER, to_string(doMath<long double>(i, j, i, j)));
-            }continue;
-        case TokenType::VARIABLISED_STR: {
-            VariableType<string> var;
-            tokens_copy.emplace_back(TokenType::TRUESTRING, doMath<string>(i, j, i, j));
-            }continue;
-        case TokenType::FUNCTIONISED: {
-            if (tokens[i][j + 1].type == TokenType::L_RBACKET) {
-                if (tokens[i][j + 2].type == TokenType::R_RBACKET) {
-                  runFunction(stoi(tokens[i][j].value), i, j);
-                } else {
-                  int start = j++;
-                  vector<shared_ptr<Variable>> vars;
-                  while (tokens[i][j].type != TokenType::R_RBACKET) {
-                    switch (tokens[i][j].type) {
-                      case TokenType::VARIABLISED_BOOL: {
-                        VariableType<bool> var;
-                        var = *(dynamic_pointer_cast<VariableType<bool>>(
-                            variable[stoi(tokens[i][j].value)]));
-                        vars.push_back(make_shared<VariableType<bool>>(var));
-                      }
-                      case TokenType::TRUE: {
-                        VariableType<bool> var;
-                        var.newvalue(true);
-                        vars.push_back(make_shared<VariableType<bool>>(var));
-                      } break;
-                      case TokenType::FALSE: {
-                        VariableType<bool> var;
-                        var.newvalue(false);
-                        vars.push_back(make_shared<VariableType<bool>>(var));
-                      } break;
-                      case TokenType::NUMBER:
-                      case TokenType::VARIABLISED_NUM: {
-                        VariableType<long double> var;
-                        var.newvalue(doMath<long double>(i, j, i, j));
-                        vars.push_back(
-                            make_shared<VariableType<long double>>(var));
-                      } break;
-                      case TokenType::TRUESTRING:
-                      case TokenType::VARIABLISED_STR: {
-                        VariableType<string> var;
-                        var.newvalue(doMath<string>(i, j, i, j));
-                        vars.push_back(make_shared<VariableType<string>>(var));
-                      } break;
-                    }
-                    j++;
-                  }
-                  runFunction(stoi(tokens[i][start].value), i, start, vars);
-                }
-                j--;
-              } else {
-                error(ERROR::BRACKET, i, j + 1);
-              }
-            }continue;
-        default: {
-            tokens_copy.push_back(tokens[i][j]);
-            }continue;
+          shared_ptr<VariableType<bool>> var =
+              dynamic_pointer_cast<VariableType<bool>>(
+                  variable[stoi(tokens[i][j].value)]);
+          if (var->get_value(0)) {
+            tokens_copy.emplace_back(TokenType::TRUE, "true");
+          } else {
+            tokens_copy.emplace_back(TokenType::FALSE, "false");
+          }
         }
+          continue;
+        case TokenType::VARIABLISED_NUM: {
+          tokens_copy.emplace_back(TokenType::NUMBER,
+                                   to_string(doMath<long double>(i, j, i, j)));
+        }
+          continue;
+        case TokenType::VARIABLISED_STR: {
+          VariableType<string> var;
+          tokens_copy.emplace_back(TokenType::TRUESTRING,
+                                   doMath<string>(i, j, i, j));
+        }
+          continue;
+        case TokenType::FUNCTIONISED: {
+          if (tokens[i][j + 1].type == TokenType::L_RBACKET) {
+            if (tokens[i][j + 2].type == TokenType::R_RBACKET) {
+              runFunction(stoi(tokens[i][j].value), i, j);
+            } else {
+              int start = j++;
+              vector<shared_ptr<Variable>> vars;
+              while (tokens[i][j].type != TokenType::R_RBACKET) {
+                switch (tokens[i][j].type) {
+                  case TokenType::VARIABLISED_BOOL: {
+                    VariableType<bool> var;
+                    var = *(dynamic_pointer_cast<VariableType<bool>>(
+                        variable[stoi(tokens[i][j].value)]));
+                    vars.push_back(make_shared<VariableType<bool>>(var));
+                  }
+                  case TokenType::TRUE: {
+                    VariableType<bool> var;
+                    var.newvalue(true);
+                    vars.push_back(make_shared<VariableType<bool>>(var));
+                  } break;
+                  case TokenType::FALSE: {
+                    VariableType<bool> var;
+                    var.newvalue(false);
+                    vars.push_back(make_shared<VariableType<bool>>(var));
+                  } break;
+                  case TokenType::NUMBER:
+                  case TokenType::VARIABLISED_NUM: {
+                    VariableType<long double> var;
+                    var.newvalue(doMath<long double>(i, j, i, j));
+                    vars.push_back(make_shared<VariableType<long double>>(var));
+                  } break;
+                  case TokenType::TRUESTRING:
+                  case TokenType::VARIABLISED_STR: {
+                    VariableType<string> var;
+                    var.newvalue(doMath<string>(i, j, i, j));
+                    vars.push_back(make_shared<VariableType<string>>(var));
+                  } break;
+                }
+                j++;
+              }
+              runFunction(stoi(tokens[i][start].value), i, start, vars);
+            }
+            j--;
+          } else {
+            error(ERROR::BRACKET, i, j + 1);
+          }
+        }
+          continue;
+        default: {
+          tokens_copy.push_back(tokens[i][j]);
+        }
+          continue;
+      }
     }
   }
   tokens_copy.emplace_back(TokenType::R_RBACKET, ")");
-  while (tokens_copy.size() != 1)
-  {
+  while (tokens_copy.size() != 1) {
     scanFunc();
-        if (!brackets.empty()) {
+    if (!brackets.empty()) {
       for (int j = brackets.size() - 1; j >= 0; j--) {
         for (int i = (int)brackets[j].first + 1;
              i < (int)brackets[j].second - 1; i++) {
@@ -853,7 +908,9 @@ bool Parser_main::boolOP(int& line, int& pos, int end_line, int end_pos) {
               break;
             }
           }
-          if (foundInOperators0) {break;}
+          if (foundInOperators0) {
+            break;
+          }
         }
 
         if (!foundInOperators0) {
@@ -872,8 +929,7 @@ bool Parser_main::boolOP(int& line, int& pos, int end_line, int end_pos) {
   }
   line = end_line;
   pos = end_pos;
-  if (tokens_copy[0].type == TokenType::TRUE)
-  {
+  if (tokens_copy[0].type == TokenType::TRUE) {
     return true;
   }
   return false;

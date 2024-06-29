@@ -36,6 +36,7 @@ enum class TokenType {
     AND, OR,
     NOT, XOR,
     EQUIVALENT,
+    NOT_EQUIVALENT,
 
     //ADDRESS,
     COMMA,

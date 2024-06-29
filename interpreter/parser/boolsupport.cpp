@@ -94,6 +94,18 @@ void BoolSupport::calculate(int index) {
         tokens_copy[index+1].type = TokenType::NA;
         break;
         break;
+    case TokenType::NOT_EQUIVALENT:
+        if (tokens_copy[index-1].value != tokens_copy[index+1].value)
+        {
+            tokens_copy[index].type = TokenType::TRUE;
+            tokens_copy[index].value = "True";
+        } else {
+            tokens_copy[index].type = TokenType::FALSE;
+            tokens_copy[index].value = "False";
+        }
+        tokens_copy[index-1].type = TokenType::NA;
+        tokens_copy[index+1].type = TokenType::NA;
+        break;
     case TokenType::EQUIVALENT:
         if (tokens_copy[index-1].value == tokens_copy[index+1].value)
         {

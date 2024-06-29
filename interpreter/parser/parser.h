@@ -61,7 +61,7 @@ class Parser_main : public BoolSupport
 {
 private:
     template<typename T>
-    void defScope(int line, int pos);
+    int defScope(int line, int pos);
     void defFile(int line, int pos);
     void defVar(int& line, int& pos, int end_line, int end_pos);
     void defVar(int& line, int& pos, int end_line, int end_pos, vector<shared_ptr<Variable>> pass);
