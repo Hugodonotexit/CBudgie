@@ -29,10 +29,13 @@ void Parser_main::runFunction(int index, vector<shared_ptr<Variable>> var) {
 void Parser_main::runFunction(int index, int _line_, int _pos_,
                               vector<shared_ptr<Variable>> var) {
   int varStartSize = variable.size();
+  int scopeStartSize = scope.size();
   const Scope::Location &startPos = scope[index]->getStartPos();
   const Scope::Location &endPos = scope[index]->getEndPos();
   Scope::Location conStartPos = scope[index]->getConStartPos();
   Scope::Location conEndPos = scope[index]->getConEndPos();
+  bool isRun = false;
+  bool stop = false;
   if (conEndPos.pos - conStartPos.pos != 1) {
     for (int i = conStartPos.pos + 1; i < tokens[conStartPos.line].size();
          i++) {
@@ -46,13 +49,16 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
   }
 
   for (int i = startPos.line; i <= endPos.line; i++) {
+    if (stop) break;
 #pragma omp parallel for
     for (int j = 0; j < tokens[i].size(); j++) {
       if (i == startPos.line && j < startPos.pos) {
         j = startPos.pos;
       } else if (i == endPos.line && j > endPos.pos) {
+        stop = true;
         break;
       }
+      //cerr << "At run;" << i << ":" << j << endl;
       switch (tokens[i][j].type) {
         case TokenType::LET:
           defVar(i, j, endPos.line, endPos.pos);
@@ -103,8 +109,8 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
                 j++;
               }
               runFunction(stoi(tokens[i][start].value), i, start, passingVars);
-            }
-            j--;
+              j--;
+            }  
           } else {
             error(ERROR::BRACKET, i, j + 1);
           }
@@ -174,8 +180,8 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
                     j++;
                   }
                   runFunction(stoi(tokens[i][start].value), i, start, vars);
+                  j--;
                 }
-                j--;
               } else {
                 error(ERROR::BRACKET, i, j + 1);
               }
@@ -218,7 +224,20 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
               break;
           }
         break;
-        case TokenType::IF:
+        case TokenType::IF: {
+          bool runningIF = false;
+          if (j-1 >= 0)
+          {
+            if ((tokens[i][j-1].type == TokenType::ELSE && !isRun) || tokens[i][j-1].type != TokenType::ELSE)
+            {
+              runningIF = true;
+            }
+          } else if ((tokens[i-1][tokens[i-1].size()-1].type == TokenType::ELSE && !isRun) || 
+                      tokens[i-1][tokens[i-1].size()-1].type != TokenType::ELSE)
+          {
+            runningIF = true;
+          }
+          //cerr << i << ":" << j << ";" << runningIF << endl;
           if (tokens[i][++j].type != TokenType::L_RBACKET) {
             error(ERROR::BRACKET, i, j);
           } else {
@@ -240,7 +259,12 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
           {
             j=tokens[--i].size()-1;
           } else j--;
-          if (boolOP(startline,startpos,i,j)) {
+          if (runningIF)
+          {
+            isRun = boolOP(startline,startpos,i,j);
+          }
+          
+          if (isRun && runningIF) {
             if (j == tokens[i].size()-1)
             {
               i++;
@@ -267,13 +291,18 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
                 error(ERROR::BRACKET, i, j);
               }
             }
-        }
-         continue;
+          }
+        } continue;
+      default:
+      continue;
       }
     }
   }
   if (variable.size() > varStartSize) {
     variable.erase(variable.begin() + varStartSize, variable.end());
+  }
+  if (scope.size() > scopeStartSize) {
+    scope.erase(scope.begin() + scopeStartSize, scope.end());
   }
   return;
 }
@@ -450,7 +479,9 @@ void Parser_main::defVar(int &line, int &pos, int end_line, int end_pos,
             }
             runFunction(stoi(tokens[start_line][start_pos].value), start_line,
                         start_pos, vars);
+            pos--;
           }
+          
         } else {
           error(ERROR::BRACKET, line, pos + 1);
         }
@@ -786,7 +817,7 @@ T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
       }
     }
   } else {
-    error(ERROR::OTHER, -1, -1);
+    error(ERROR::OTHER, -2, -1);
   }
   line = _line_;
   pos = _pos_;
@@ -833,6 +864,7 @@ bool Parser_main::boolOP(int &line, int &pos, int end_line, int end_pos) {
           if (tokens[i][j + 1].type == TokenType::L_RBACKET) {
             if (tokens[i][j + 2].type == TokenType::R_RBACKET) {
               runFunction(stoi(tokens[i][j].value), i, j);
+              j++;
             } else {
               int start = j++;
               vector<shared_ptr<Variable>> vars;
