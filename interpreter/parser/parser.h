@@ -82,8 +82,8 @@ private:
     template<typename T>
     int defScope(int line, int pos);
     void defFile(int line, int pos);
-    void defVar(int& line, int& pos, int end_line, int end_pos);
-    void defVar(int& line, int& pos, int end_line, int end_pos, vector<shared_ptr<Variable>> pass);
+    int defVar(int& line, int& pos, int end_line, int end_pos);
+    int defVar(int& line, int& pos, int end_line, int end_pos, vector<shared_ptr<Variable>> pass);
 
     void runFunction(int index);
     void runFunction(int index, int __line__, int __pos__);

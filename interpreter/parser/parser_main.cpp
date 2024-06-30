@@ -27,7 +27,7 @@ void Parser_main::runFunction(int index, vector<shared_ptr<Variable>> var) {
   runFunction(index, -1, -1, var);
 }
 void Parser_main::runFunction(int index, int _line_, int _pos_,
-                              vector<shared_ptr<Variable>> var) {
+                              vector<shared_ptr<Variable>> var) { 
   int varStartSize = variable.size();
   int scopeStartSize = scope.size();
   const Scope::Location &startPos = scope[index]->getStartPos();
@@ -36,6 +36,8 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
   Scope::Location conEndPos = scope[index]->getConEndPos();
   bool isRun = false;
   bool stop = false;
+if (!var.empty())
+{
   if (conEndPos.pos - conStartPos.pos != 1) {
     for (int i = conStartPos.pos + 1; i < tokens[conStartPos.line].size();
          i++) {
@@ -47,7 +49,7 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
       }
     }
   }
-
+}
   for (int i = startPos.line; i <= endPos.line; i++) {
     if (stop) break;
 #pragma omp parallel for
@@ -263,38 +265,97 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
           {
             isRun = boolOP(startline,startpos,i,j);
           }
-          
-          if (isRun && runningIF) {
-            if (j == tokens[i].size()-1)
+          if (j == tokens[i].size()-1)
             {
               i++;
               j=0;
             } else {j++;}
-            runFunction(defScope<If>(i,j));
+            int indeX = defScope<If>(i,j);
+          if (isRun && runningIF) {
+            runFunction(indeX);
           } else {
             if (j == tokens[i].size()-1)
             {
               i++;
               j=0;
             } else {j++;}
-          }  
-          if (tokens[i][++j].type != TokenType::L_SBACKET)
+          } 
+          shared_ptr<If> thisScope = dynamic_pointer_cast<If>(scope[indeX]);
+          i = thisScope->getEndPos().line;
+          j = thisScope->getEndPos().pos; 
+        } continue;
+      case TokenType::FOR: {
+        if (j < tokens[i].size())
+          {
+            if (tokens[i][j+1].type != TokenType::L_RBACKET)
             {
-              error(ERROR::BRACKET, i, j);
-            } 
-            while (tokens[i][j].type != TokenType::R_SBACKET) {
-            j++;
-            if (j >= tokens[i].size()) {
-              i++;
-              j = 0;
-              if (i >= tokens.size()) {
-                error(ERROR::BRACKET, i, j);
-              }
+              error(ERROR::BRACKET,i,j);
             }
           }
-        } continue;
-      default:
-      continue;
+            int thisScopeIndex = defScope<For>(i,j);
+            shared_ptr<For> thisScope = dynamic_pointer_cast<For>(scope[thisScopeIndex]);
+            int lineSec[4], posSec[4], colonNum = 0;
+            lineSec[0] = thisScope->getConStartPos().line;
+            posSec[0] = thisScope->getConStartPos().pos + 1;
+            int lineEnd = thisScope->getEndPos().line;
+            int posEnd = thisScope->getEndPos().pos;
+            int thisVarIndex = defVar(lineSec[0], posSec[0], lineEnd, posEnd);
+            shared_ptr<VariableType<long double>> var =  dynamic_pointer_cast<VariableType<long double>>(variable[thisVarIndex]);
+            while (colonNum < 3)
+            {
+              switch (tokens[i][++j].type)
+              {
+              case TokenType::R_RBACKET:
+                colonNum++;
+                lineSec[colonNum] = i;
+                posSec[colonNum] = j;
+                stop = true;
+                break;
+              case TokenType::COLON:
+                colonNum++;
+                lineSec[colonNum] = i;
+                posSec[colonNum] = j;
+                break;
+              }
+              if (stop) break;
+            }
+            switch (colonNum)
+            {
+              case 0:
+              case 1:
+                error(ERROR::INIT_VAR,i,j);
+              break;
+              case 2: { 
+                int POS = posSec[1]+1;
+                var->newMaxValue(doMath<long double>(lineSec[1],POS,lineSec[2],posSec[2]-1));
+                var->newStep(1);
+              }break;
+              case 3: {
+                int _POS = posSec[1]+1;
+                int POS_ = posSec[2]+1;
+                var->newMaxValue(doMath<long double>(lineSec[1],_POS,lineSec[2],posSec[2]-1));
+                var->newStep(doMath<long double>(lineSec[2],POS_,lineSec[3],posSec[3]-1));
+              }break;
+            }
+            if (var->getStep() > 0 && var->getMaxValue() >= var->getvalue(0))
+            {
+              for (long double& _i_ = var->getvalue(0); _i_ <= var->getMaxValue(); _i_ = _i_ + var->getStep())
+              {
+                runFunction(thisScopeIndex);
+              }
+            } else if (var->getStep() < 0 && var->getMaxValue() <= var->getvalue(0)){
+              for (long double& _i_ = var->getvalue(0); _i_ >= var->getMaxValue(); _i_ = _i_ + var->getStep())
+              {
+                runFunction(thisScopeIndex);
+              }
+            } else {
+              error(ERROR::OTHER,i,j);
+            }
+            i = thisScope->getConEndPos().line;
+            j = thisScope->getConEndPos().pos;
+      } continue;
+      default: 
+        continue;
       }
     }
   }
@@ -306,18 +367,18 @@ void Parser_main::runFunction(int index, int _line_, int _pos_,
   }
   return;
 }
-void Parser_main::defVar(int &line, int &pos, int end_line, int end_pos) {
+int Parser_main::defVar(int &line, int &pos, int end_line, int end_pos) {
   vector<shared_ptr<Variable>> pass;
-  defVar(line, pos, end_line, end_pos, pass);
+  return defVar(line, pos, end_line, end_pos, pass);
 }
-void Parser_main::defVar(int &line, int &pos, int end_line, int end_pos,
-                         vector<shared_ptr<Variable>> pass) {
+int Parser_main::defVar(int &line, int &pos, int end_line, int end_pos, vector<shared_ptr<Variable>> pass) {
   shared_ptr<Variable> var;
   TokenType type;
   size_t size = 1;
   int _pos;
   int _line;
   string name;
+  //cerr << line << ":" << pos << ";" << end_line << ":" << end_pos << endl;
   if (pass.empty()) {
     _pos = pos++;
     _line = line;
@@ -333,7 +394,7 @@ void Parser_main::defVar(int &line, int &pos, int end_line, int end_pos,
     pos++;
   }
   if (tokens[line][pos].type == TokenType::EQUAL) {
-    if (tokens[line][pos + 1].type == TokenType::L_SQBACKET) {
+    if (tokens[line][pos + 1].type == TokenType::L_SBACKET) {
       pos++;
     }
     pos++;
@@ -485,8 +546,7 @@ void Parser_main::defVar(int &line, int &pos, int end_line, int end_pos,
         } else {
           error(ERROR::BRACKET, line, pos + 1);
         }
-        defVar(_line, _pos, end_line, end_pos);
-        return;
+        return defVar(_line, _pos, end_line, end_pos);
     }
   } else if (!pass.empty()) {
     if (tokens[line][pos].type == TokenType::LET) {
@@ -505,8 +565,7 @@ void Parser_main::defVar(int &line, int &pos, int end_line, int end_pos,
                      dynamic_pointer_cast<VariableType<string>>(pass[0])) {
         type = TokenType::VARIABLISED_STR;
         vector<string> arr = str->getvector();
-        var =
-            make_shared<VariableType<string>>(tokens[line][pos + 1].value, arr);
+        var = make_shared<VariableType<string>>(tokens[line][pos + 1].value, arr);
       }
     }
   } else {
@@ -538,6 +597,7 @@ void Parser_main::defVar(int &line, int &pos, int end_line, int end_pos,
     }
   }
   variable.push_back(var);
+  return variable.size()-1;
 }
 
 void Parser_main::defFile(int line, int pos) {
@@ -648,7 +708,6 @@ int Parser_main::defScope(int line, int pos) {
 template <typename T>
 T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
   T var;
-
   int _line_ = line;
   int _pos_ = pos;
   bool stop = false;
@@ -661,8 +720,7 @@ T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
       T localVar;
       if (i == line && j < pos) {
         j = pos;
-      } else if ((i >= end_line && j > end_pos) ||
-                 tokens[i][j].type == TokenType::COMMA) {
+      } else if ((i >= end_line && j > end_pos) || tokens[i][j].type == TokenType::COMMA) {
         stop = true;
         break;
       }
@@ -815,7 +873,7 @@ T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
       }
     }
   } else {
-    error(ERROR::OTHER, -1, -1);
+    error(ERROR::OTHER, line, pos);
   }
   line = _line_;
   pos = _pos_;
@@ -986,12 +1044,16 @@ long double Parser_main::mathOP(int &line, int &pos, int end_line, int end_pos) 
     for (int j = 0; j < tokens[i].size(); j++) {
       if (i == line && j < pos) {
         j = pos;
-      } else if (i >= end_line && j > end_pos) {
+      } else if ((i >= end_line && j > end_pos) || stopping) {
         stopping = true;
         break;
       }
       //cerr << i << ":" << j << endl;
       switch (tokens[i][j].type) {
+        case TokenType::COMMA:
+        case TokenType::COLON:
+          stopping = true;
+          break;
         case TokenType::NUMBER:
           math_tokens_copy.push_back(tokens[i][j]);
           if (j + 1 < tokens[i].size()) {
@@ -1011,14 +1073,14 @@ long double Parser_main::mathOP(int &line, int &pos, int end_line, int end_pos) 
     }
   }
   math_tokens_copy.emplace_back(TokenType::R_RBACKET, ")");
-  /*
-  for (int i = 0; i < math_tokens_copy.size(); i++)
+  
+  /*for (int i = 0; i < math_tokens_copy.size(); i++)
   {
     cerr << math_tokens_copy[i].value << " ";
   }
-   cerr << endl;
+  cerr << endl;*/
+  
   math_scanFunc();
-  */
   while (math_tokens_copy.size() != 1) {
     math_scanFunc();
     if (!math_brackets.empty()) {

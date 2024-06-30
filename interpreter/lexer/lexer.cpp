@@ -63,7 +63,7 @@ Lexer::Lexer(const vector<string>& input) : input(input) {
       {TokenType::NOT, "!"},
 
       //{TokenType::ADDRESS, "@"},
-      {TokenType::COMMA, ","},
+      {TokenType::COMMA, ","}, {TokenType::COLON, ":"},
 
       {TokenType::L_RBACKET, "("},
       {TokenType::R_RBACKET, ")"},

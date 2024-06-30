@@ -58,7 +58,8 @@ template <typename T>
 class VariableType : public Variable {
  private:
   vector<T> value;
-
+  long double maxValue;
+  long double step;
  public:
   // Constructor to create a vector of given size and initialize with val
   VariableType() {}
@@ -71,6 +72,14 @@ class VariableType : public Variable {
     } else {
       throw out_of_range("Index out of bounds");
     }
+  }
+
+  void newMaxValue(long double newvalue) {
+    maxValue = newvalue;
+  }
+
+  void newStep(long double newstep) {
+    step = newstep;
   }
 
   void newvalue(T newvalue) {
@@ -90,6 +99,10 @@ class VariableType : public Variable {
       throw out_of_range("Index out of bounds");
     }
   }
+
+  long double getMaxValue() {return maxValue;}
+
+  long double getStep() {return step;}
 
     bool get_value(int index) {
     if (index < value.size()) {

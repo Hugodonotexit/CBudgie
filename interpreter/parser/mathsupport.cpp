@@ -297,16 +297,22 @@ void MathSupport::math_calculate(int index) {
         math_tokens_copy[index+1].type = TokenType::NA;
         }break;
       case TokenType::MINUS: {
-        if (math_tokens_copy[index-1].type != TokenType::NUMBER || math_tokens_copy[index+1].type != TokenType::NUMBER)
+        if (math_tokens_copy[index-1].type != TokenType::NUMBER || math_tokens_copy[index+1].type == TokenType::NUMBER)
         {
+          long double a = stold(math_tokens_copy[index+1].value);
+          math_tokens_copy[index].value = to_string(negative(a));
+          math_tokens_copy[index].type = TokenType::NUMBER;
+          math_tokens_copy[index+1].type = TokenType::NA;
+        } else if (math_tokens_copy[index-1].type == TokenType::NUMBER && math_tokens_copy[index+1].type == TokenType::NUMBER) {
+          long double a = stold(math_tokens_copy[index-1].value);
+          long double b = stold(math_tokens_copy[index+1].value);
+          math_tokens_copy[index].value = to_string(minus(a,b));
+          math_tokens_copy[index].type = TokenType::NUMBER;
+          math_tokens_copy[index-1].type = TokenType::NA;
+          math_tokens_copy[index+1].type = TokenType::NA;
+        } else {
           error(ERROR::OTHER,-1,-1);
         }
-        long double a = stold(math_tokens_copy[index-1].value);
-        long double b = stold(math_tokens_copy[index+1].value);
-        math_tokens_copy[index].value = to_string(minus(a,b));
-        math_tokens_copy[index].type = TokenType::NUMBER;
-        math_tokens_copy[index-1].type = TokenType::NA;
-        math_tokens_copy[index+1].type = TokenType::NA;
         }break;
     }
 }
