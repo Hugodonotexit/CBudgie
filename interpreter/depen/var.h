@@ -6,61 +6,97 @@
 using namespace std;
 
 enum class TokenType {
-    /*INT8,INT16,INT32,INT64,
-    FLOAT4,FLOAT8,FLOAT16,
-    UINT8,UINT16,UINT32,UINT64,
-    STRINGTYPE,BOOL,*/
-    ASINH,ACOSH,ATANH,ASIN,ACOS,ATAN,SINH,COSH,TANH,SIN,COS,TAN,
-   
-    FILE,
+  /*INT8,INT16,INT32,INT64,
+  FLOAT4,FLOAT8,FLOAT16,
+  UINT8,UINT16,UINT32,UINT64,
+  STRINGTYPE,BOOL,*/
+  ASINH,
+  ACOSH,
+  ATANH,
+  ASIN,
+  ACOS,
+  ATAN,
+  SINH,
+  COSH,
+  TANH,
+  SIN,
+  COS,
+  TAN,
 
-    IF, ELSE,
+  FILE,
 
-    //SWITCH, CASE, DEFAULT,
+  IF,
+  ELSE,
 
-    FOR, WHILE,
+  // SWITCH, CASE, DEFAULT,
 
-    BREAK, CONTINUE, RETURN,
+  FOR,
+  WHILE,
 
-    DEF, LET, AS, TRUE, FALSE,
+  BREAK,
+  CONTINUE,
+  RETURN,
 
-    TRUESTRING, STRING, NUMBER,
-    POW, ABS, LN,
-    PLUS, MINUS,
-    TIMES, DIVIDE,
-    MODE, EQUAL,
-    //INC, DEC,
+  DEF,
+  LET,
+  AS,
+  TRUE,
+  FALSE,
 
-    GREATER, SMALLER,
-    E_GREATER, E_SMALLER,
-    AND, OR,
-    NOT, XOR,
-    EQUIVALENT,
-    NOT_EQUIVALENT,
+  TRUESTRING,
+  STRING,
+  NUMBER,
+  POW,
+  ABS,
+  LN,
+  PLUS,
+  MINUS,
+  TIMES,
+  DIVIDE,
+  MODE,
+  EQUAL,
+  // INC, DEC,
 
-    //ADDRESS,
-    COMMA, COLON,
+  GREATER,
+  SMALLER,
+  E_GREATER,
+  E_SMALLER,
+  AND,
+  OR,
+  NOT,
+  XOR,
+  EQUIVALENT,
+  NOT_EQUIVALENT,
 
-    L_RBACKET, R_RBACKET,
-    L_SQBACKET, R_SQBACKET,
-    L_SBACKET, R_SBACKET, 
+  // ADDRESS,
+  COMMA,
+  COLON,
 
-    CIN, COUT,
-    
-    VARIABLISED_BOOL, VARIABLISED_NUM, VARIABLISED_STR, FUNCTIONISED,
+  L_RBACKET,
+  R_RBACKET,
+  L_SQBACKET,
+  R_SQBACKET,
+  L_SBACKET,
+  R_SBACKET,
 
-    NA
+  CIN,
+  COUT,
+
+  VARIABLISED_BOOL,
+  VARIABLISED_NUM,
+  VARIABLISED_STR,
+  FUNCTIONISED,
+
+  NA
 };
 
 struct Token {
-    TokenType type;
-    string value;
-    
-    Token(TokenType type, const string value) : type(type), value(value) {}
+  TokenType type;
+  string value;
+
+  Token(TokenType type, const string value) : type(type), value(value) {}
 };
 
-enum class ERROR {
-    BRACKET, INIT_VAR, ARRAY_ADDING, UNDEF, OTHER
-};
+enum class ERROR { BRACKET, INIT_VAR, ARRAY_ADDING, UNDEF, OTHER };
 
 #endif

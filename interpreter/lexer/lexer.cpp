@@ -1,5 +1,6 @@
-#include <cmath>
 #include "lexer.h"
+
+#include <cmath>
 
 #include "var.h"
 
@@ -9,10 +10,21 @@ Lexer::~Lexer() {}
 
 Lexer::Lexer(const vector<string>& input) : input(input) {
   tokenPatterns = {
-      {TokenType::ASINH, "asinh"},{TokenType::ACOSH, "acosh"},{TokenType::ATANH, "atanh"},{TokenType::ASIN, "asin"},{TokenType::ACOS, "acos"},{TokenType::ATAN, "atan"},
-      {TokenType::SINH, "sinh"},{TokenType::COSH, "cosh"},{TokenType::TANH, "tanh"},{TokenType::SIN, "sin"},{TokenType::COS, "cos"},{TokenType::TAN, "tan"},
+      {TokenType::ASINH, "asinh"},
+      {TokenType::ACOSH, "acosh"},
+      {TokenType::ATANH, "atanh"},
+      {TokenType::ASIN, "asin"},
+      {TokenType::ACOS, "acos"},
+      {TokenType::ATAN, "atan"},
+      {TokenType::SINH, "sinh"},
+      {TokenType::COSH, "cosh"},
+      {TokenType::TANH, "tanh"},
+      {TokenType::SIN, "sin"},
+      {TokenType::COS, "cos"},
+      {TokenType::TAN, "tan"},
 
-      {TokenType::ABS, "abs"}, {TokenType::LN, "ln"},
+      {TokenType::ABS, "abs"},
+      {TokenType::LN, "ln"},
 
       //{TokenType::INC, "++"},
       //{TokenType::DEC, "--"},
@@ -63,7 +75,8 @@ Lexer::Lexer(const vector<string>& input) : input(input) {
       {TokenType::NOT, "!"},
 
       //{TokenType::ADDRESS, "@"},
-      {TokenType::COMMA, ","}, {TokenType::COLON, ":"},
+      {TokenType::COMMA, ","},
+      {TokenType::COLON, ":"},
 
       {TokenType::L_RBACKET, "("},
       {TokenType::R_RBACKET, ")"},
@@ -98,7 +111,7 @@ vector<vector<Token>> Lexer::tokenize() {
       }
 
       bool isFound = false;
-      #pragma omp parallel for
+#pragma omp parallel for
       for (auto& pattern : tokenPatterns) {
         if (input[line].substr(pos, pattern.second.size()) == pattern.second) {
           tokens_line.emplace_back(
@@ -120,12 +133,13 @@ vector<vector<Token>> Lexer::tokenize() {
           if (input[line][i] == '\"') {
             isFound = true;
           } else if (i == input[line].size()) {
-            throw runtime_error("Missing a closing \" at" + to_string(line) + ":" + to_string(pos));
+            throw runtime_error("Missing a closing \" at" + to_string(line) +
+                                ":" + to_string(pos));
           }
 
         } while (!isFound);
-        string str = input[line].substr(pos+1, i - pos - 1);
-        int  x = 0;
+        string str = input[line].substr(pos + 1, i - pos - 1);
+        int x = 0;
         tokens_line.emplace_back(TokenType::TRUESTRING, str);
         pos = i + 1;
         continue;
@@ -160,7 +174,8 @@ vector<vector<Token>> Lexer::tokenize() {
           }
         }
         int length = _pos_ - start;
-        tokens_line.emplace_back(TokenType::NUMBER, input[line].substr(start, length));
+        tokens_line.emplace_back(TokenType::NUMBER,
+                                 input[line].substr(start, length));
         pos += length;
         continue;
       }
@@ -172,13 +187,13 @@ vector<vector<Token>> Lexer::tokenize() {
           break;
         }
       } while (isChar(input[line][i]));
-      tokens_line.emplace_back(TokenType::STRING,input[line].substr(pos, i - pos));
+      tokens_line.emplace_back(TokenType::STRING,
+                               input[line].substr(pos, i - pos));
       pos = i;
     }
-    if (!tokens_line.empty())
-    {
+    if (!tokens_line.empty()) {
       tokens.push_back(tokens_line);
-    } 
+    }
   }
 
   return tokens;

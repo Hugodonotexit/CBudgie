@@ -1,17 +1,17 @@
 #include <vector>
 
-#include "lexer/lexer.h"
 #include "depen/var.h"
+#include "lexer/lexer.h"
 #include "lexer/readFile.h"
 #include "parser/parser.h"
 
 using namespace std;
 
 int main(int argc, char* argv[]) {
-  //clock_t start_time, end_time;
-  //double cpu_time_used;
-  
-  //start_time = clock();
+  // clock_t start_time, end_time;
+  // double cpu_time_used;
+
+  // start_time = clock();
   ReadFile readFile(argc, argv);
   vector<string> input = readFile.getInput();
   vector<vector<Token>> tokens;
@@ -31,20 +31,16 @@ int main(int argc, char* argv[]) {
   } catch (const runtime_error& e) {
     cerr << "Error: " << e.what() << endl;
   }
-  try
-  {
+  try {
     Parser_main parser(tokens);
-  }
-  catch(const runtime_error& e)
-  {
+  } catch (const runtime_error& e) {
     cerr << "Error: " << e.what() << endl;
   }
-  
 
-  //end_time = clock();
-  //cpu_time_used = ((double) (end_time - start_time)) / CLOCKS_PER_SEC;
+  // end_time = clock();
+  // cpu_time_used = ((double) (end_time - start_time)) / CLOCKS_PER_SEC;
 
-  //printf("Time taken: %f seconds\n", cpu_time_used);
+  // printf("Time taken: %f seconds\n", cpu_time_used);
 
   return 0;
 }
