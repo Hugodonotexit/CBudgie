@@ -85,10 +85,10 @@ private:
     int defVar(int& line, int& pos, int end_line, int end_pos);
     int defVar(int& line, int& pos, int end_line, int end_pos, vector<shared_ptr<Variable>> pass);
 
-    void runFunction(int index);
-    void runFunction(int index, int __line__, int __pos__);
-    void runFunction(int index, vector<shared_ptr<Variable>> var);
-    void runFunction(int index, int __line__, int __pos__, vector<shared_ptr<Variable>> var);
+    bool runFunction(int index);
+    bool runFunction(int index, int __line__, int __pos__);
+    bool runFunction(int index, vector<shared_ptr<Variable>> var);
+    bool runFunction(int index, int __line__, int __pos__, vector<shared_ptr<Variable>> var);
     
     template<typename T>
     T doMath(int& line, int& pos, int end_line, int end_pos);

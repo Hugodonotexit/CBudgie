@@ -17,16 +17,16 @@ Parser_main::Parser_main(vector<vector<Token>> &token) : MathSupport(token) {
   runFunction(mainIndex);
 }
 
-void Parser_main::runFunction(int index) { runFunction(index, -1, -1); }
+bool Parser_main::runFunction(int index) { return runFunction(index, -1, -1); }
 
-void Parser_main::runFunction(int index, int _line_, int _pos_) {
+bool Parser_main::runFunction(int index, int _line_, int _pos_) {
   vector<shared_ptr<Variable>> var;
-  runFunction(index, -1, -1, var);
+ return runFunction(index, -1, -1, var);
 }
-void Parser_main::runFunction(int index, vector<shared_ptr<Variable>> var) {
-  runFunction(index, -1, -1, var);
+bool Parser_main::runFunction(int index, vector<shared_ptr<Variable>> var) {
+ return runFunction(index, -1, -1, var);
 }
-void Parser_main::runFunction(int index, int _line_, int _pos_,
+bool Parser_main::runFunction(int index, int _line_, int _pos_,
                               vector<shared_ptr<Variable>> var) { 
   int varStartSize = variable.size();
   int scopeStartSize = scope.size();
@@ -116,6 +116,10 @@ if (!var.empty())
           } else {
             error(ERROR::BRACKET, i, j + 1);
           }
+        case TokenType::CONTINUE:
+          return false;
+        case TokenType::BREAK:
+          return true;
         case TokenType::RETURN:
           switch (tokens[i][++j].type) {
             case TokenType::VARIABLISED_BOOL: {
@@ -124,22 +128,22 @@ if (!var.empty())
             } break;
             case TokenType::TRUE:
               tokens[_line_][_pos_].type = TokenType::TRUE;
-              return;
+              return false;
             case TokenType::FALSE:
               tokens[_line_][_pos_].type = TokenType::FALSE;
-              return;
+              return false;
             case TokenType::NUMBER:
             case TokenType::VARIABLISED_NUM:
               tokens[_line_][_pos_].type = TokenType::NUMBER;
               tokens[_line_][_pos_].value =
                   to_string(doMath<long double>(i, j, i, tokens[i].size() - 1));
-              return;
+              return false;
             case TokenType::TRUESTRING:
             case TokenType::VARIABLISED_STR:
               tokens[_line_][_pos_].type = TokenType::TRUESTRING;
               tokens[_line_][_pos_].value =
                   doMath<string>(i, j, i, tokens[i].size() - 1);
-              return;
+              return false;
             case TokenType::FUNCTIONISED:
               if (tokens[i][j + 1].type == TokenType::L_RBACKET) {
                 if (tokens[i][j + 2].type == TokenType::R_RBACKET) {
@@ -341,12 +345,18 @@ if (!var.empty())
             {
               for (long double& _i_ = var->getvalue(0); _i_ <= var->getMaxValue(); _i_ = _i_ + var->getStep())
               {
-                runFunction(thisScopeIndex);
+                if (runFunction(thisScopeIndex))
+                {
+                  return false;
+                }
               }
             } else if (var->getStep() < 0 && var->getMaxValue() <= var->getvalue(0)){
               for (long double& _i_ = var->getvalue(0); _i_ >= var->getMaxValue(); _i_ = _i_ + var->getStep())
               {
-                runFunction(thisScopeIndex);
+                if (runFunction(thisScopeIndex))
+                {
+                  return false;
+                }
               }
             } else {
               error(ERROR::OTHER,i,j);
@@ -365,7 +375,7 @@ if (!var.empty())
   if (scope.size() > scopeStartSize) {
     scope.erase(scope.begin() + scopeStartSize, scope.end());
   }
-  return;
+  return false;
 }
 int Parser_main::defVar(int &line, int &pos, int end_line, int end_pos) {
   vector<shared_ptr<Variable>> pass;
