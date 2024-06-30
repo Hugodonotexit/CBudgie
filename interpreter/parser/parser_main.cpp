@@ -1,6 +1,7 @@
 #include "parser.h"
 Parser_main::~Parser_main() {}
 Parser_main::Parser_main(vector<vector<Token>> &token) : MathSupport(token) {
+  #pragma omp parallel for
   for (int line = 0; line < tokens.size(); line++) {
 #pragma omp parallel for
     for (int pos = 0; pos < tokens[line].size(); pos++) {
@@ -743,7 +744,6 @@ T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
   vector<int> changedLine_fun, changedPos_fun;
   vector<string> changedIndex_fun;
   for (int i = line; i <= end_line; i++) {
-#pragma omp parallel for
     if (stop) {
       break;
     }
@@ -1062,8 +1062,10 @@ bool Parser_main::boolOP(int &line, int &pos, int end_line, int end_pos) {
         }
 
         bool foundInOperators0 = false;
+        #pragma omp parallel for
         for (int i = (int)brackets[j].first + 1;
              i < (int)brackets[j].second - 1; i++) {
+          #pragma omp parallel for
           for (int k = 0; k < (int)operators[0].size(); k++) {
             if (i == operators[0][k]) {
               foundInOperators0 = true;
@@ -1165,8 +1167,10 @@ long double Parser_main::mathOP(int &line, int &pos, int end_line,
         }
 
         bool foundInOperators0 = false;
+        #pragma omp parallel for
         for (int i = (int)math_brackets[j].first + 1;
              i < (int)math_brackets[j].second - 1; i++) {
+              #pragma omp parallel for
           for (int k = 0; k < (int)math_operators[0].size(); k++) {
             if (i == math_operators[0][k]) {
               foundInOperators0 = true;
@@ -1189,8 +1193,10 @@ long double Parser_main::mathOP(int &line, int &pos, int end_line,
             }
           }
           bool foundInOperators1 = false;
+          #pragma omp parallel for
           for (int i = (int)math_brackets[j].first + 1;
                i < (int)math_brackets[j].second - 1; i++) {
+                #pragma omp parallel for
             for (int k = 0; k < (int)math_operators[1].size(); k++) {
               if (i == math_operators[1][k]) {
                 foundInOperators1 = true;

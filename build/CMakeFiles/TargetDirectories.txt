@@ -1,0 +1,7 @@
+/home/hugo/CBudgie/build/CMakeFiles/cbudgie.dir
+/home/hugo/CBudgie/build/CMakeFiles/edit_cache.dir
+/home/hugo/CBudgie/build/CMakeFiles/rebuild_cache.dir
+/home/hugo/CBudgie/build/CMakeFiles/list_install_components.dir
+/home/hugo/CBudgie/build/CMakeFiles/install.dir
+/home/hugo/CBudgie/build/CMakeFiles/install/local.dir
+/home/hugo/CBudgie/build/CMakeFiles/install/strip.dir

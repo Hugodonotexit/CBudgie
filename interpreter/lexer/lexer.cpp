@@ -99,6 +99,7 @@ bool Lexer::isChar(char a) {
 
 vector<vector<Token>> Lexer::tokenize() {
   vector<vector<Token>> tokens;
+  #pragma omp parallel for
   for (int line = 0; line < input.size(); line++) {
     int pos = 0;
     vector<Token> tokens_line;
