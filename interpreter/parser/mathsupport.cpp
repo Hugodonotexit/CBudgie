@@ -19,6 +19,7 @@ void MathSupport::cleanNAN() {
 };
 
 void MathSupport::cleanBracket() {
+  #pragma omp parallel for
   for (int i = 0; i < (int)math_tokens_copy.size() - 2; i++) {
     if (math_tokens_copy[i].type == TokenType::L_RBACKET &&
         math_tokens_copy[i + 2].type == TokenType::R_RBACKET) {
@@ -32,6 +33,7 @@ void MathSupport::locateOps() {
   math_operators[0].erase(math_operators[0].begin(), math_operators[0].end());
   math_operators[1].erase(math_operators[1].begin(), math_operators[1].end());
   math_operators[2].erase(math_operators[2].begin(), math_operators[2].end());
+  #pragma omp parallel for
   for (int i = 0; i < (int)math_tokens_copy.size(); i++) {
     switch (math_tokens_copy[i].type) {
       case TokenType::ASINH:

@@ -1,7 +1,6 @@
 #include "parser.h"
 Parser_main::~Parser_main() {}
 Parser_main::Parser_main(vector<vector<Token>> &token) : MathSupport(token) {
-  #pragma omp parallel for collapse(2)
   for (int line = 0; line < tokens.size(); line++) {
     for (int pos = 0; pos < tokens[line].size(); pos++) {
       switch (tokens[line][pos].type) {
@@ -51,7 +50,6 @@ bool Parser_main::runFunction(int index, int _line_, int _pos_,
   }
   for (int i = startPos.line; i <= endPos.line; i++) {
     if (stop) break;
-    #pragma omp parallel for
     for (int j = 0; j < tokens[i].size(); j++) {
       if (i == startPos.line && j < startPos.pos) {
         j = startPos.pos;
@@ -596,7 +594,6 @@ int Parser_main::defVar(int &line, int &pos, int end_line, int end_pos,
   } else {
     error(ERROR::INIT_VAR, line, pos);
   }
-  #pragma omp parallel for collapse(2)
   for (int i = line; i <= end_line; i++) {
     for (int j = 0; j < tokens[i].size(); j++) {
       if (i == line && j < pos) {
@@ -700,7 +697,6 @@ int Parser_main::defScope(int line, int pos) {
   }
   sco.setEndtPos(i, j);
   if constexpr (is_same_v<T, Function>) {
-    #pragma omp parallel for collapse(2)
     for (int i = 0; i < tokens.size(); i++) {
       for (int j = 0; j < tokens[i].size(); j++) {
         if (tokens[i][j].type == TokenType::STRING) {
@@ -1059,7 +1055,6 @@ bool Parser_main::boolOP(int &line, int &pos, int end_line, int end_pos) {
         }
 
         bool foundInOperators0 = false;
-        #pragma omp parallel for collapse(2)
         for (int i = (int)brackets[j].first + 1;
              i < (int)brackets[j].second - 1; i++) {
           for (int k = 0; k < (int)operators[0].size(); k++) {
@@ -1162,7 +1157,6 @@ long double Parser_main::mathOP(int &line, int &pos, int end_line,
         }
 
         bool foundInOperators0 = false;
-        #pragma omp parallel for collapse(2)
         for (int i = (int)math_brackets[j].first + 1;
              i < (int)math_brackets[j].second - 1; i++) {   
           for (int k = 0; k < (int)math_operators[0].size(); k++) {
@@ -1187,7 +1181,6 @@ long double Parser_main::mathOP(int &line, int &pos, int end_line,
             }
           }
           bool foundInOperators1 = false;
-          #pragma omp parallel for collapse(2)
           for (int i = (int)math_brackets[j].first + 1;
                i < (int)math_brackets[j].second - 1; i++) {
             for (int k = 0; k < (int)math_operators[1].size(); k++) {
