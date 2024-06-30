@@ -244,47 +244,21 @@ if (!var.empty())
             runningIF = true;
           }
           //cerr << i << ":" << j << ";" << runningIF << endl;
-          if (tokens[i][++j].type != TokenType::L_RBACKET) {
-            error(ERROR::BRACKET, i, j);
-          } else {
-            j++;
-          }
-          int startline = i;
-          int startpos = j;
-          while (tokens[i][j].type != TokenType::R_RBACKET) {
-            j++;
-            if (j >= tokens[i].size()) {
-              i++;
-              j = 0;
-              if (i >= tokens.size()) {
-                error(ERROR::BRACKET, i, j);
-              }
-            }
-          }
-          if (j==0)
-          {
-            j=tokens[--i].size()-1;
-          } else j--;
+          int indeX = defScope<If>(i,j);
+          shared_ptr<If> thisScope = dynamic_pointer_cast<If>(scope[indeX]);
+          int startLINE = thisScope->getConStartPos().line;
+          int startPos = thisScope->getConStartPos().pos;
+          int endLINE = thisScope->getConEndPos().line;
+          int endPos = thisScope->getConEndPos().pos;
           if (runningIF)
           {
-            isRun = boolOP(startline,startpos,i,j);
+            isRun = boolOP(startLINE,startPos,endLINE,endPos);
           }
-          if (j == tokens[i].size()-1)
-            {
-              i++;
-              j=0;
-            } else {j++;}
-            int indeX = defScope<If>(i,j);
+            
           if (isRun && runningIF) {
             runFunction(indeX);
-          } else {
-            if (j == tokens[i].size()-1)
-            {
-              i++;
-              j=0;
-            } else {j++;}
-          } 
-          shared_ptr<If> thisScope = dynamic_pointer_cast<If>(scope[indeX]);
+          }
+          
           i = thisScope->getEndPos().line;
           j = thisScope->getEndPos().pos; 
         } continue;
