@@ -144,8 +144,8 @@ class Scope {
   void pushBackVar(shared_ptr<Variable> a) { var.push_back(a); }
   virtual void setConStartPos(int line, int pos) {}
   virtual void setConEndPos(int line, int pos) {}
-  virtual Location getConStartPos() {}
-  virtual Location getConEndPos() {}
+  virtual Location getConStartPos() {return start;}
+  virtual Location getConEndPos() {return end;}
   bool inScope(int i, int j) {
     if (i > start.line && i < end.line) {
       return true;

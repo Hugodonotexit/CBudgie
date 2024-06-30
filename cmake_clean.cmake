@@ -1,0 +1,1 @@
+file(REMOVE_RECURSE /home/hugo/CBudgie/build/build cbudgie)
