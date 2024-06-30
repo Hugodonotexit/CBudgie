@@ -99,7 +99,7 @@ bool Lexer::isChar(char a) {
 
 vector<vector<Token>> Lexer::tokenize() {
   vector<vector<Token>> tokens;
-  #pragma omp parallel for
+  #pragma omp parallel for collapse(2)
   for (int line = 0; line < input.size(); line++) {
     int pos = 0;
     vector<Token> tokens_line;
@@ -112,7 +112,6 @@ vector<vector<Token>> Lexer::tokenize() {
       }
 
       bool isFound = false;
-#pragma omp parallel for
       for (auto& pattern : tokenPatterns) {
         if (input[line].substr(pos, pattern.second.size()) == pattern.second) {
           tokens_line.emplace_back(
