@@ -364,6 +364,27 @@ if (!var.empty())
             i = thisScope->getConEndPos().line;
             j = thisScope->getConEndPos().pos;
       } continue;
+      case TokenType::WHILE: {
+          //cerr << i << ":" << j << ";" << runningIF << endl;
+          if (tokens[i][j+1].type != TokenType::L_RBACKET) {
+            error(ERROR::BRACKET, i, j+1);
+          }
+          int thisScopeIndex = defScope<While>(i,j);
+          shared_ptr<If> thisScope = dynamic_pointer_cast<If>(scope[thisScopeIndex]);
+          int startLINE = thisScope->getConStartPos().line;
+          int startPos = thisScope->getConStartPos().pos;
+          int endLINE = thisScope->getConEndPos().line;
+          int endPos = thisScope->getConEndPos().pos;
+          while (boolOP(startLINE,startPos,endLINE,endPos))
+          {
+            runFunction(thisScopeIndex);
+            startLINE = thisScope->getConStartPos().line;
+            startPos = thisScope->getConStartPos().pos;
+          }
+          i = thisScope->getEndPos().line;
+          j = thisScope->getEndPos().pos;
+      }
+      continue;
       default: 
         continue;
       }
@@ -721,6 +742,12 @@ T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
   int _line_ = line;
   int _pos_ = pos;
   bool stop = false;
+  vector<int> changedLine, changedPos;
+  vector<string> changedIndex;
+  vector<int> changedLine_str, changedPos_str;
+  vector<string> changedIndex_str;
+  vector<int> changedLine_fun, changedPos_fun;
+  vector<string> changedIndex_fun;
   for (int i = line; i <= end_line; i++) {
 #pragma omp parallel for
     if (stop) {
@@ -754,6 +781,9 @@ T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
             return stold(str);
           }
         case TokenType::FUNCTIONISED:
+          changedLine_fun.push_back(i);
+          changedPos_fun.push_back(j);
+          changedIndex_fun.push_back(tokens[i][j].value);
           if (tokens[i][j + 1].type == TokenType::L_RBACKET) {
             if (tokens[i][j + 2].type == TokenType::R_RBACKET) {
               runFunction(stoi(tokens[i][j].value), i, j);
@@ -803,6 +833,9 @@ T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
           }
           continue;
         case TokenType::VARIABLISED_NUM: {
+          changedLine.push_back(i);
+          changedPos.push_back(j);
+          changedIndex.push_back(tokens[i][j].value);
           tokens[i][j].type = TokenType::NUMBER;
           int index = 0;
           int _j = j;
@@ -830,6 +863,9 @@ T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
         }
           continue;
         case TokenType::VARIABLISED_STR: {
+          changedLine_str.push_back(i);
+          changedPos_str.push_back(j);
+          changedIndex_str.push_back(tokens[i][j].value);
           tokens[i][j].type = TokenType::TRUESTRING;
           int index = 0;
           int _j = j;
@@ -885,6 +921,24 @@ T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
   } else {
     error(ERROR::OTHER, line, pos);
   }
+  #pragma omp parallel for
+  for (int i = 0; i < changedIndex_fun.size(); i++)
+  {
+    tokens[changedLine_fun[i]][changedPos_fun[i]].type = TokenType::FUNCTIONISED;
+    tokens[changedLine_fun[i]][changedPos_fun[i]].value = changedIndex_fun[i];
+  }
+  #pragma omp parallel for
+  for (int i = 0; i < changedIndex_str.size(); i++)
+  {
+    tokens[changedLine_str[i]][changedPos_str[i]].type = TokenType::VARIABLISED_STR;
+    tokens[changedLine_str[i]][changedPos_str[i]].value = changedIndex_str[i];
+  }
+  #pragma omp parallel for
+  for (int i = 0; i < changedIndex.size(); i++)
+  {
+    tokens[changedLine[i]][changedPos[i]].type = TokenType::VARIABLISED_NUM;
+    tokens[changedLine[i]][changedPos[i]].value = changedIndex[i];
+  }
   line = _line_;
   pos = _pos_;
   return var;
@@ -893,6 +947,8 @@ T Parser_main::doMath(int &line, int &pos, int end_line, int end_pos) {
 bool Parser_main::boolOP(int &line, int &pos, int end_line, int end_pos) {
   tokens_copy.erase(tokens_copy.begin(), tokens_copy.end());
   bool stopping = false;
+  vector<int> changedLine, changedPos;
+  vector<string> changedIndex;
   tokens_copy.emplace_back(TokenType::L_RBACKET, "(");
   for (int i = line; i <= end_line; i++) {
     if (stopping) break;
@@ -905,6 +961,9 @@ bool Parser_main::boolOP(int &line, int &pos, int end_line, int end_pos) {
       }
       switch (tokens[i][j].type) {
         case TokenType::VARIABLISED_BOOL: {
+          changedLine.push_back(i);
+          changedPos.push_back(j);
+          changedIndex.push_back(tokens[i][j].value);
           shared_ptr<VariableType<bool>> var =
               dynamic_pointer_cast<VariableType<bool>>(
                   variable[stoi(tokens[i][j].value)]);
@@ -1035,6 +1094,12 @@ bool Parser_main::boolOP(int &line, int &pos, int end_line, int end_pos) {
         }
       }
     }
+  }
+  #pragma omp parallel for
+  for (int i = 0; i < changedIndex.size(); i++)
+  {
+    tokens[changedLine[i]][changedPos[i]].type = TokenType::FUNCTIONISED;
+    tokens[changedLine[i]][changedPos[i]].value = changedIndex[i];
   }
   line = end_line;
   pos = end_pos;

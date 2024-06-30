@@ -221,11 +221,6 @@ class Function : public If {
   string &getname() { return name; }
 };
 
-class Else : public Scope {
- public:
-  Else() {}
-};
-
 class While : public If {
  private:
  public:
