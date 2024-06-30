@@ -13,33 +13,33 @@ using namespace std;
 class Operation {
  protected:
   Operation(){};
-   long double mod(long double &a, long double &b) { return std::fmod(a,b); }
-   long double add(long double &a, long double &b) { return a + b; }
-   long double minus(long double &a, long double &b) { return a - b; }
-   long double times(long double &a, long double &b) { return a * b; }
-   long double divide(long double &a, long double &b) {
+  long double mod(long double &a, long double &b) { return std::fmod(a, b); }
+  long double add(long double &a, long double &b) { return a + b; }
+  long double minus(long double &a, long double &b) { return a - b; }
+  long double times(long double &a, long double &b) { return a * b; }
+  long double divide(long double &a, long double &b) {
     if (b == 0) {
       throw logic_error("ERROR_DIVIDED_BY_ZERO");
       return nan("");
     }
     return a / b;
   }
-   long double pow(long double &a, long double &b) { return std::pow(a, b); }
-   long double negative(long double &a) { return -a; }
-   long double abs(long double &a) { return std::fabs(a); }
-   long double ln(long double &a) { return std::log(a); }
-   long double sin(long double &a) { return std::sin(a); }
-   long double asin(long double &a) { return std::asin(a); }
-   long double sinh(long double &a) { return std::sinh(a); }
-   long double asinh(long double &a) { return std::asinh(a); }
-   long double cos(long double &a) { return std::cos(a); }
-   long double acos(long double &a) { return std::acos(a); }
-   long double cosh(long double &a) { return std::cosh(a); }
-   long double acosh(long double &a) { return std::acosh(a); }
-   long double tan(long double &a) { return std::tan(a); }
-   long double atan(long double &a) { return std::atan(a); }
-   long double tanh(long double &a) { return std::tanh(a); }
-   long double atanh(long double &a) { return std::atanh(a); }
+  long double pow(long double &a, long double &b) { return std::pow(a, b); }
+  long double negative(long double &a) { return -a; }
+  long double abs(long double &a) { return std::fabs(a); }
+  long double ln(long double &a) { return std::log(a); }
+  long double sin(long double &a) { return std::sin(a); }
+  long double asin(long double &a) { return std::asin(a); }
+  long double sinh(long double &a) { return std::sinh(a); }
+  long double asinh(long double &a) { return std::asinh(a); }
+  long double cos(long double &a) { return std::cos(a); }
+  long double acos(long double &a) { return std::acos(a); }
+  long double cosh(long double &a) { return std::cosh(a); }
+  long double acosh(long double &a) { return std::acosh(a); }
+  long double tan(long double &a) { return std::tan(a); }
+  long double atan(long double &a) { return std::atan(a); }
+  long double tanh(long double &a) { return std::tanh(a); }
+  long double atanh(long double &a) { return std::atanh(a); }
 };
 
 class Variable {
@@ -60,6 +60,7 @@ class VariableType : public Variable {
   vector<T> value;
   long double maxValue;
   long double step;
+
  public:
   // Constructor to create a vector of given size and initialize with val
   VariableType() {}
@@ -74,22 +75,16 @@ class VariableType : public Variable {
     }
   }
 
-  void newMaxValue(long double newvalue) {
-    maxValue = newvalue;
-  }
+  void newMaxValue(long double newvalue) { maxValue = newvalue; }
 
-  void newStep(long double newstep) {
-    step = newstep;
-  }
+  void newStep(long double newstep) { step = newstep; }
 
   void newvalue(T newvalue) {
     value.clear();
     value.push_back(newvalue);
   }
 
-  void pushValue(T newvalue) {
-    value.push_back(newvalue);
-  }
+  void pushValue(T newvalue) { value.push_back(newvalue); }
 
   // Get the value at a specific index
   T &getvalue(int index) {
@@ -100,22 +95,19 @@ class VariableType : public Variable {
     }
   }
 
-  long double getMaxValue() {return maxValue;}
+  long double getMaxValue() { return maxValue; }
 
-  long double getStep() {return step;}
+  long double getStep() { return step; }
 
-    bool get_value(int index) {
+  bool get_value(int index) {
     if (index < value.size()) {
       return value[index];
     } else {
       throw out_of_range("Index out of bounds");
     }
   }
-  
 
-  vector<T> &getvector() {
-    return value;
-  }
+  vector<T> &getvector() { return value; }
 
   int getSize() { return value.size(); }
 
@@ -195,8 +187,8 @@ class If : public Scope {
     condition_end.line = line;
     condition_end.pos = pos;
   }
-  Location getConStartPos() {return condition_start;}
-  Location getConEndPos() {return condition_end;}
+  Location getConStartPos() { return condition_start; }
+  Location getConEndPos() { return condition_end; }
   bool inConScope(int i, int j) {
     if (i > condition_start.line && i < condition_end.line) {
       return true;
@@ -209,6 +201,11 @@ class If : public Scope {
     }
     return false;
   }
+};
+
+class Else : public Scope {
+ public:
+  Else() {}
 };
 
 class Function : public If {

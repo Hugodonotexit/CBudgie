@@ -262,6 +262,26 @@ if (!var.empty())
           i = thisScope->getEndPos().line;
           j = thisScope->getEndPos().pos; 
         } continue;
+      case TokenType::ELSE: {
+        if (j+1 < tokens[i].size())
+          {
+            if (tokens[i][j+1].type == TokenType::IF)
+            {
+              continue;
+            }
+          } else if (tokens[i+1][0].type == TokenType::IF) {
+            continue;
+          }
+          int indeX = defScope<Else>(i,j);
+          shared_ptr<Else> thisScope = dynamic_pointer_cast<Else>(scope[indeX]);
+        if (!isRun)
+        {
+          runFunction(indeX);
+        }
+        isRun = false;
+        i = thisScope->getEndPos().line;
+        j = thisScope->getEndPos().pos; 
+        } continue;
       case TokenType::FOR: {
         if (j < tokens[i].size())
           {
