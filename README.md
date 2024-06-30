@@ -3,18 +3,6 @@
 
 Welcome to the official repository for the `cBudgie` programming language! `cBudgie` is a modern, lightweight, and easy-to-learn language designed for simplicity and efficiency. This repository contains the source code, documentation, and tools related to `cBudgie`.
 
-## Table of Contents
-
-- [Introduction](#introduction)
-- [Features](#features)
-- [Installation](#installation)
-- [Example](#hello-world-example)
-- [Language Syntax](#language-syntax)
-- [Development Environment](#development-environment)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
-
 ## Introduction
 
 `cBudgie` is designed to be a user-friendly language for beginners and a powerful tool for experienced developers. It combines the best features of various programming languages, offering a clean syntax and robust functionality.
@@ -33,8 +21,8 @@ To build and install the `cbudgie` interpreter, follow these steps:
 
 1. **Clone the Repository**:
     ```sh
-    git clone <repository_url>
-    cd <repository_directory>
+    git clone https://github.com/Hugodonotexit/CBudgie
+    cd CBudgie
     ```
 
 2. **Create a Build Directory**:
