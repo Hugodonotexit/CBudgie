@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Set compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -Ofast -fopenmp")
 
 # Include directories
 include_directories(depen lexer parser)
@@ -39,7 +39,7 @@ set_target_properties(cbudgie PROPERTIES
 )
 
 # Compile options (similar to CXXFLAGS)
-target_compile_options(cbudgie PRIVATE -Ofast)
+target_compile_options(cbudgie PRIVATE -march=native -Ofast -fopenmp)
 
 # Include directories (similar to CXXFLAGS -I)
 target_include_directories(cbudgie PRIVATE ${CMAKE_SOURCE_DIR}/interpreter/depen ${CMAKE_SOURCE_DIR}/interpreter/lexer ${CMAKE_SOURCE_DIR}/interpreter/parser)

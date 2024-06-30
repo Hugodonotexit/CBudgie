@@ -1,7 +1,4 @@
 #include "lexer.h"
-
-#include <cmath>
-
 #include "var.h"
 
 using namespace std;
@@ -111,7 +108,6 @@ vector<vector<Token>> Lexer::tokenize() {
       }
 
       bool isFound = false;
-#pragma omp parallel for
       for (auto& pattern : tokenPatterns) {
         if (input[line].substr(pos, pattern.second.size()) == pattern.second) {
           tokens_line.emplace_back(

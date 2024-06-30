@@ -10,7 +10,6 @@ void BoolSupport::scanFunc() {
 }
 
 void BoolSupport::cleanNAN() {
-#pragma omp parallel for
   for (int i = 0; i < (int)tokens_copy.size(); i++) {
     if (tokens_copy[i].type == TokenType::NA) {
       tokens_copy.erase(tokens_copy.begin() + i);
@@ -20,7 +19,7 @@ void BoolSupport::cleanNAN() {
 };
 
 void BoolSupport::cleanBracket() {
-#pragma omp parallel for
+  #pragma omp parallel for
   for (int i = 0; i < (int)tokens_copy.size() - 2; i++) {
     if (tokens_copy[i].type == TokenType::L_RBACKET &&
         tokens_copy[i + 2].type == TokenType::R_RBACKET) {
@@ -33,6 +32,7 @@ void BoolSupport::cleanBracket() {
 void BoolSupport::locateOps() {
   operators[0].erase(operators[0].begin(), operators[0].end());
   operators[1].erase(operators[1].begin(), operators[1].end());
+  #pragma omp parallel for
   for (int i = 0; i < (int)tokens_copy.size(); i++) {
     switch (tokens_copy[i].type) {
       case TokenType::XOR:
@@ -69,7 +69,6 @@ void BoolSupport::locateBrackets() {
   for (int i = (int)openBracket.size() - 1; i >= 0; i--) {
     if (openBracket[i] >= closeBracket[i]) {
       error(ERROR::OTHER, -1, -2);
-      return;
     }
   }
   for (int i = 0; i < (int)openBracket.size(); i++) {
