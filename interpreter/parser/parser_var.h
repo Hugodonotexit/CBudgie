@@ -10,38 +10,30 @@
 
 class Parser_var : public Parser_error {
  protected:
-  vector<vector<Token>> tokens;
   vector<shared_ptr<Scope>> scope;
   vector<shared_ptr<Variable>> variable;
   int mainIndex;
-  ;
 
   ~Parser_var() {}
-  Parser_var(vector<vector<Token>> &token) : tokens(token) {}
+  Parser_var(vector<Token> &token, map<int,int> &range) : Parser_error(token, range) {}
 
-  inline void coutConfig(int &line, int &pos) { coutConfig(line, pos, true); }
-  void coutConfig(int &line, int &pos, bool isCIN) {
-    int _i = line;
+  inline void coutConfig(int &pos) { coutConfig(pos, true); }
+  inline void coutConfig(int &pos, bool isCIN) {
     int _j = pos + 1;
-    if (_j >= tokens[_i].size() ||
-        tokens[_i][_j].type != TokenType::L_RBACKET) {
-      error(ERROR::BRACKET, _i, _j);
+    if (_j >= tokens.size() ||
+        tokens[_j].type != TokenType::L_RBACKET) {
+      error(ERROR::BRACKET, _j);
     }
     stringstream ss;
     bool foundClosingBracket = false;
     while (!foundClosingBracket) {
-      if (_j >= tokens[_i].size()) {
-        _i++;
-        _j = 0;
+      if (_j >= tokens.size()) {
+        error(ERROR::BRACKET, tokens.size());
       }
-      if (_i >= tokens.size()) {
-        error(ERROR::BRACKET, _i - 1, tokens[_i - 1].size());
-      }
-
-      switch (tokens[_i][_j].type) {
+      switch (tokens[_j].type) {
         case TokenType::TRUESTRING:
         case TokenType::NUMBER:
-          ss << tokens[_i][_j].value;
+          ss << tokens[_j].value;
           break;
         case TokenType::PLUS:
           _j++;
@@ -50,7 +42,7 @@ class Parser_var : public Parser_error {
         case TokenType::VARIABLISED_NUM: {
           shared_ptr<VariableType<long double>> var =
               dynamic_pointer_cast<VariableType<long double>>(
-                  variable[stoi(tokens[_i][_j].value)]);
+                  variable[stoi(tokens[_j].value)]);
           for (int l = 0; l < var->getSize(); l++) {
             if (l > 0) {
               ss << " ";
@@ -61,7 +53,7 @@ class Parser_var : public Parser_error {
         case TokenType::VARIABLISED_STR: {
           shared_ptr<VariableType<string>> var =
               dynamic_pointer_cast<VariableType<string>>(
-                  variable[stoi(tokens[_i][_j].value)]);
+                  variable[stoi(tokens[_j].value)]);
           for (int l = 0; l < var->getSize(); l++) {
             if (l > 0) {
               ss << " ";
@@ -78,7 +70,7 @@ class Parser_var : public Parser_error {
         case TokenType::VARIABLISED_BOOL: {
           shared_ptr<VariableType<bool>> var =
               dynamic_pointer_cast<VariableType<bool>>(
-                  variable[stoi(tokens[_i][_j].value)]);
+                  variable[stoi(tokens[_j].value)]);
           for (int l = 0; l < var->getSize(); l++) {
             if (l > 0) {
               ss << " ";
@@ -94,7 +86,7 @@ class Parser_var : public Parser_error {
           foundClosingBracket = true;
           break;
         case TokenType::STRING:
-          error(ERROR::UNDEF, _i, _j);
+          error(ERROR::UNDEF, _j);
           break;
       }
       _j++;
@@ -103,7 +95,6 @@ class Parser_var : public Parser_error {
     if (isCIN) {
       cout << endl;
     }
-    line = _i;
     pos = _j;
     return;
   }

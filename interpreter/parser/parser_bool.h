@@ -62,12 +62,12 @@ class BoolSupport : public Parser_var {
       }
     }
     if (openBracket.size() != closeBracket.size()) {
-      error(ERROR::BRACKET, -1, -1);
+      error(ERROR::BRACKET, -1);
       return;
     }
     for (int i = (int)openBracket.size() - 1; i >= 0; i--) {
       if (openBracket[i] >= closeBracket[i]) {
-        error(ERROR::OTHER, -1, -2);
+        error(ERROR::OTHER, -1);
       }
     }
     for (int i = 0; i < (int)openBracket.size(); i++) {
@@ -81,7 +81,7 @@ class BoolSupport : public Parser_var {
   vector<Token> tokens_copy;
   vector<int> operators[2];
   vector<std::pair<int, int>> brackets;
-  BoolSupport(vector<vector<Token>> &tokens) : Parser_var(tokens) {}
+  BoolSupport(vector<Token> &tokens,map<int,int> &range) : Parser_var(tokens,range) {}
   ~BoolSupport() {}
 
   inline void scanFunc() {
@@ -146,7 +146,7 @@ class BoolSupport : public Parser_var {
       case TokenType::E_GREATER:
         if (tokens_copy[index - 1].type != TokenType::NUMBER ||
             tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
           return;
         }
         if (stold(tokens_copy[index - 1].value) >=
@@ -163,7 +163,7 @@ class BoolSupport : public Parser_var {
       case TokenType::E_SMALLER:
         if (tokens_copy[index - 1].type != TokenType::NUMBER ||
             tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
           return;
         }
         if (stold(tokens_copy[index - 1].value) <=
@@ -180,7 +180,7 @@ class BoolSupport : public Parser_var {
       case TokenType::GREATER:
         if (tokens_copy[index - 1].type != TokenType::NUMBER ||
             tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
           return;
         }
         if (stold(tokens_copy[index - 1].value) >
@@ -197,7 +197,7 @@ class BoolSupport : public Parser_var {
       case TokenType::SMALLER:
         if (tokens_copy[index - 1].type != TokenType::NUMBER ||
             tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
           return;
         }
         if (stold(tokens_copy[index - 1].value) <

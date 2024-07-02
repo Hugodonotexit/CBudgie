@@ -77,12 +77,12 @@ class MathSupport : public BoolSupport, public Operation {
       }
     }
     if (openBracket.size() != closeBracket.size()) {
-      error(ERROR::BRACKET, -1, -1);
+      error(ERROR::BRACKET, -1);
       return;
     }
     for (int i = (int)openBracket.size() - 1; i >= 0; i--) {
       if (openBracket[i] >= closeBracket[i]) {
-        error(ERROR::OTHER, -1, -2);
+        error(ERROR::OTHER, -1);
         return;
       }
     }
@@ -97,7 +97,7 @@ class MathSupport : public BoolSupport, public Operation {
   vector<Token> math_tokens_copy;
   vector<int> math_operators[3];
   vector<std::pair<int, int>> math_brackets;
-  MathSupport(vector<vector<Token>> &tokens) : BoolSupport(tokens) {}
+  MathSupport(vector<Token> &tokens,map<int,int> &range) : BoolSupport(tokens,range) {}
   ~MathSupport() {}
 
   inline void math_scanFunc() {
@@ -110,7 +110,7 @@ class MathSupport : public BoolSupport, public Operation {
     switch (math_tokens_copy[index].type) {
       case TokenType::ASINH: {
         if (math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index + 1].value);
         math_tokens_copy[index].value = to_string(asinh(a));
@@ -119,7 +119,7 @@ class MathSupport : public BoolSupport, public Operation {
       } break;
       case TokenType::ACOSH: {
         if (math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index + 1].value);
         math_tokens_copy[index].value = to_string(acosh(a));
@@ -128,7 +128,7 @@ class MathSupport : public BoolSupport, public Operation {
       } break;
       case TokenType::SINH: {
         if (math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index + 1].value);
         math_tokens_copy[index].value = to_string(sinh(a));
@@ -137,7 +137,7 @@ class MathSupport : public BoolSupport, public Operation {
       } break;
       case TokenType::COSH: {
         if (math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index + 1].value);
         math_tokens_copy[index].value = to_string(cosh(a));
@@ -146,7 +146,7 @@ class MathSupport : public BoolSupport, public Operation {
       } break;
       case TokenType::ABS: {
         if (math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index + 1].value);
         math_tokens_copy[index].value = to_string(abs(a));
@@ -155,7 +155,7 @@ class MathSupport : public BoolSupport, public Operation {
       } break;
       case TokenType::LN: {
         if (math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index + 1].value);
         math_tokens_copy[index].value = to_string(ln(a));
@@ -164,7 +164,7 @@ class MathSupport : public BoolSupport, public Operation {
       } break;
       case TokenType::ATANH: {
         if (math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index + 1].value);
         math_tokens_copy[index].value = to_string(atanh(a));
@@ -173,7 +173,7 @@ class MathSupport : public BoolSupport, public Operation {
       } break;
       case TokenType::TANH: {
         if (math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index + 1].value);
         math_tokens_copy[index].value = to_string(tanh(a));
@@ -182,7 +182,7 @@ class MathSupport : public BoolSupport, public Operation {
       } break;
       case TokenType::ASIN: {
         if (math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index + 1].value);
         math_tokens_copy[index].value = to_string(asin(a));
@@ -191,7 +191,7 @@ class MathSupport : public BoolSupport, public Operation {
       } break;
       case TokenType::SIN: {
         if (math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index + 1].value);
         math_tokens_copy[index].value = to_string(sin(a));
@@ -200,7 +200,7 @@ class MathSupport : public BoolSupport, public Operation {
       } break;
       case TokenType::ACOS: {
         if (math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index + 1].value);
         math_tokens_copy[index].value = to_string(acos(a));
@@ -209,7 +209,7 @@ class MathSupport : public BoolSupport, public Operation {
       } break;
       case TokenType::COS: {
         if (math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index + 1].value);
         math_tokens_copy[index].value = to_string(cos(a));
@@ -218,7 +218,7 @@ class MathSupport : public BoolSupport, public Operation {
       } break;
       case TokenType::ATAN: {
         if (math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index + 1].value);
         math_tokens_copy[index].value = to_string(atan(a));
@@ -227,7 +227,7 @@ class MathSupport : public BoolSupport, public Operation {
       } break;
       case TokenType::TAN: {
         if (math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index + 1].value);
         math_tokens_copy[index].value = to_string(tan(a));
@@ -237,7 +237,7 @@ class MathSupport : public BoolSupport, public Operation {
       case TokenType::TIMES: {
         if (math_tokens_copy[index - 1].type != TokenType::NUMBER ||
             math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index - 1].value);
         long double b = stold(math_tokens_copy[index + 1].value);
@@ -249,7 +249,7 @@ class MathSupport : public BoolSupport, public Operation {
       case TokenType::DIVIDE: {
         if (math_tokens_copy[index - 1].type != TokenType::NUMBER ||
             math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index - 1].value);
         long double b = stold(math_tokens_copy[index + 1].value);
@@ -261,7 +261,7 @@ class MathSupport : public BoolSupport, public Operation {
       case TokenType::MODE: {
         if (math_tokens_copy[index - 1].type != TokenType::NUMBER ||
             math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index - 1].value);
         long double b = stold(math_tokens_copy[index + 1].value);
@@ -273,7 +273,7 @@ class MathSupport : public BoolSupport, public Operation {
       case TokenType::POW: {
         if (math_tokens_copy[index - 1].type != TokenType::NUMBER ||
             math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index - 1].value);
         long double b = stold(math_tokens_copy[index + 1].value);
@@ -285,7 +285,7 @@ class MathSupport : public BoolSupport, public Operation {
       case TokenType::PLUS: {
         if (math_tokens_copy[index - 1].type != TokenType::NUMBER ||
             math_tokens_copy[index + 1].type != TokenType::NUMBER) {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
         long double a = stold(math_tokens_copy[index - 1].value);
         long double b = stold(math_tokens_copy[index + 1].value);
@@ -310,7 +310,7 @@ class MathSupport : public BoolSupport, public Operation {
           math_tokens_copy[index - 1].type = TokenType::NA;
           math_tokens_copy[index + 1].type = TokenType::NA;
         } else {
-          error(ERROR::OTHER, -1, -1);
+          error(ERROR::OTHER, -1);
         }
       } break;
     }

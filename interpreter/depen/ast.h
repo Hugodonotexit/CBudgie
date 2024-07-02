@@ -12,34 +12,34 @@ using namespace std;
 
 class Operation {
  protected:
-  Operation(){};
-  long double mod(long double &a, long double &b) { return std::fmod(a, b); }
-  long double add(long double &a, long double &b) { return a + b; }
-  long double minus(long double &a, long double &b) { return a - b; }
-  long double times(long double &a, long double &b) { return a * b; }
-  long double divide(long double &a, long double &b) {
+  inline Operation(){};
+  inline long double mod(long double &a, long double &b) { return std::fmod(a, b); }
+  inline long double add(long double &a, long double &b) { return a + b; }
+  inline long double minus(long double &a, long double &b) { return a - b; }
+  inline long double times(long double &a, long double &b) { return a * b; }
+  inline long double divide(long double &a, long double &b) {
     if (b == 0) {
       throw logic_error("ERROR_DIVIDED_BY_ZERO");
       return nan("");
     }
     return a / b;
   }
-  long double pow(long double &a, long double &b) { return std::pow(a, b); }
-  long double negative(long double &a) { return -a; }
-  long double abs(long double &a) { return std::fabs(a); }
-  long double ln(long double &a) { return std::log(a); }
-  long double sin(long double &a) { return std::sin(a); }
-  long double asin(long double &a) { return std::asin(a); }
-  long double sinh(long double &a) { return std::sinh(a); }
-  long double asinh(long double &a) { return std::asinh(a); }
-  long double cos(long double &a) { return std::cos(a); }
-  long double acos(long double &a) { return std::acos(a); }
-  long double cosh(long double &a) { return std::cosh(a); }
-  long double acosh(long double &a) { return std::acosh(a); }
-  long double tan(long double &a) { return std::tan(a); }
-  long double atan(long double &a) { return std::atan(a); }
-  long double tanh(long double &a) { return std::tanh(a); }
-  long double atanh(long double &a) { return std::atanh(a); }
+  inline long double pow(long double &a, long double &b) { return std::pow(a, b); }
+  inline long double negative(long double &a) { return -a; }
+  inline long double abs(long double &a) { return std::fabs(a); }
+  inline long double ln(long double &a) { return std::log(a); }
+  inline long double sin(long double &a) { return std::sin(a); }
+  inline long double asin(long double &a) { return std::asin(a); }
+  inline long double sinh(long double &a) { return std::sinh(a); }
+  inline long double asinh(long double &a) { return std::asinh(a); }
+  inline long double cos(long double &a) { return std::cos(a); }
+  inline long double acos(long double &a) { return std::acos(a); }
+  inline long double cosh(long double &a) { return std::cosh(a); }
+  inline long double acosh(long double &a) { return std::acosh(a); }
+  inline long double tan(long double &a) { return std::tan(a); }
+  inline long double atan(long double &a) { return std::atan(a); }
+  inline long double tanh(long double &a) { return std::tanh(a); }
+  inline long double atanh(long double &a) { return std::atanh(a); }
 };
 
 class Variable {
@@ -47,11 +47,11 @@ class Variable {
   string name;
 
  public:
-  Variable() {}
-  Variable(string newName) : name(newName) {}
-  void setname(string newName) { name = newName; }
-  string getname() { return name; }
-  virtual ~Variable() {}
+  inline Variable() {}
+  inline Variable(string newName) : name(newName) {}
+  inline void setname(string newName) { name = newName; }
+  inline string getname() { return name; }
+  inline virtual ~Variable() {}
 };
 
 template <typename T>
@@ -63,11 +63,11 @@ class VariableType : public Variable {
 
  public:
   // Constructor to create a vector of given size and initialize with val
-  VariableType() {}
-  VariableType(string newName, vector<T> val) : Variable(newName), value(val) {}
+  inline VariableType() {}
+  inline VariableType(string newName, vector<T> val) : Variable(newName), value(val) {}
 
   // Set the value at a specific index
-  void setvalue(size_t index, T &newvalue) {
+  inline void setvalue(size_t index, T &newvalue) {
     if (index < value.size()) {
       value[index] = newvalue;
     } else {
@@ -75,19 +75,19 @@ class VariableType : public Variable {
     }
   }
 
-  void newMaxValue(long double newvalue) { maxValue = newvalue; }
+  inline void newMaxValue(long double newvalue) { maxValue = newvalue; }
 
-  void newStep(long double newstep) { step = newstep; }
+  inline void newStep(long double newstep) { step = newstep; }
 
-  void newvalue(T newvalue) {
+  inline void newvalue(T newvalue) {
     value.clear();
     value.push_back(newvalue);
   }
 
-  void pushValue(T newvalue) { value.push_back(newvalue); }
+ inline void pushValue(T newvalue) { value.push_back(newvalue); }
 
   // Get the value at a specific index
-  T &getvalue(int index) {
+  inline T &getvalue(int index) {
     if (index < value.size()) {
       return value[index];
     } else {
@@ -95,11 +95,11 @@ class VariableType : public Variable {
     }
   }
 
-  long double getMaxValue() { return maxValue; }
+  inline long double getMaxValue() { return maxValue; }
 
-  long double getStep() { return step; }
+  inline long double getStep() { return step; }
 
-  bool get_value(int index) {
+  inline bool get_value(int index) {
     if (index < value.size()) {
       return value[index];
     } else {
@@ -107,59 +107,36 @@ class VariableType : public Variable {
     }
   }
 
-  vector<T> &getvector() { return value; }
+  inline vector<T> &getvector() { return value; }
 
-  int getSize() { return value.size(); }
+  inline int getSize() { return value.size(); }
 
   // Destructor to clean up allocated memory
   ~VariableType() {}
 };
 
 class Scope {
- public:
-  struct Location {
-    int temp = -1;
-    int line;
-    int pos;
-    Location() : line(temp), pos(temp) {}
-  };
-
- private:
-  Location start;
-  Location end;
+  private:
+  int start;
+  int end;
   vector<shared_ptr<Variable>> var;
 
  public:
   Scope() {}
-  void setStartPos(int line, int pos) {
-    start.line = line;
-    start.pos = pos;
+  inline void setStartPos(int pos) {
+    start = pos;
   }
-  void setEndtPos(int line, int pos) {
-    end.line = line;
-    end.pos = pos;
+  inline void setEndtPos(int pos) {
+    end = pos;
   }
-  Location getStartPos() { return start; }
-  Location getEndPos() { return end; }
-  void pushBackVar(shared_ptr<Variable> a) { var.push_back(a); }
-  virtual void setConStartPos(int line, int pos) {}
-  virtual void setConEndPos(int line, int pos) {}
-  virtual Location getConStartPos() {return start;}
-  virtual Location getConEndPos() {return end;}
-  bool inScope(int i, int j) {
-    if (i > start.line && i < end.line) {
-      return true;
-    } else if (i == start.line || i == end.line) {
-      if (j > start.pos && j < end.pos) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-    return false;
-  }
-  virtual bool inConScope(int i, int j) { return false; }
-  virtual ~Scope() {}
+  inline int getStartPos() { return start; }
+  inline int getEndPos() { return end; }
+  inline void pushBackVar(shared_ptr<Variable> a) { var.push_back(a); }
+  inline virtual void setConStartPos(int pos) {}
+  inline virtual void setConEndPos(int pos) {}
+  inline virtual int getConStartPos() {return start;}
+  inline virtual int getConEndPos() {return end;}
+  inline virtual ~Scope() {}
 };
 
 class File : public Scope {
@@ -167,45 +144,30 @@ class File : public Scope {
   string &file_name;
 
  public:
-  File(string &newName) : file_name(newName) {}
-  void setname(string &newName) { file_name = newName; }
-  string &getname() { return file_name; }
+  inline File(string &newName) : file_name(newName) {}
+  inline void setname(string &newName) { file_name = newName; }
+  inline string &getname() { return file_name; }
 };
 
 class If : public Scope {
  private:
-  Location condition_start;
-  Location condition_end;
-
+  int condition_start;
+  int condition_end;
  public:
-  If() {}
-  void setConStartPos(int line, int pos) {
-    condition_start.line = line;
-    condition_start.pos = pos;
+  inline If() {}
+  inline void setConStartPos(int pos) {
+    condition_start = pos;
   }
-  void setConEndPos(int line, int pos) {
-    condition_end.line = line;
-    condition_end.pos = pos;
+  inline void setConEndPos(int pos) {
+    condition_end = pos;
   }
-  Location getConStartPos() { return condition_start; }
-  Location getConEndPos() { return condition_end; }
-  bool inConScope(int i, int j) {
-    if (i > condition_start.line && i < condition_end.line) {
-      return true;
-    } else if (i == condition_start.line || i == condition_end.line) {
-      if (j > condition_start.pos && j < condition_end.pos) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-    return false;
-  }
+  inline int getConStartPos() { return condition_start; }
+  inline int getConEndPos() { return condition_end; }
 };
 
 class Else : public Scope {
  public:
-  Else() {}
+  inline Else() {}
 };
 
 class Function : public If {
@@ -213,38 +175,38 @@ class Function : public If {
   string &name;
 
  public:
-  Function(string &newName) : name(newName) {}
-  void setname(string &newName) { name = newName; }
-  string &getname() { return name; }
+  inline Function(string &newName) : name(newName) {}
+  inline void setname(string &newName) { name = newName; }
+  inline string &getname() { return name; }
 };
 
 class While : public If {
  private:
  public:
-  While() {}
+  inline While() {}
 };
 
 class For : public If {
  private:
  public:
-  For() {}
+  inline For() {}
 };
 
 class Switch : public If {
  public:
-  Switch() {}
+  inline Switch() {}
 };
 
 class Consule {
  public:
-  Consule() {}
+  inline Consule() {}
   inline static void output(string out) { cout << out; }
   inline static string input() {
     string in;
     cin >> in;
     return in;
   }
-  ~Consule() {}
+  inline ~Consule() {}
 };
 
 #endif

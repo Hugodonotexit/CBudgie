@@ -8,12 +8,17 @@
 using namespace std;
 
 int main(int argc, char* argv[]) {
+  //auto start = std::chrono::high_resolution_clock::now();
+
   ReadFile readFile(argc, argv);
-  Lexer lexer(readFile.getInput());
   try {
-    Parser_main parser(lexer.tokenize());
-  } catch (const runtime_error& e) {
+    Parser_main parser(readFile.tokenize(),readFile.getrange());
+  } catch (const exception& e) {
     cerr << "Error: " << e.what() << endl;
   }
+
+  //auto end = std::chrono::high_resolution_clock::now();
+  //std::chrono::duration<double> elapsed = end - start;
+  //std::cout << "Elapsed time: " << std::fixed << std::setprecision(4) << elapsed.count() << " seconds" << std::endl;
   return 0;
 }
