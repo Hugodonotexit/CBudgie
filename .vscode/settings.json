@@ -3,6 +3,7 @@
         "*.h": "cpp",
         "*.bg": "cbudgie",
         "*.cpp": "cpp",
+        "*.tpp": "cpp",
         "type_traits": "cpp",
         "utility": "cpp",
         "stdexcept": "cpp",
@@ -73,6 +74,18 @@
         "cinttypes": "cpp",
         "typeindex": "cpp",
         "typeinfo": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "stack": "cpp",
+        "__nullptr": "cpp",
+        "filesystem": "cpp",
+        "__bit_reference": "cpp",
+        "queue": "cpp",
+        "__split_buffer": "cpp",
+        "shared_mutex": "cpp",
+        "locale": "cpp",
+        "__hash_table": "cpp",
+        "__tree": "cpp",
+        "__node_handle": "cpp",
+        "ios": "cpp"
     }
 }

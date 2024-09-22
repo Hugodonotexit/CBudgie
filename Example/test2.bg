@@ -1,8 +1,8 @@
+main()
 def main() {
-    let a = 10
-    let b = 20
-    let c = 5
-    for (let i = a:b:c) {
-        cout(i)
+    i=10
+    while (i < 20) {
+        print(i)
+        i = i + 5
     }
 }
