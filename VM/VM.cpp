@@ -17,7 +17,7 @@ VM::VM(const std::filesystem::path& filePath) {
       case Opcode::ENDSCOPE:
         stack.pop();
         if (scopeCounts.top() != var.size()) {
-          var.erase(var.begin() + (scopeCounts.top() - 1), var.end());
+          var.erase(var.begin() + scopeCounts.top(), var.end());
         }
         scopeCounts.pop();
         break;
@@ -262,7 +262,7 @@ VM::VM(const std::filesystem::path& filePath) {
         instructionPointer = functionPointers.top();
         functionPointers.pop();
         if (scopeCounts.top() != var.size()) {
-          var.erase(var.begin() + (scopeCounts.top() - 1), var.end());
+          var.erase(var.begin() + scopeCounts.top(), var.end());
         }
         scopeCounts.pop();
         

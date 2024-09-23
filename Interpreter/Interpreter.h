@@ -2,7 +2,7 @@
 #include "Translator.h"
 #include "../VM/VM.h"
 #include <filesystem>
-class Interpreter : public Translator
+class Interpreter
 {
 private:
     /* data */

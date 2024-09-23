@@ -10,6 +10,7 @@ void Lexer::run() {
     throw std::runtime_error("Unable to open file: " +
                              filePath.filename().string());
   }
+
   int lexerCount = 0;
   std::string line;
 

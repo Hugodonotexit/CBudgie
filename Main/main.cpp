@@ -4,7 +4,11 @@
 #include "../VM/VM.h"
 #include "../Interpreter/Interpreter.h"
 #include "../Interpreter/Translator.h"
+
+//#include <chrono>
 int main(int argc, char* argv[]) {
+    //auto start = std::chrono::high_resolution_clock::now();
+
     if (argc < 2) {
         std::cerr << "Usage: cbudgie <file_path>     Run a cbudgie script\n"
                   << "Usage: cbudgie [options] <file_path>\n"
@@ -59,6 +63,11 @@ int main(int argc, char* argv[]) {
         //////std::cout << "Running script " << file.filename().string() << ".\n";
         Interpreter interpreter(file);
     }
+
+    //auto end = std::chrono::high_resolution_clock::now();
+    //std::chrono::duration<double> duration = end - start;
+    
+    //std::cout << "Execution time: " << duration.count() << " seconds" << std::endl;
 
     return 0;
 }

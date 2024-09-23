@@ -2,14 +2,15 @@ main()
 
 def main() 
     name = read("Enter your name: ")
-    age = read("Enter your age: ")
-    age.toNum
+    age = read("Enter your age: ").toNum
     print("Your name is " + name)
     i = 0
     while (i <= age) {
         print(i)
         if (i == age) {
             print("This is your age!")
+        } else {
+            print("This is NOT your age!")
         }
         i = i + 1
     }

@@ -26,5 +26,5 @@ private:
     void writeToFile(std::vector<std::string>& bytecode, const std::filesystem::path& outputPath);
 public:
     Translator(std::filesystem::path file);
-    
+    Translator(std::filesystem::path file, std::filesystem::path destination);
 };

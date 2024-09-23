@@ -1,5 +1,20 @@
 #include "Translator.h"
 
+Translator::Translator(std::filesystem::path newFilePath,std::filesystem::path destination)
+    : filePath(newFilePath) {
+  std::vector<std::vector<Token>> tokenized_code;
+  std::vector<std::string> bytecode;
+  Lexer lexer(filePath, tokenized_code, lexerMutex_, lexerCv_, lexingDone);
+
+  std::thread lexerThread(&Lexer::run, &lexer);
+  std::thread translatorThread(&Translator::translate, this, std::ref(tokenized_code), std::ref(bytecode));
+
+  lexerThread.join();
+  translatorThread.join();
+  
+  writeToFile(bytecode, destination);
+}
+
 Translator::Translator(std::filesystem::path newFilePath)
     : filePath(newFilePath) {
   std::vector<std::vector<Token>> tokenized_code;
@@ -53,7 +68,9 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                                     " " + std::to_string(variable->second) + " " +
                                     "0");
                 
-            } else throw std::runtime_error("Invaild usagr of to Num !!" );
+            } else if (linker->tokenType == TokenType::READ) {
+                bytecode.push_back(OpcodeToString.find(Opcode::TO_NUM)->second);
+            } else throw std::runtime_error("Invaild usagr of toNum !!" );
             break;
            case TokenType::TO_STRING:
             if (linker->tokenType == TokenType::VARIABLIE) {
@@ -69,6 +86,8 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                                     " " + std::to_string(variable->second) + " " +
                                     "0");
                 
+            } else if (linker->tokenType == TokenType::READ) {
+                bytecode.push_back(OpcodeToString.find(Opcode::TO_STRING)->second);
             } else throw std::runtime_error("Invaild usagr of toString !!" );
             break;
           case TokenType::TO_BOOL:
@@ -80,11 +99,13 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                                std::to_string(variable->second) + " " + "0");
                     
                 }
-                bytecode.push_back(OpcodeToString.find(Opcode::TO_NUM)->second);
+                bytecode.push_back(OpcodeToString.find(Opcode::TO_BOOL)->second);
                 bytecode.push_back(OpcodeToString.find(Opcode::STORE)->second +
                                     " " + std::to_string(variable->second) + " " +
                                     "0");
                 
+            } else if (linker->tokenType == TokenType::READ) {
+                bytecode.push_back(OpcodeToString.find(Opcode::TO_BOOL)->second);
             } else throw std::runtime_error("Invaild usagr of toBool !!" );
             break;  
           case TokenType::WHILE:

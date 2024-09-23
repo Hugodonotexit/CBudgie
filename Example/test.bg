@@ -3,8 +3,8 @@ main()
 def main() 
     diameter = read("Enter the diameter: ")
     radius = diameter/2 
-    area = findArea(radius)
-    circ = findCircumference(diameter)
+    area = radius ** 2 * 3.14159265
+    circ = diameter * 3.14159265
     print("Radius: " + radius + " cm")
     print("Area: " + area + " cm^2")
     print("Circumference: " + circ + " cm")
@@ -16,10 +16,4 @@ def main()
         print("it has a good personality ") 
     }
 
-def findArea(radius) {
-    return radius ** 2 * 3.14159265
-}
-def findCircumference(diameter) {
-    return diameter * 3.14159265
-}
-
+return
