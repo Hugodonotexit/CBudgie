@@ -2,8 +2,6 @@
 #include <string>
 #include <unordered_map>
 enum class Opcode {
-  CALL,
-
   LOAD,
   LOAD_ALL,
 
@@ -20,6 +18,7 @@ enum class Opcode {
 
   IF_JUMP,
   JUMP,
+  CALL,
 
   ADD,
   SUB,
@@ -28,6 +27,7 @@ enum class Opcode {
   MOD,
   POW,
   POP,
+  POP_ALL,
 
   TO_STRING,
   TO_BOOL,
@@ -47,7 +47,7 @@ enum class Opcode {
 
   READ,
   PRINT,
-
+  
   NEWSCOPE,
   ENDSCOPE,
   NOP
@@ -72,6 +72,7 @@ static const std::unordered_map<Opcode, std::string> OpcodeToString = {
     {Opcode::POW, "POW"},
     {Opcode::MOD, "MOD"},
     {Opcode::POP, "POP"},
+    {Opcode::POP_ALL, "POP_ALL"},
     {Opcode::TO_STRING, "TO_STRING"},
     {Opcode::TO_BOOL, "TO_BOOL"},
     {Opcode::TO_NUM, "TO_NUM"},
@@ -111,6 +112,7 @@ static const std::unordered_map<std::string, Opcode> stringToOpcode = {
     {"POW", Opcode::POW},
     {"MOD", Opcode::MOD},
     {"POP", Opcode::POP},
+    {"POP_ALL", Opcode::POP_ALL},
     {"TO_STRING", Opcode::TO_STRING},
     {"TO_BOOL", Opcode::TO_BOOL},
     {"TO_NUM", Opcode::TO_NUM},

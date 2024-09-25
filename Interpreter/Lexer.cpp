@@ -19,6 +19,7 @@ void Lexer::run() {
     std::vector<int> math_op;
     int equal_op = -1;
     int swap_op = -1;
+    int return_swap_op = -1;
     bool skip = false;
     for (int i = 0; i < line.size(); i++) {
         char current = line[i];
@@ -28,9 +29,9 @@ void Lexer::run() {
                 || temp.tokenType == TokenType::READ
                 || temp.tokenType == TokenType::FUNCTION 
                 || temp.tokenType == TokenType::IF
-                || temp.tokenType == TokenType::WHILE
-                || temp.tokenType == TokenType::RETURN  ) 
-                {swap_op = tokenized_line.size();};
+                || temp.tokenType == TokenType::WHILE) 
+                {swap_op = tokenized_line.size();}
+            else if (temp.tokenType == TokenType::RETURN) return_swap_op = tokenized_line.size();
             tokenized_line.push_back(temp);
         } else if (std::isdigit(current) || (current == '-' && std::isdigit(line[i+1]))) {
             tokenized_line.push_back(readNumber(line, i));
@@ -187,11 +188,17 @@ void Lexer::run() {
 
     if (swap_op != -1)
     {
+        int l_rbacket=0, r_rbacket=0;
         if (equal_op != -1 && swap_op > equal_op) swap_op-=2;
         int index = 1;
         int end = -1;
         while (swap_op+index < tokenized_line.size()) {
-            if (tokenized_line[swap_op+index].tokenType == TokenType::R_RBACKET) end=swap_op+index+1;
+            if (tokenized_line[swap_op+index].tokenType == TokenType::R_RBACKET) r_rbacket++;
+            if (tokenized_line[swap_op+index].tokenType == TokenType::L_RBACKET) l_rbacket++;
+            if (l_rbacket == r_rbacket && l_rbacket > 0) {
+              end=swap_op+index+1;
+              break;
+            }
             index++;
         }
         if (end != -1) {
@@ -200,6 +207,10 @@ void Lexer::run() {
         }
     }
     
+    if (return_swap_op != -1) {
+      tokenized_line.push_back(tokenized_line[return_swap_op]);
+      tokenized_line.erase(tokenized_line.begin() + return_swap_op);
+    }
 
     tokenized_line = reorderExpression(tokenized_line);
     
@@ -207,12 +218,13 @@ void Lexer::run() {
         std::lock_guard<std::mutex> lock(mutex_);
         tokenized_code.push_back(tokenized_line);
     }
-    lexerCount++;
-    if (lexerCount >= 15)
-    {
-        cv_.notify_one();
-    }
     
+  }
+
+  lexerCount++;
+  if (lexerCount >= 10)
+  {
+    cv_.notify_one();
   }
   {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -232,7 +244,7 @@ Token Lexer::readIdentifierOrKeyword(const std::string& line, int& i) {
     } else if (line[i] == '(') {
         return {TokenType::FUNCTION, word};
     } else {
-        return {TokenType::VARIABLIE, word};
+        return {TokenType::VARIABLE, word};
     }
 }
 

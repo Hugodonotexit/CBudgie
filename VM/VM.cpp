@@ -11,6 +11,13 @@ VM::VM(const std::filesystem::path& filePath) {
   while (instructionPointer < instructions.size() && run) {
     auto& instruction = instructions[instructionPointer];
     switch (instruction.opcode) {
+      case Opcode::POP_ALL:
+        if (stack.empty()) break;
+        while (!stack.top().empty())
+        {
+          stack.top().pop();
+        }
+        break;
       case Opcode::POP:
         stack.top().pop();
         break;
@@ -286,13 +293,13 @@ VM::VM(const std::filesystem::path& filePath) {
         scopeCounts.push(var.size());
         {
           std::vector<std::vector<WrappedVar>> temp;
-          for (int i = 0; i < instruction.offset; i++) {
+          while (!stack.top().empty()) {
             std::vector<WrappedVar> tmp;
             tmp.push_back(stack.top().top());
             temp.push_back(tmp);
             stack.top().pop();
           }
-          var.insert(var.end(), temp.begin(), temp.end());
+          var.insert(var.end(), temp.rbegin(), temp.rend());
           stack.emplace();
         }
         continue;
@@ -304,7 +311,6 @@ VM::VM(const std::filesystem::path& filePath) {
           instructionPointer = instruction.index;
           continue;
         }
-        stack.top().pop();
 
         break;
       case Opcode::JUMP:

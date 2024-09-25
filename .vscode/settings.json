@@ -86,6 +86,8 @@
         "__hash_table": "cpp",
         "__tree": "cpp",
         "__node_handle": "cpp",
-        "ios": "cpp"
+        "ios": "cpp",
+        "__mutex_base": "cpp",
+        "__string": "cpp"
     }
 }

@@ -82,7 +82,14 @@ std::vector<Instruction> readbytecode::read_file(const std::filesystem::path &fi
   std::string line;
   while (std::getline(file, line)) {
     Instruction instruction = read_line(line);
-    if (instruction.opcode != Opcode::NOP) Instructions.push_back(instruction);
+    if (instruction.opcode != Opcode::NOP) {
+      if (instruction.opcode == Opcode::ENDSCOPE && Instructions.back().opcode == Opcode::NEWSCOPE)
+      {
+        Instructions.pop_back();
+        continue;
+      }
+      Instructions.push_back(instruction);
+    }
   }
 
   file.close();

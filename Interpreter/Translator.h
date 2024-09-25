@@ -12,14 +12,14 @@
 #include "Lexer.h"
 #include "../dependance/Token.h"
 #include "../dependance/Opcode.h"
+#include <deque>
 class Translator
 {
 private:
     std::filesystem::path filePath;
-    int variableIndex = 0;
     std::mutex lexerMutex_;
     std::condition_variable lexerCv_;
-    bool lexingDone;
+    bool lexingDone = false;
 
     void translate(std::vector<std::vector<Token>>& tokenized_code, std::vector<std::string>& bytecode);
 

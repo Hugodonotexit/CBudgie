@@ -1,6 +1,7 @@
 #pragma once
 
 enum class TokenType {
+    CONST,
     DEF,
 
     READ,
@@ -16,7 +17,7 @@ enum class TokenType {
     FALSE,
     WORD_CONST,
 
-    VARIABLIE,
+    VARIABLE,
     FUNCTION,
 
     BREAK,

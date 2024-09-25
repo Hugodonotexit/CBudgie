@@ -2,9 +2,9 @@ main()
 
 def main() 
     diameter = read("Enter the diameter: ").toNum()
-    radius = diameter/2 
-    area = radius ** 2 * 3.14159265
-    circ = diameter * 3.14159265
+    radius = getRadius(diameter)
+    area = getArea(radius)
+    circ = getCirc(diameter)
     print("Radius: " + radius + " cm")
     print("Area: " + area + " cm^2")
     print("Circumference: " + circ + " cm")
@@ -16,4 +16,16 @@ def main()
         print("it has a good personality ") 
     }
 
-return
+return 
+
+def getRadius(diameter)
+    radius = diameter/2
+return radius
+
+def getArea(radius)
+    area = radius ** 2 * 3.14159265
+return area
+
+def getCirc(diameter)
+    circ = diameter * 3.14159265
+return circ

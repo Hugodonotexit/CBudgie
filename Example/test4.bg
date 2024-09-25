@@ -2,7 +2,7 @@ main()
 
 def main() 
     name = read("Enter your name: ")
-    age = read("Enter your age: ").toNum
+    age = read("Enter your age: ").toNum()
     print("Your name is " + name)
     i = 0
     while (i <= age) {
@@ -15,4 +15,4 @@ def main()
         i = i + 1
     }
     
-return 0
+return
