@@ -185,7 +185,6 @@ void Lexer::run() {
       }
     }
 
-    // it here is item of math op
     // loop through all math operations
     for (auto it : math_op) {
       if (tokenized_line[it + 1].tokenType != TokenType::L_RBACKET) {
@@ -220,7 +219,7 @@ void Lexer::run() {
             break;
           }
         }
-        
+
         if (!done) {
           tokenized_line.push_back(tokenized_line[op]);
           tokenized_line.push_back(tokenized_line[op - 1]);
@@ -231,10 +230,12 @@ void Lexer::run() {
         if (swap_op != -1 && swap_op > op) swap_op -= 2;
     }
 
+    // Move all tokens that return true on isKewordOrInBuiltFunction to after the brackets after them if there
     if (swap_op != -1) {
       int l_rbacket = 0, r_rbacket = 0;
       int index = 1;
       int end = -1;
+      // Identify end of bracket
       while (swap_op + index < tokenized_line.size()) {
         if (tokenized_line[swap_op + index].tokenType == TokenType::R_RBACKET)
           r_rbacket++;
@@ -246,13 +247,16 @@ void Lexer::run() {
         }
         index++;
       }
+      // If end is -1 there are no brackets
       if (end != -1) {
+        // There are brackets move token
         tokenized_line.insert(tokenized_line.begin() + end,
                               tokenized_line[swap_op]);
         tokenized_line.erase(tokenized_line.begin() + swap_op);
       }
     }
 
+    // Move return token to end of line if there is one
     if (return_swap_op != -1) {
       tokenized_line.push_back(tokenized_line[return_swap_op]);
       tokenized_line.erase(tokenized_line.begin() + return_swap_op);
@@ -260,6 +264,7 @@ void Lexer::run() {
 
     tokenized_line = reorderExpression(tokenized_line);
 
+    //add tokenized line to rest of tokenized code
     {
       std::lock_guard<std::mutex> lock(mutex_);
       tokenized_code.push_back(tokenized_line);
