@@ -41,15 +41,7 @@ void Lexer::run() {
       if (isIdentifierStart(current)) {
         // Collect token type and string of identifier
         Token temp = readIdentifierOrKeyword(line, i);
-        if(
-            temp.tokenType == TokenType::PRINT ||
-            temp.tokenType == TokenType::READ ||
-            temp.tokenType == TokenType::FUNCTION ||
-            temp.tokenType == TokenType::IF ||
-            temp.tokenType == TokenType::WHILE ||
-            temp.tokenType == TokenType::FOR
-          ){
-          // Token is a keyword
+        if(isKewordOrInBuiltFunction(temp.tokenType)){
           swap_op = tokenized_line.size();
         } 
         else if (temp.tokenType == TokenType::RETURN) {
@@ -305,6 +297,15 @@ Token Lexer::readNumber(const std::string& line, int& i) {
 bool Lexer::isIdentifierStart(char c) { return std::isalpha(c) || c == '_'; }
 
 bool Lexer::isIdentifierPart(char c) { return std::isalnum(c) || c == '_'; }
+
+bool Lexer::isKewordOrInBuiltFunction(TokenType type){
+  return    type == TokenType::PRINT ||
+            type == TokenType::READ ||
+            type == TokenType::FUNCTION ||
+            type == TokenType::IF ||
+            type == TokenType::WHILE ||
+            type == TokenType::FOR
+}
 
 int Lexer::getPrecedence(TokenType type) {
   switch (type) {
