@@ -6,6 +6,7 @@
 #include <variant>
 #include <filesystem>
 #include <cmath>
+#include <array>
 #include "WrappedVar.h"
 
 class VM

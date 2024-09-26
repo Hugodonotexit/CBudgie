@@ -53,46 +53,6 @@ enum class Opcode {
   NOP
 };
 
-static const std::unordered_map<Opcode, std::string> OpcodeToString = {
-    {Opcode::CALL, "CALL"},
-    {Opcode::LOAD, "LOAD"},
-    {Opcode::LOAD_ALL, "LOAD_ALL"},
-    {Opcode::STORE, "STORE"},
-    {Opcode::STORE_ALL, "STORE_ALL"},
-    {Opcode::LOAD_NUMCONST, "LOAD_NUMCONST"},
-    {Opcode::LOAD_WORDCONST, "LOAD_WORDCONST"},
-    {Opcode::LOAD_BOOLCONST, "LOAD_BOOLCONST"},
-    {Opcode::RETURN, "RETURN"},
-    {Opcode::IF_JUMP, "IF_JUMP"},
-    {Opcode::JUMP, "JUMP"},
-    {Opcode::ADD, "ADD"},
-    {Opcode::SUB, "SUB"},
-    {Opcode::MUL, "MUL"},
-    {Opcode::DIV, "DIV"},
-    {Opcode::POW, "POW"},
-    {Opcode::MOD, "MOD"},
-    {Opcode::POP, "POP"},
-    {Opcode::POP_ALL, "POP_ALL"},
-    {Opcode::TO_STRING, "TO_STRING"},
-    {Opcode::TO_BOOL, "TO_BOOL"},
-    {Opcode::TO_NUM, "TO_NUM"},
-    {Opcode::LESS_THAN, "LESS_THAN"},
-    {Opcode::GREATER_THAN, "GREATER_THAN"},
-    {Opcode::EQUAL, "EQUAL"},
-    {Opcode::NOT_EQUAL, "NOT_EQUAL"},
-    {Opcode::LESS_THAN_EQUAL, "LESS_THAN_EQUAL"},
-    {Opcode::GREATER_THAN_EQUAL, "GREATER_THAN_EQUAL"},
-    {Opcode::AND, "AND"},
-    {Opcode::OR, "OR"},
-    {Opcode::XOR, "XOR"},
-    {Opcode::NOT, "NOT"},
-    {Opcode::READ, "READ"},
-    {Opcode::PRINT, "PRINT"},
-    {Opcode::NEWSCOPE, "NEWSCOPE"},
-    {Opcode::ENDSCOPE, "ENDSCOPE"},
-    {Opcode::NOP, ""}
-};
-
 static const std::unordered_map<std::string, Opcode> stringToOpcode = {
     {"CALL", Opcode::CALL},
     {"LOAD", Opcode::LOAD},

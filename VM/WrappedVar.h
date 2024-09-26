@@ -20,8 +20,12 @@ public:
                 return lhs + (long double)rhs;
             } else if constexpr (std::is_same_v<T, bool> && !std::is_same_v<U, std::string>) {
                 return lhs || rhs;
+            } else if constexpr (std::is_same_v<T, bool> && std::is_same_v<U, std::string>) {
+                return (lhs ? "True" : "False") + rhs;
+            } else if constexpr (std::is_same_v<T, long double> && std::is_same_v<U, std::string>) {
+                return std::to_string(lhs) + rhs;
             } else if constexpr (std::is_same_v<T, std::string> && std::is_same_v<U, bool>) {
-                return lhs + (rhs ? "true" : "false");
+                return lhs + (rhs ? "True" : "False");
             } else if constexpr (std::is_same_v<T, std::string> && std::is_same_v<U, long double>) {
                 return lhs + std::to_string(rhs);
             } else if constexpr (std::is_same_v<T, std::string> && std::is_same_v<U, std::string>) {

@@ -88,6 +88,8 @@
         "__node_handle": "cpp",
         "ios": "cpp",
         "__mutex_base": "cpp",
-        "__string": "cpp"
+        "__string": "cpp",
+        "__functional_03": "cpp",
+        "target": "cpp"
     }
 }

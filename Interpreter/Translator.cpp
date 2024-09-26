@@ -31,6 +31,7 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
     int translationCount = 0;
     std::stack<int> scopeCounts;
     std::stack<std::pair<int,int>> tempIfJump;
+    std::stack<std::pair<int,std::vector<std::string>>> tempForJump;
     std::stack<std::pair<int,int>> loopPointer;
     std::vector<Token>::iterator linker;
 
@@ -57,18 +58,15 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                 if (linker != tokens.begin()) {
                   if ((linker-1)->tokenType == TokenType::EQUAL)
                   {
-                    bytecode.push_back(OpcodeToString.find(Opcode::LOAD)->second + " " +
-                               std::to_string(variable->second) + " " + "0");
+                    bytecode.push_back("LOAD " + std::to_string(variable->second) + " " + "0");
                     
                   }
                 }
-                bytecode.push_back(OpcodeToString.find(Opcode::TO_NUM)->second);
-                bytecode.push_back(OpcodeToString.find(Opcode::STORE)->second +
-                                    " " + std::to_string(variable->second) + " " +
-                                    "0");
+                bytecode.push_back("TO_NUM");
+                bytecode.push_back("STORE " + std::to_string(variable->second) + " " + "0");
                 
             } else if (linker->tokenType == TokenType::READ) {
-                bytecode.push_back(OpcodeToString.find(Opcode::TO_NUM)->second);
+                bytecode.push_back("TO_NUM");
             } else throw std::runtime_error("Invaild usage of toNum()!!" );
             break;
            case TokenType::TO_STRING:
@@ -78,18 +76,15 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                 if (linker != tokens.begin()) {
                   if ((linker-1)->tokenType == TokenType::EQUAL)
                   {
-                    bytecode.push_back(OpcodeToString.find(Opcode::LOAD)->second + " " +
-                               std::to_string(variable->second) + " " + "0");
+                    bytecode.push_back("LOAD " + std::to_string(variable->second) + " " + "0");
                     
                   }
                 }
-                bytecode.push_back(OpcodeToString.find(Opcode::TO_STRING)->second);
-                bytecode.push_back(OpcodeToString.find(Opcode::STORE)->second +
-                                    " " + std::to_string(variable->second) + " " +
-                                    "0");
+                bytecode.push_back("TO_STRING");
+                bytecode.push_back("STORE " + std::to_string(variable->second) + " " + "0");
                 
             } else if (linker->tokenType == TokenType::READ) {
-                bytecode.push_back(OpcodeToString.find(Opcode::TO_STRING)->second);
+                bytecode.push_back("TO_STRING");
             } else throw std::runtime_error("Invaild usage of toString()!!" );
             break;
           case TokenType::TO_BOOL:
@@ -99,30 +94,59 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                 if (linker != tokens.begin()) {
                   if ((linker-1)->tokenType == TokenType::EQUAL)
                   {
-                    bytecode.push_back(OpcodeToString.find(Opcode::LOAD)->second + " " +
-                               std::to_string(variable->second) + " " + "0");
+                    bytecode.push_back("LOAD " + std::to_string(variable->second) + " " + "0");
                     
                   }
                 }
-                bytecode.push_back(OpcodeToString.find(Opcode::TO_BOOL)->second);
-                bytecode.push_back(OpcodeToString.find(Opcode::STORE)->second +
-                                    " " + std::to_string(variable->second) + " " +
-                                    "0");
+                bytecode.push_back("TO_BOOL");
+                bytecode.push_back( "STORE " + std::to_string(variable->second) + " " + "0");
                 
             } else if (linker->tokenType == TokenType::READ) {
-                bytecode.push_back(OpcodeToString.find(Opcode::TO_BOOL)->second);
+                bytecode.push_back("TO_BOOL");
             } else throw std::runtime_error("Invaild usage of toBool()!!" );
             break;  
           case TokenType::WHILE:
-            bytecode.push_back(OpcodeToString.find(Opcode::NOT)->second);
+            bytecode.push_back("NOT");
             translationCount=bytecode.size()-1;
             loopPointer.push(std::make_pair<int,int>((int)scopeCounts.size(),(int)translationCount-std::distance(tokens.begin(), it)));
-            bytecode.push_back(OpcodeToString.find(Opcode::IF_JUMP)->second + " ");
+            bytecode.push_back("IF_JUMP ");
             tempIfJump.push(std::make_pair<int,int>((int)scopeCounts.size(),(int)translationCount+1));
             break;
+          case TokenType::COLON:
+            bytecode.push_back("COLON");
+            break;
+          case TokenType::FOR:
+            {
+              auto rit_bytecode = std::find(bytecode.rbegin(), bytecode.rend(), "COLON");
+              auto it_bytecode = rit_bytecode.base()-1;
+              *it_bytecode = "LESS_THAN";
+              std::vector<std::string> subvector(++it_bytecode, bytecode.end());
+              bytecode.erase(it_bytecode, bytecode.end());
+              
+              rit_bytecode = std::find(rit_bytecode, bytecode.rend(), "COLON");
+              it_bytecode = rit_bytecode.base()-2;
+              std::string copiedCommand = *it_bytecode;
+              std::string copiedCommand1 = copiedCommand;
+              copiedCommand.replace(0, 5, "LOAD");
+              *(++it_bytecode) = copiedCommand;
+            
+              loopPointer.push(std::make_pair<int,int>((int)scopeCounts.size(),(int)std::distance(bytecode.begin(), it_bytecode)));
+
+              subvector.push_back(copiedCommand);
+              subvector.push_back("ADD");
+              subvector.push_back(copiedCommand1);
+
+              bytecode.push_back("NOT");
+              translationCount=bytecode.size()-1;
+              
+              bytecode.push_back("IF_JUMP ");
+              tempIfJump.push(std::make_pair<int,int>((int)scopeCounts.size(),(int)translationCount+1));
+              tempForJump.emplace((int)scopeCounts.size(),subvector);
+            }
+            break;
           case TokenType::BREAK:
-            bytecode.push_back(OpcodeToString.find(Opcode::ENDSCOPE)->second);
-            bytecode.push_back(OpcodeToString.find(Opcode::POP)->second);
+            bytecode.push_back("ENDSCOPE");
+            bytecode.push_back("POP");
             if (scopeCounts.top() != variableMapByString.back().size())
             {
                 for (int i = scopeCounts.top(); i < variableMapByInt.back().size(); i++)
@@ -131,25 +155,25 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                     variableMapByInt.back().erase(i);
                 } 
             }
-            bytecode.push_back(OpcodeToString.find(Opcode::JUMP)->second + " ");
+            bytecode.push_back("JUMP ");
             translationCount=bytecode.size()-1;
             tempIfJump.push(std::make_pair<int,int>((int)tempIfJump.top().first,(int)translationCount));
             break;  
           case TokenType::ELSE:
-            bytecode.push_back(OpcodeToString.find(Opcode::NOT)->second);
-            bytecode.push_back(OpcodeToString.find(Opcode::IF_JUMP)->second + " ");
+            bytecode.push_back("NOT");
+            bytecode.push_back("IF_JUMP ");
             translationCount=bytecode.size()-1;
             tempIfJump.push(std::make_pair<int,int>((int)scopeCounts.size(),(int)translationCount));
             break;
           case TokenType::IF:
-            bytecode.push_back(OpcodeToString.find(Opcode::NOT)->second);
-            bytecode.push_back(OpcodeToString.find(Opcode::IF_JUMP)->second + " ");
+            bytecode.push_back("NOT");
+            bytecode.push_back("IF_JUMP ");
             translationCount=bytecode.size()-1;
             tempIfJump.push(std::make_pair<int,int>((int)scopeCounts.size(),(int)translationCount));
             break;
           case TokenType::CONTINUE:
-            bytecode.push_back(OpcodeToString.find(Opcode::ENDSCOPE)->second);
-            bytecode.push_back(OpcodeToString.find(Opcode::POP)->second);
+            bytecode.push_back("ENDSCOPE");
+            bytecode.push_back("POP");
             if (scopeCounts.top() != variableMapByString.back().size())
             {
                 for (int i = scopeCounts.top(); i < variableMapByInt.back().size(); i++)
@@ -158,7 +182,7 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                     variableMapByInt.back().erase(i);
                 } 
             }
-            bytecode.push_back(OpcodeToString.find(Opcode::JUMP)->second + " " + std::to_string(loopPointer.top().second));
+            bytecode.push_back("JUMP " + std::to_string(loopPointer.top().second));
             break;
           case TokenType::DEF:
                 {
@@ -180,12 +204,12 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                 }
             break;
           case TokenType::L_SBACKET:
-            bytecode.push_back(OpcodeToString.find(Opcode::NEWSCOPE)->second);
+            bytecode.push_back("NEWSCOPE");
             scopeCounts.push(variableMapByString.back().size());
             break;
           case TokenType::R_SBACKET:
             {
-            bytecode.push_back(OpcodeToString.find(Opcode::ENDSCOPE)->second);
+            bytecode.push_back("ENDSCOPE");
             if (scopeCounts.top() != variableMapByString.back().size())
             {
                 for (int i = scopeCounts.top(); i < variableMapByInt.back().size(); i++)
@@ -197,13 +221,19 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                     
             scopeCounts.pop();
             if (loopPointer.size() > 0 && loopPointer.top().first == scopeCounts.size()) {
-                bytecode.push_back(OpcodeToString.find(Opcode::JUMP)->second + " " + std::to_string(loopPointer.top().second));
+                bytecode.push_back("JUMP " + std::to_string(loopPointer.top().second));
                 loopPointer.pop();
             }
 
             translationCount=bytecode.size()-1;
             if (tempIfJump.size() > 0 && tempIfJump.top().first == scopeCounts.size())
             {
+              if (tempForJump.size() > 0 && tempForJump.top().first == scopeCounts.size())
+                {
+                  bytecode.insert(bytecode.end()-1, tempForJump.top().second.begin(), tempForJump.top().second.end());
+                  tempForJump.pop();
+                }
+                translationCount=bytecode.size()-1;
                 int temp = tempIfJump.top().first;
                 bytecode[tempIfJump.top().second] += std::to_string(translationCount+1);
                 tempIfJump.pop();
@@ -212,30 +242,32 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                     bytecode[tempIfJump.top().second] += std::to_string(translationCount+temp+1);
                     tempIfJump.pop();
                 }
+                
+                
             } 
             
             }
             break;
           case TokenType::RETURN:
                 if (tokens.size() == 1) {
-                  bytecode.push_back(OpcodeToString.find(Opcode::RETURN)->second + " 0");
+                  bytecode.push_back("RETURN 0");
                 } else {
-                  bytecode.push_back(OpcodeToString.find(Opcode::RETURN)->second + " 1");
+                  bytecode.push_back("RETURN 1");
                 }
                 variableMapByString.pop_back();
                 variableMapByInt.pop_back();
                 
             break;   
           case TokenType::FUNCTION: {
-            bytecode.insert(bytecode.begin() + start, OpcodeToString.find(Opcode::POP_ALL)->second);
+            bytecode.insert(bytecode.begin() + start, "POP_ALL");
             auto function = functionMap.find(it->code);
             translationCount=bytecode.size()-1;
             if (function == functionMap.end()) {
                 functionMap.emplace(it->code, -1);
-                bytecode.push_back(OpcodeToString.find(Opcode::CALL)->second + " ");
+                bytecode.push_back("CALL ");
                 undefinedFunctionMap.emplace(it->code, bytecode.size()-1);
             } else {
-                bytecode.push_back(OpcodeToString.find(Opcode::CALL)->second + " " + std::to_string(function->second) + " " + "0");
+                bytecode.push_back("CALL " + std::to_string(function->second) + " " + "0");
                 } 
           } break; 
           case TokenType::VARIABLE: {
@@ -248,26 +280,19 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                 variable = variableMapByString.back().find(it->code);
               }
             }
-            bytecode.push_back(OpcodeToString.find(Opcode::LOAD)->second + " " +
-                               std::to_string(variable->second) + " " + "0");
+            bytecode.push_back("LOAD " + std::to_string(variable->second) + " " + "0");
           } break;
           case TokenType::TRUE:
-            bytecode.push_back(
-                OpcodeToString.find(Opcode::LOAD_BOOLCONST)->second + " 1");
+            bytecode.push_back("LOAD_BOOLCONST 1");
             break;
           case TokenType::FALSE:
-            bytecode.push_back(
-                OpcodeToString.find(Opcode::LOAD_BOOLCONST)->second + " 0");
+            bytecode.push_back("LOAD_BOOLCONST 0");
             break;
           case TokenType::NUM_CONST:
-            bytecode.push_back(
-                OpcodeToString.find(Opcode::LOAD_NUMCONST)->second + " " +
-                it->code);
+            bytecode.push_back("LOAD_NUMCONST " + it->code);
             break;
           case TokenType::WORD_CONST:
-            bytecode.push_back(
-                OpcodeToString.find(Opcode::LOAD_WORDCONST)->second + " " +
-                it->code);
+            bytecode.push_back("LOAD_WORDCONST " + it->code);
             break;
           case TokenType::EQUAL: {
             it++;
@@ -279,73 +304,65 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
               if (variable == variableMapByString.front().end()) {
                 variableMapByString.back().emplace(it->code, variableMapByString.back().size());
                 variableMapByInt.back().emplace(variableMapByInt.back().size(), it->code);
-                bytecode.push_back(OpcodeToString.find(Opcode::STORE)->second +
-                                  " " + std::to_string(variableMapByInt.back().size()-1) + " " +
-                                  "0");
+                bytecode.push_back("STORE " + std::to_string(variableMapByInt.back().size()-1) + " " + "0");
               }    
               break;
             }
-            bytecode.push_back(OpcodeToString.find(Opcode::STORE)->second +
-                               " " + std::to_string(variable->second) + " " +
-                               "0");
+            bytecode.push_back("STORE " + std::to_string(variable->second) + " " + "0");
           } break;
           case TokenType::PLUS:
-            bytecode.push_back(OpcodeToString.find(Opcode::ADD)->second);
+            bytecode.push_back("ADD");
             break;
           case TokenType::MINUS:
-            bytecode.push_back(OpcodeToString.find(Opcode::SUB)->second);
+            bytecode.push_back("SUB");
             break;
           case TokenType::TIMES:
-            bytecode.push_back(OpcodeToString.find(Opcode::MUL)->second);
+            bytecode.push_back("MUL");
             break;
           case TokenType::DIVIDE:
-            bytecode.push_back(OpcodeToString.find(Opcode::DIV)->second);
+            bytecode.push_back("DIV");
             break;
           case TokenType::MODE:
-            bytecode.push_back(OpcodeToString.find(Opcode::MOD)->second);
+            bytecode.push_back("MOD");
             break;
           case TokenType::POW:
-            bytecode.push_back(OpcodeToString.find(Opcode::POW)->second);
+            bytecode.push_back("POW");
             break;
           case TokenType::AND:
-            bytecode.push_back(OpcodeToString.find(Opcode::AND)->second);
+            bytecode.push_back("AND");
             break;
           case TokenType::NOT:
-            bytecode.push_back(OpcodeToString.find(Opcode::NOT)->second);
+            bytecode.push_back("NOT");
             break;
           case TokenType::XOR:
-            bytecode.push_back(OpcodeToString.find(Opcode::XOR)->second);
+            bytecode.push_back("XOR");
             break;
           case TokenType::OR:
-            bytecode.push_back(OpcodeToString.find(Opcode::OR)->second);
+            bytecode.push_back("OR");
             break;
           case TokenType::GREATER:
-            bytecode.push_back(
-                OpcodeToString.find(Opcode::GREATER_THAN)->second);
+            bytecode.push_back("GREATER_THAN");
             break;
           case TokenType::SMALLER:
-            bytecode.push_back(OpcodeToString.find(Opcode::LESS_THAN)->second);
+            bytecode.push_back("LESS_THAN");
             break;
           case TokenType::E_GREATER:
-            bytecode.push_back(
-                OpcodeToString.find(Opcode::GREATER_THAN_EQUAL)->second);
+            bytecode.push_back("GREATER_THAN_EQUAL");
             break;
           case TokenType::E_SMALLER:
-            bytecode.push_back(
-                OpcodeToString.find(Opcode::LESS_THAN_EQUAL)->second);
+            bytecode.push_back("LESS_THAN_EQUAL");
             break;
           case TokenType::EQUIVALENT:
-            bytecode.push_back(OpcodeToString.find(Opcode::EQUAL)->second);
+            bytecode.push_back("EQUAL");
             break;
           case TokenType::NOT_EQUIVALENT:
-            bytecode.push_back(OpcodeToString.find(Opcode::NOT_EQUAL)->second);
+            bytecode.push_back("NOT_EQUAL");
             break;
           case TokenType::READ:
-            bytecode.push_back(OpcodeToString.find(Opcode::PRINT)->second);
-            bytecode.push_back(OpcodeToString.find(Opcode::READ)->second);
+            bytecode.push_back("PRINT");
             break;
           case TokenType::PRINT:
-            bytecode.push_back(OpcodeToString.find(Opcode::PRINT)->second);
+            bytecode.push_back("PRINT");
             break;
           default:
             break;

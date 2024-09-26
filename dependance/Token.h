@@ -1,7 +1,6 @@
 #pragma once
 
 enum class TokenType {
-    CONST,
     DEF,
 
     READ,
@@ -11,6 +10,7 @@ enum class TokenType {
     ELSE,
 
     WHILE,
+    FOR,
 
     NUM_CONST,
     TRUE,
@@ -65,4 +65,5 @@ struct Token
     std::string code;
 
     Token(TokenType tokenType, std::string code) : tokenType(tokenType), code(code) {}
+    Token() {}
 };

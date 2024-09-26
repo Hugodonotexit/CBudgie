@@ -23,7 +23,7 @@ def getRadius(diameter)
 return radius
 
 def getArea(radius)
-    area = radius ** 2 * 3.14159265
+    area =  3.14159265 * radius ** 2
 return area
 
 def getCirc(diameter)

@@ -9,7 +9,7 @@ VM::VM(const std::filesystem::path& filePath) {
   bool run = true;
 
   while (instructionPointer < instructions.size() && run) {
-    auto& instruction = instructions[instructionPointer];
+    Instruction& instruction = instructions[instructionPointer];
     switch (instruction.opcode) {
       case Opcode::POP_ALL:
         if (stack.empty()) break;
@@ -33,7 +33,7 @@ VM::VM(const std::filesystem::path& filePath) {
         stack.emplace();
         break;
       case Opcode::NOP:
-        continue;
+        break;
       case Opcode::TO_STRING:
         if (std::holds_alternative<long double>(stack.top().top().value)) {
           std::string temp =
@@ -214,6 +214,9 @@ VM::VM(const std::filesystem::path& filePath) {
         stack.top().push(b != a);
       } break;
       case Opcode::READ: {
+        WrappedVar a(stack.top().top());
+        stack.top().pop();
+        std::cout << a << std::endl;
         std::string words;
         std::cin >> words;
         stack.top().push(WrappedVar(words));
