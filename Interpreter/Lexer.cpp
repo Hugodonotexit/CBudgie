@@ -13,6 +13,8 @@ Lexer::Lexer(const std::filesystem::path& filePath,
 
 void Lexer::run() {
   std::ifstream file(filePath);
+
+  // Attempt to open file
   if (!file.is_open()) {
     throw std::runtime_error("Unable to open file: " +
                              filePath.filename().string());
@@ -21,26 +23,38 @@ void Lexer::run() {
   int lexerCount = 0;
   std::string line;
 
+  // Loop through each line of the file and convert to tokens
   while (std::getline(file, line)) {
+
     std::vector<Token> tokenized_line;
     std::vector<int> math_op;
     std::vector<int> equal_op;
     int swap_op = -1;
     int return_swap_op = -1;
     bool skip = false;
+
+    // Sweep through each char in the line
     for (int i = 0; i < line.size(); i++) {
       char current = line[i];
+
+      // Determine if the current charater could be the start of a keyword
       if (isIdentifierStart(current)) {
+        // Collect token type and string of identifier
         Token temp = readIdentifierOrKeyword(line, i);
-        if (temp.tokenType == TokenType::PRINT ||
+        if(
+            temp.tokenType == TokenType::PRINT ||
             temp.tokenType == TokenType::READ ||
             temp.tokenType == TokenType::FUNCTION ||
             temp.tokenType == TokenType::IF ||
             temp.tokenType == TokenType::WHILE ||
-            temp.tokenType == TokenType::FOR) {
+            temp.tokenType == TokenType::FOR
+          ){
+          // Token is a keyword
           swap_op = tokenized_line.size();
-        } else if (temp.tokenType == TokenType::RETURN)
+        } 
+        else if (temp.tokenType == TokenType::RETURN) {
           return_swap_op = tokenized_line.size();
+        }
         tokenized_line.push_back(temp);
       } else if (std::isdigit(current) ||
                  (current == '-' && std::isdigit(line[i + 1]))) {
@@ -256,10 +270,12 @@ void Lexer::run() {
 
 Token Lexer::readIdentifierOrKeyword(const std::string& line, int& i) {
   int start = i;
+  // progess i until it is the final char in the identifier
   while (i < line.size() && isIdentifierPart(line[i])) {
     i++;
   }
 
+  //Return the associated token type along with the syring of the identifier
   std::string word = line.substr(start, i - start);
   if (keywords.count(word)) {
     return {keywords[word], word};
