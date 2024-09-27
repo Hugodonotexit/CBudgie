@@ -33,6 +33,8 @@ private:
     bool isIdentifierStart(char c);
     bool isIdentifierPart(char c);
     bool isLeftAssociative(TokenType type);
+    bool isKewordOrInBuiltFunction(TokenType type);
+    bool isNumberStart(char current,char next);
     int getPrecedence(TokenType type);
     std::vector<Token> reorderExpression(const std::vector<Token>& vec);
 public:

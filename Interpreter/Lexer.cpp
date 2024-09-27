@@ -73,6 +73,54 @@ void Lexer::run() {
           }
           tokenized_line.emplace_back(TokenType::WORD_CONST, line.substr(start, i - start + 1));
         } break;
+        case '`':{
+          int start = i++;
+          // Collect entire string
+          while (line[i] != '`') {
+            i++;
+            if (i >= line.size())
+              //String not closed (note strings cannot be multi line)
+              throw std::invalid_argument("Missing ` at: " + line);
+          }
+          std::string str = line.substr(start, i - start + 1);
+          str[0] = '"';
+          str[str.size()-1] = '"';
+          std::cout << str << std::endl;
+          bool alreadyOneVar = false;
+          for (int j = 0; j < str.size(); j++) {
+            if (j != 0 && str.substr(j-1,1) != "\\" && str.substr(j,2) == "${"){
+              std::cout << "found start" << std::endl;
+              j += 2;
+              start = j;
+              while (str[j] != '}') {
+                j++;
+                if (j >= str.size())
+                  // String escape not closed (note strings cannot be multi line)
+                  throw std::invalid_argument("Missing } at: " + line);
+              }
+              if (alreadyOneVar) {
+                tokenized_line.emplace_back(TokenType::PLUS, "+");
+                math_op.push_back(tokenized_line.size() - 1);
+                tokenized_line.emplace_back(TokenType::WORD_CONST, "\""+str.substr(0, start - 2)+"\"");
+              }else{
+                tokenized_line.emplace_back(TokenType::WORD_CONST, str.substr(0, start - 2)+"\"");
+              }
+              tokenized_line.emplace_back(TokenType::PLUS, "+");
+              math_op.push_back(tokenized_line.size() - 1);
+              tokenized_line.emplace_back(TokenType::VARIABLE, str.substr(start, j - start));
+              str.erase(0,j+1); 
+              j = 0;
+              alreadyOneVar = true;
+            }
+          }
+          if (str.size() > 0 && alreadyOneVar) {
+            tokenized_line.emplace_back(TokenType::PLUS, "+");
+            math_op.push_back(tokenized_line.size() - 1);
+            tokenized_line.emplace_back(TokenType::WORD_CONST, "\""+str);
+          }else if (str.size() > 0) {
+            tokenized_line.emplace_back(TokenType::WORD_CONST, "\""+str);
+          }
+        } break;
         case '#':
           skip = true;
           break;
@@ -323,7 +371,7 @@ bool Lexer::isIdentifierStart(char c) { return std::isalpha(c) || c == '_'; }
 bool Lexer::isIdentifierPart(char c) { return std::isalnum(c) || c == '_'; }
 
 bool Lexer::isNumberStart(char current,char next){
-  return std::isdigit(current) || (currrent == '-' ^^ std::isdigit(next))
+  return std::isdigit(current) || (current == '-' && std::isdigit(next));
 }
 
 bool Lexer::isKewordOrInBuiltFunction(TokenType type){
@@ -332,7 +380,7 @@ bool Lexer::isKewordOrInBuiltFunction(TokenType type){
             type == TokenType::FUNCTION ||
             type == TokenType::IF ||
             type == TokenType::WHILE ||
-            type == TokenType::FOR
+            type == TokenType::FOR;
 }
 
 int Lexer::getPrecedence(TokenType type) {
