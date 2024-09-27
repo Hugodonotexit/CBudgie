@@ -39,12 +39,17 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
     variableMapByInt.emplace_back();
   while (true) {
     std::unique_lock<std::mutex> lock(lexerMutex_);
+    // Wait until either there is another line to translate or the lexer indicated no more lines are coming
     lexerCv_.wait(lock, [&tokenized_code, this]() { return !tokenized_code.empty() || lexingDone; });
+    // If there is a line ready for translation then translate it
     if (!tokenized_code.empty()) {
+      // Take the next line and remove it from the tokenized code
       std::vector<Token> tokens = tokenized_code.front();
       if (!tokenized_code.empty()) {
         tokenized_code.erase(tokenized_code.begin());
       }
+
+      // Go through each token in the line and translate it to bytecode
       int start = bytecode.size();
       for (auto it = tokens.begin(); it < tokens.end(); ++it) {
         switch (it->tokenType) {
@@ -378,6 +383,8 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
       break;
     }
   }
+
+  //main function is the entry point and required for a program to run
   auto variable = functionMap.find("main");
   if (variable == functionMap.end()) throw std::invalid_argument("Missing main() function!");
 }

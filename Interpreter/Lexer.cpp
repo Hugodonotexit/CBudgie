@@ -13,6 +13,8 @@ Lexer::Lexer(const std::filesystem::path& filePath,
 
 void Lexer::run() {
   std::ifstream file(filePath);
+
+  // Attempt to open file
   if (!file.is_open()) {
     throw std::runtime_error("Unable to open file: " +
                              filePath.filename().string());
@@ -21,42 +23,105 @@ void Lexer::run() {
   int lexerCount = 0;
   std::string line;
 
+  // Loop through each line of the file and convert to tokens
   while (std::getline(file, line)) {
+
     std::vector<Token> tokenized_line;
     std::vector<int> math_op;
     std::vector<int> equal_op;
     int swap_op = -1;
     int return_swap_op = -1;
     bool skip = false;
+
+    // Sweep through each char in the line
     for (int i = 0; i < line.size(); i++) {
       char current = line[i];
-      if (isIdentifierStart(current)) {
+
+      // Determine if the current charater could be the start of a keyword
+      if (isIdentifierStart(current,  line[i+1])) {
+        // Collect token type and string of identifier
         Token temp = readIdentifierOrKeyword(line, i);
-        if (temp.tokenType == TokenType::PRINT ||
-            temp.tokenType == TokenType::READ ||
-            temp.tokenType == TokenType::FUNCTION ||
-            temp.tokenType == TokenType::IF ||
-            temp.tokenType == TokenType::WHILE ||
-            temp.tokenType == TokenType::FOR) {
+        // Check if token is a non return keyword or built in function
+        if(isKewordOrInBuiltFunction(temp.tokenType)){
           swap_op = tokenized_line.size();
-        } else if (temp.tokenType == TokenType::RETURN)
+        } 
+        else if (temp.tokenType == TokenType::RETURN) {
           return_swap_op = tokenized_line.size();
+        }
+        //Add token,string object to converted line
         tokenized_line.push_back(temp);
-      } else if (std::isdigit(current) ||
-                 (current == '-' && std::isdigit(line[i + 1]))) {
+      } 
+      // Determine if the current charater could be the start of a number
+      else if (isNumberStart(current,line[i+1])) {
+        //Addtoken string object to converted line
         tokenized_line.push_back(readNumber(line, i));
       }
+
+      // TODO: Does this need to be here? 
       current = line[i];
+
+      // Pretty much same as before but looking at all single char identifiers
       switch (current) {
-        case '"': {
+        case 'f': {
+          i++;
           int start = i++;
+          // Collect entire string
           while (line[i] != '"') {
             i++;
             if (i >= line.size())
+              //String not closed (note strings cannot be multi line)
               throw std::invalid_argument("Missing \" at: " + line);
           }
-          tokenized_line.emplace_back(TokenType::WORD_CONST,
-                                      line.substr(start, i - start + 1));
+          int strLength = i - start + 1;
+
+          std::string str = line.substr(start, strLength);
+          int lastEnd = -1;
+          for (int j = 1; j < strLength; j++) {
+            if (str.substr(j,2) == "\\{"){
+              j++;
+              continue;
+            } 
+            else if (str[j] == '{') {
+              start = j;
+              while (str[j] != '}') {
+                j++;
+                if (str.substr(j,2) == "\\}") j++;
+                if (j >= str.size())
+                  // String escape not closed (note strings cannot be multi line)
+                  throw std::invalid_argument("Missing } at: " + line);
+              }
+              if (lastEnd != -1) {
+                tokenized_line.emplace_back(TokenType::PLUS, "+");
+                math_op.push_back(tokenized_line.size() - 1);
+                tokenized_line.emplace_back(TokenType::WORD_CONST, "\""+str.substr(lastEnd,  start - lastEnd)+"\"");
+              }else{
+                tokenized_line.emplace_back(TokenType::WORD_CONST, str.substr(0, start)+ "\"");
+              }
+
+              tokenized_line.emplace_back(TokenType::PLUS, "+");
+              math_op.push_back(tokenized_line.size() - 1);
+              
+              tokenized_line.emplace_back(TokenType::VARIABLE, str.substr(start+1, j - start - 1));
+              lastEnd = j+1;
+              if (j == str.size()-1 && lastEnd < j) {
+                tokenized_line.emplace_back(TokenType::PLUS, "+");
+                math_op.push_back(tokenized_line.size() - 1);
+                tokenized_line.emplace_back(TokenType::WORD_CONST, "\""+str.substr(lastEnd));
+              }
+            }
+          }
+        }
+          break;
+        case '"': {
+          int start = i++;
+          // Collect entire string
+          while (line[i] != '"') {
+            i++;
+            if (i >= line.size())
+              //String not closed (note strings cannot be multi line)
+              throw std::invalid_argument("Missing \" at: " + line);
+          }          
+          tokenized_line.emplace_back(TokenType::WORD_CONST, line.substr(start, i - start + 1));
         } break;
         case '#':
           skip = true;
@@ -164,15 +229,19 @@ void Lexer::run() {
         case ' ':
           continue;
       }
+      // TODO: skip is never set to true without immediatly being followed by a break, this could be removed?
       if (skip) {
         break;
       }
     }
 
+    // loop through all math operations
     for (auto it : math_op) {
       if (tokenized_line[it + 1].tokenType != TokenType::L_RBACKET) {
+        // if math operation is not next to a bracket arrange the tokens so the order goes from num,op,num to num,num,op
         std::swap(tokenized_line[it], tokenized_line[it + 1]);
       } else {
+        // otherwise collect rest of the bracket including sub brackets
         int count = 1;
         int i = 1;
         while (count != 0 && it + i < tokenized_line.size()) {
@@ -180,15 +249,18 @@ void Lexer::run() {
           if (tokenized_line[it + i].tokenType == TokenType::L_RBACKET) count++;
           if (tokenized_line[it + i].tokenType == TokenType::R_RBACKET) count--;
         }
+        //move bracketed stuff to the front of the queue
         tokenized_line.insert(tokenized_line.begin() + it + i,
                               tokenized_line[it]);
         tokenized_line.erase(tokenized_line.begin() + it);
       }
     }
+
+    //loop through all comparasion operations
     for (auto op : equal_op) {
         bool done = false;
-        for (auto i = tokenized_line.begin() + op + 1; i < tokenized_line.end();
-             i++) {
+
+        for (auto i = tokenized_line.begin() + op + 1; i < tokenized_line.end();i++) {
           if (i->tokenType == TokenType::COLON) {
             auto it = tokenized_line.begin() + op;
             tokenized_line.insert(i, *it);
@@ -197,6 +269,7 @@ void Lexer::run() {
             break;
           }
         }
+
         if (!done) {
           tokenized_line.push_back(tokenized_line[op]);
           tokenized_line.push_back(tokenized_line[op - 1]);
@@ -207,10 +280,12 @@ void Lexer::run() {
         if (swap_op != -1 && swap_op > op) swap_op -= 2;
     }
 
+    // Move all tokens that return true on isKewordOrInBuiltFunction to after the brackets after them if there
     if (swap_op != -1) {
       int l_rbacket = 0, r_rbacket = 0;
       int index = 1;
       int end = -1;
+      // Identify end of bracket
       while (swap_op + index < tokenized_line.size()) {
         if (tokenized_line[swap_op + index].tokenType == TokenType::R_RBACKET)
           r_rbacket++;
@@ -222,13 +297,16 @@ void Lexer::run() {
         }
         index++;
       }
+      // If end is -1 there are no brackets
       if (end != -1) {
+        // There are brackets move token
         tokenized_line.insert(tokenized_line.begin() + end,
                               tokenized_line[swap_op]);
         tokenized_line.erase(tokenized_line.begin() + swap_op);
       }
     }
 
+    // Move return token to end of line if there is one
     if (return_swap_op != -1) {
       tokenized_line.push_back(tokenized_line[return_swap_op]);
       tokenized_line.erase(tokenized_line.begin() + return_swap_op);
@@ -236,6 +314,7 @@ void Lexer::run() {
 
     tokenized_line = reorderExpression(tokenized_line);
 
+    //add tokenized line to rest of tokenized code
     {
       std::lock_guard<std::mutex> lock(mutex_);
       tokenized_code.push_back(tokenized_line);
@@ -256,10 +335,12 @@ void Lexer::run() {
 
 Token Lexer::readIdentifierOrKeyword(const std::string& line, int& i) {
   int start = i;
+  // progess i until it is the final char in the identifier
   while (i < line.size() && isIdentifierPart(line[i])) {
     i++;
   }
 
+  //Return the associated token type along with the string of the identifier
   std::string word = line.substr(start, i - start);
   if (keywords.count(word)) {
     return {keywords[word], word};
@@ -283,12 +364,33 @@ Token Lexer::readNumber(const std::string& line, int& i) {
     ++i;
   }
 
+  //Return the associated token type along with the string of the number
   return {TokenType::NUM_CONST, line.substr(start, i - start)};
 }
 
-bool Lexer::isIdentifierStart(char c) { return std::isalpha(c) || c == '_'; }
+bool Lexer::isIdentifierStart(char c, char next) {
+  if (c == 'f' && next == '\"')
+  {
+    return false;
+  }
+   
+  return  std::isalpha(c) || c == '_'; 
+  }
 
 bool Lexer::isIdentifierPart(char c) { return std::isalnum(c) || c == '_'; }
+
+bool Lexer::isNumberStart(char current,char next){
+  return std::isdigit(current) || (current == '-' && std::isdigit(next));
+}
+
+bool Lexer::isKewordOrInBuiltFunction(TokenType type){
+  return    type == TokenType::PRINT ||
+            type == TokenType::READ ||
+            type == TokenType::FUNCTION ||
+            type == TokenType::IF ||
+            type == TokenType::WHILE ||
+            type == TokenType::FOR;
+}
 
 int Lexer::getPrecedence(TokenType type) {
   switch (type) {
