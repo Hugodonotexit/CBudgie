@@ -85,18 +85,15 @@ void Lexer::run() {
           std::string str = line.substr(start, i - start + 1);
           str[0] = '"';
           str[str.size()-1] = '"';
-          std::cout << str << std::endl;
           bool alreadyOneVar = false;
           for (int j = 0; j < str.size(); j++) {
             if (j != 0 && str.substr(j-1,1) != "\\" && str.substr(j,2) == "${"){
-              std::cout << "found start" << std::endl;
               j += 2;
               start = j;
               while (str[j] != '}') {
                 j++;
                 if (j >= str.size())
                   // String escape not closed (note strings cannot be multi line)
-                  throw std::invalid_argument("Missing } at: " + line);
               }
               if (alreadyOneVar) {
                 tokenized_line.emplace_back(TokenType::PLUS, "+");
