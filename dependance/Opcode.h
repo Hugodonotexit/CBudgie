@@ -3,10 +3,9 @@
 #include <unordered_map>
 enum class Opcode {
   LOAD,
-  LOAD_ALL,
 
   STORE,
-  STORE_ALL,
+  
 
   LOAD_NUMCONST,
 
@@ -19,6 +18,9 @@ enum class Opcode {
   IF_JUMP,
   JUMP,
   CALL,
+  LOAD_ALL,
+  STORE_ALL,
+
 
   ADD,
   SUB,

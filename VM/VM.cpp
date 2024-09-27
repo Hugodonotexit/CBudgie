@@ -117,14 +117,15 @@ VM::VM(const std::filesystem::path& filePath) {
         break;
       case Opcode::STORE_ALL:
         if (instruction.index < var.size()) {
-          for (int i = 0; i < instruction.offset; i++) {
-            if (i < var[instruction.index].size()) {
+          int i = 0;
+          while (!stack.top().empty()) {
+            if (i <= var[instruction.index].size()) {
               var[instruction.index][i] = stack.top().top();
-              stack.top().pop();
             } else {
               var[instruction.index].push_back(stack.top().top());
-              stack.top().pop();
             }
+            stack.top().pop();
+            i++;
           }
         } else {
           std::vector<WrappedVar> temp;

@@ -299,7 +299,11 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
             if (it->tokenType != TokenType::VARIABLE)
               throw std::invalid_argument("invalid_argument " + it->code);
             auto variable = variableMapByString.back().find(it->code);
-            if (variable == variableMapByString.back().end()) {
+            if ((it-2)->tokenType == TokenType::R_SQBACKET)
+            {
+              bytecode.push_back("STORE_ALL " + std::to_string(variableMapByInt.back().size()-1) + " " + "0");
+            } else {
+              if (variable == variableMapByString.back().end()) {
               variable = variableMapByString.front().find(it->code);
               if (variable == variableMapByString.front().end()) {
                 variableMapByString.back().emplace(it->code, variableMapByString.back().size());
@@ -309,6 +313,7 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
               break;
             }
             bytecode.push_back("STORE " + std::to_string(variable->second) + " " + "0");
+            }
           } break;
           case TokenType::PLUS:
             bytecode.push_back("ADD");
