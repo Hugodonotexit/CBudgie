@@ -38,7 +38,7 @@ void Lexer::run() {
       char current = line[i];
 
       // Determine if the current charater could be the start of a keyword
-      if (isIdentifierStart(current)) {
+      if (isIdentifierStart(current,  line[i+1])) {
         // Collect token type and string of identifier
         Token temp = readIdentifierOrKeyword(line, i);
         // Check if token is a non return keyword or built in function
@@ -62,7 +62,8 @@ void Lexer::run() {
 
       // Pretty much same as before but looking at all single char identifiers
       switch (current) {
-        case '"': {
+        case 'f': {
+          i++;
           int start = i++;
           // Collect entire string
           while (line[i] != '"') {
@@ -71,52 +72,56 @@ void Lexer::run() {
               //String not closed (note strings cannot be multi line)
               throw std::invalid_argument("Missing \" at: " + line);
           }
-          tokenized_line.emplace_back(TokenType::WORD_CONST, line.substr(start, i - start + 1));
-        } break;
-        case '`':{
-          int start = i++;
-          // Collect entire string
-          while (line[i] != '`') {
-            i++;
-            if (i >= line.size())
-              //String not closed (note strings cannot be multi line)
-              throw std::invalid_argument("Missing ` at: " + line);
-          }
-          std::string str = line.substr(start, i - start + 1);
-          str[0] = '"';
-          str[str.size()-1] = '"';
-          bool alreadyOneVar = false;
-          for (int j = 0; j < str.size(); j++) {
-            if (j != 0 && str.substr(j-1,1) != "\\" && str.substr(j,2) == "${"){
-              j += 2;
+          int strLength = i - start + 1;
+
+          std::string str = line.substr(start, strLength);
+          int lastEnd = -1;
+          for (int j = 1; j < strLength; j++) {
+            if (str.substr(j,2) == "\\{"){
+              j++;
+              continue;
+            } 
+            else if (str[j] == '{') {
               start = j;
               while (str[j] != '}') {
                 j++;
+                if (str.substr(j,2) == "\\}") j++;
                 if (j >= str.size())
                   // String escape not closed (note strings cannot be multi line)
+                  throw std::invalid_argument("Missing } at: " + line);
               }
-              if (alreadyOneVar) {
+              if (lastEnd != -1) {
                 tokenized_line.emplace_back(TokenType::PLUS, "+");
                 math_op.push_back(tokenized_line.size() - 1);
-                tokenized_line.emplace_back(TokenType::WORD_CONST, "\""+str.substr(0, start - 2)+"\"");
+                tokenized_line.emplace_back(TokenType::WORD_CONST, "\""+str.substr(lastEnd,  start - lastEnd)+"\"");
               }else{
-                tokenized_line.emplace_back(TokenType::WORD_CONST, str.substr(0, start - 2)+"\"");
+                tokenized_line.emplace_back(TokenType::WORD_CONST, str.substr(0, start)+ "\"");
               }
+
               tokenized_line.emplace_back(TokenType::PLUS, "+");
               math_op.push_back(tokenized_line.size() - 1);
-              tokenized_line.emplace_back(TokenType::VARIABLE, str.substr(start, j - start));
-              str.erase(0,j+1); 
-              j = 0;
-              alreadyOneVar = true;
+              
+              tokenized_line.emplace_back(TokenType::VARIABLE, str.substr(start+1, j - start - 1));
+              lastEnd = j+1;
+              if (j == str.size()-1 && lastEnd < j) {
+                tokenized_line.emplace_back(TokenType::PLUS, "+");
+                math_op.push_back(tokenized_line.size() - 1);
+                tokenized_line.emplace_back(TokenType::WORD_CONST, "\""+str.substr(lastEnd));
+              }
             }
           }
-          if (str.size() > 0 && alreadyOneVar) {
-            tokenized_line.emplace_back(TokenType::PLUS, "+");
-            math_op.push_back(tokenized_line.size() - 1);
-            tokenized_line.emplace_back(TokenType::WORD_CONST, "\""+str);
-          }else if (str.size() > 0) {
-            tokenized_line.emplace_back(TokenType::WORD_CONST, "\""+str);
-          }
+        }
+          break;
+        case '"': {
+          int start = i++;
+          // Collect entire string
+          while (line[i] != '"') {
+            i++;
+            if (i >= line.size())
+              //String not closed (note strings cannot be multi line)
+              throw std::invalid_argument("Missing \" at: " + line);
+          }          
+          tokenized_line.emplace_back(TokenType::WORD_CONST, line.substr(start, i - start + 1));
         } break;
         case '#':
           skip = true;
@@ -363,7 +368,14 @@ Token Lexer::readNumber(const std::string& line, int& i) {
   return {TokenType::NUM_CONST, line.substr(start, i - start)};
 }
 
-bool Lexer::isIdentifierStart(char c) { return std::isalpha(c) || c == '_'; }
+bool Lexer::isIdentifierStart(char c, char next) {
+  if (c == 'f' && next == '\"')
+  {
+    return false;
+  }
+   
+  return  std::isalpha(c) || c == '_'; 
+  }
 
 bool Lexer::isIdentifierPart(char c) { return std::isalnum(c) || c == '_'; }
 
