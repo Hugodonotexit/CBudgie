@@ -30,9 +30,11 @@ private:
     void preprocessLine(std::vector<Token>& tokenized_line, std::vector<int>& math_op, int equal_op, int swap_op, int return_swap_op);
     Token readIdentifierOrKeyword(const std::string& line, int& i);
     Token readNumber(const std::string& line, int& i);
-    bool isIdentifierStart(char c);
+    bool isIdentifierStart(char c, char next);
     bool isIdentifierPart(char c);
     bool isLeftAssociative(TokenType type);
+    bool isKewordOrInBuiltFunction(TokenType type);
+    bool isNumberStart(char current,char next);
     int getPrecedence(TokenType type);
     std::vector<Token> reorderExpression(const std::vector<Token>& vec);
 public:
