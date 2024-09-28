@@ -12,6 +12,24 @@ public:
 
     WrappedVar(const Var& v) : value(v) {}
 
+    long double toNum() const {
+        return std::visit([](auto&& arg) -> long double {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, long double>) {
+                return arg;
+            } else if constexpr (std::is_same_v<T, bool>) {
+                return static_cast<long double>(arg);
+            } else if constexpr (std::is_same_v<T, std::string>) {
+                try {
+                    return std::stold(arg);
+                } catch (const std::invalid_argument& e) {
+                    return 0.0; // or handle the error as needed
+                }
+            }
+            return 0.0;
+        }, value);
+    }
+
     WrappedVar operator+(const WrappedVar& other) const {
         return std::visit([](auto&& lhs, auto&& rhs) -> Var {
             using T = std::decay_t<decltype(lhs)>;
