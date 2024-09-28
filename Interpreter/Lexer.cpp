@@ -16,8 +16,7 @@ void Lexer::run() {
 
   // Attempt to open file
   if (!file.is_open()) {
-    throw std::runtime_error("Unable to open file: " +
-                             filePath.filename().string());
+    throw std::runtime_error("Unable to open file: " + filePath.filename().string());
   }
 
   int lexerCount = 0;
@@ -31,14 +30,15 @@ void Lexer::run() {
     std::vector<int> equal_op;
     int swap_op = -1;
     int return_swap_op = -1;
+    std::vector<int> list_swap_op;
     bool skip = false;
 
     // Sweep through each char in the line
     for (int i = 0; i < line.size(); i++) {
       char current = line[i];
-
+      char next = line[i+1];
       // Determine if the current charater could be the start of a keyword
-      if (isIdentifierStart(current,  line[i+1])) {
+      if (isIdentifierStart(current, next)) {
         // Collect token type and string of identifier
         Token temp = readIdentifierOrKeyword(line, i);
         // Check if token is a non return keyword or built in function
@@ -48,18 +48,22 @@ void Lexer::run() {
         else if (temp.tokenType == TokenType::RETURN) {
           return_swap_op = tokenized_line.size();
         }
+        else if (temp.tokenType == TokenType::VARIABLE && next == '[') {
+          //Addtoken string object to converted line
+          list_swap_op.push_back(tokenized_line.size());
+        }
         //Add token,string object to converted line
         tokenized_line.push_back(temp);
       } 
       // Determine if the current charater could be the start of a number
-      else if (isNumberStart(current,line[i+1])) {
+      else if (isNumberStart(current, next)) {
         //Addtoken string object to converted line
         tokenized_line.push_back(readNumber(line, i));
-      }
+      } 
 
-      // TODO: Does this need to be here? 
+      // reset current
       current = line[i];
-
+      next = line[i+1];
       // Pretty much same as before but looking at all single char identifiers
       switch (current) {
         case 'f': {
@@ -229,18 +233,30 @@ void Lexer::run() {
         case ' ':
           continue;
       }
-      // TODO: skip is never set to true without immediatly being followed by a break, this could be removed?
+      // skipping comment
       if (skip) {
         break;
       }
     }
 
+    for (auto it:list_swap_op)
+    {
+      int count = 1;
+      int i = 1;
+      while (count != 0 && it + i < tokenized_line.size()) {
+        i++;
+        if (tokenized_line[it + i].tokenType == TokenType::L_SQBACKET) count++;
+        if (tokenized_line[it + i].tokenType == TokenType::R_SQBACKET) count--;
+      }
+      //move bracketed stuff to the front of the queue
+      tokenized_line.insert(tokenized_line.begin() + it + i + 1, tokenized_line[it]);
+      tokenized_line.erase(tokenized_line.begin() + it, tokenized_line.begin() + it + 1);
+    }
+    
+
     // loop through all math operations
     for (auto it : math_op) {
-      if (tokenized_line[it + 1].tokenType != TokenType::L_RBACKET) {
-        // if math operation is not next to a bracket arrange the tokens so the order goes from num,op,num to num,num,op
-        std::swap(tokenized_line[it], tokenized_line[it + 1]);
-      } else {
+      if (tokenized_line[it + 1].tokenType == TokenType::L_RBACKET) {
         // otherwise collect rest of the bracket including sub brackets
         int count = 1;
         int i = 1;
@@ -250,9 +266,12 @@ void Lexer::run() {
           if (tokenized_line[it + i].tokenType == TokenType::R_RBACKET) count--;
         }
         //move bracketed stuff to the front of the queue
-        tokenized_line.insert(tokenized_line.begin() + it + i,
-                              tokenized_line[it]);
-        tokenized_line.erase(tokenized_line.begin() + it);
+        tokenized_line.insert(tokenized_line.begin() + it + i + 1, tokenized_line[it]);
+        tokenized_line.erase(tokenized_line.begin() + it, tokenized_line.begin() + it + 1);
+        
+      } else {
+        // if math operation is not next to a bracket arrange the tokens so the order goes from num,op,num to num,num,op
+        std::swap(tokenized_line[it], tokenized_line[it + 1]);
       }
     }
 
@@ -312,8 +331,13 @@ void Lexer::run() {
       tokenized_line.erase(tokenized_line.begin() + return_swap_op);
     }
 
-    tokenized_line = reorderExpression(tokenized_line);
+    for (auto c:tokenized_line)
+    {
+      std::cout << c.code << std::endl;
+    }
 
+    tokenized_line = reorderExpression(tokenized_line);
+    
     //add tokenized line to rest of tokenized code
     {
       std::lock_guard<std::mutex> lock(mutex_);
@@ -432,7 +456,7 @@ std::vector<Token> Lexer::reorderExpression(const std::vector<Token>& vec) {
   bool encounteredEqual = false;
 
   for (const auto& token : vec) {
-    if (token.tokenType == TokenType::COLON) {
+    if (token.tokenType == TokenType::COLON || token.tokenType == TokenType::COMMA) {
       // Push current segment to final output and clear for next segment
       while (!operatorStack.empty()) {
         outputQueue.push_back(operatorStack.top());

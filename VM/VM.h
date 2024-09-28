@@ -14,7 +14,7 @@ class VM
 private:
     std::stack<std::stack<WrappedVar>> stack;
 
-    std::vector<std::vector<WrappedVar>> var;
+    std::deque<std::vector<std::vector<WrappedVar>>> var;
 
     std::vector<Instruction> instructions;
 

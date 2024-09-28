@@ -7,7 +7,7 @@ VM::VM(const std::filesystem::path& filePath) {
   std::stack<int> scopeCounts;
   stack.emplace();
   bool run = true;
-
+  var.emplace_back();
   while (instructionPointer < instructions.size() && run) {
     Instruction& instruction = instructions[instructionPointer];
     switch (instruction.opcode) {
@@ -24,12 +24,12 @@ VM::VM(const std::filesystem::path& filePath) {
       case Opcode::ENDSCOPE:
         stack.pop();
         if (scopeCounts.top() != var.size()) {
-          var.erase(var.begin() + scopeCounts.top(), var.end());
+          var.back().erase(var.back().begin() + scopeCounts.top(), var.back().end());
         }
         scopeCounts.pop();
         break;
       case Opcode::NEWSCOPE:
-        scopeCounts.push(var.size());
+        scopeCounts.push(var.back().size());
         stack.emplace();
         break;
       case Opcode::NOP:
@@ -49,7 +49,6 @@ VM::VM(const std::filesystem::path& filePath) {
 
         break;
       case Opcode::TO_BOOL:
-
         if (std::holds_alternative<std::string>(stack.top().top().value)) {
           std::string str = std::get<std::string>(stack.top().top().value);
           if (str == "F" || str == "0" || str == "False") {
@@ -66,7 +65,6 @@ VM::VM(const std::filesystem::path& filePath) {
           stack.top().pop();
           stack.top().push(WrappedVar(temp));
         }
-
         break;
       case Opcode::TO_NUM:
         if (std::holds_alternative<std::string>(stack.top().top().value)) {
@@ -94,35 +92,89 @@ VM::VM(const std::filesystem::path& filePath) {
           stack.top().push(WrappedVar(temp));
         }
         break;
-      case Opcode::LOAD:
-        stack.top().push(var[instruction.index][instruction.offset]);
-        break;
-      case Opcode::LOAD_ALL:
-        for (int i = instruction.offset - 1; i >= 0; i++) {
-          stack.top().push(var[instruction.index][i]);
+      case Opcode::LOAD_SLOW:
+      {
+        int index = stack.top().top().toNum();
+        stack.top().pop();
+        if (instruction.offset == 0) {
+          stack.top().push(var.back()[instruction.index][index]);
+        } else {
+          stack.top().push(var.front()[instruction.index][index]);
         }
+      }
+        break;
+      case Opcode::STORE_SLOW:
+      {
+        int index = stack.top().top().toNum();
+        stack.top().pop();
+        if (instruction.offset == 0) {
+            if (instruction.index >= var.back().size()) {
+              throw std::out_of_range("Attempt to store an element to an list");
+            } else {
+              if (index == var.back()[instruction.index].size()) {
+                var.back()[instruction.index].push_back(stack.top().top());
+              } else {
+                var.back()[instruction.index][index] = stack.top().top();
+              }
+            }
+          } else {
+            if (instruction.index >= var.front().size()) {
+              throw std::out_of_range("Attempt to store an element to an list");
+            } else {
+              if (index == var.front()[instruction.index].empty()) {
+                var.front()[instruction.index].push_back(stack.top().top());
+              } else {
+                var.front()[instruction.index][index] = stack.top().top();
+              }
+            }
+          }
+          
+          stack.top().pop();
+        }
+        break;
+      case Opcode::LOAD:
+      if (instruction.offset == 0) {
+        stack.top().push(var.back()[instruction.index][0]);
+      } else {
+        stack.top().push(var.front()[instruction.index][0]);
+      }
         break;
       case Opcode::STORE:
-        if (instruction.index >= var.size()) {
-          std::vector<WrappedVar> a = {WrappedVar(stack.top().top())};
-          var.push_back(a);
-        } else {
-          if (instruction.offset < var[instruction.index].size()) {
-            var[instruction.index][instruction.offset] = stack.top().top();
+        if (instruction.offset == 0) {
+          if (instruction.index >= var.back().size()) {
+            std::vector<WrappedVar> a = {WrappedVar(stack.top().top())};
+            var.back().push_back(a);
           } else {
-            var[instruction.index].push_back(stack.top().top());
+            if (var.back()[instruction.index].empty()) {
+              var.back()[instruction.index].push_back(stack.top().top());
+            } else {
+              var.back()[instruction.index][0] = stack.top().top();
+            }
+          }
+        } else {
+          if (instruction.index >= var.front().size()) {
+            std::vector<WrappedVar> a = {WrappedVar(stack.top().top())};
+            var.front().push_back(a);
+          } else {
+            if (var.front()[instruction.index].empty()) {
+              var.front()[instruction.index].push_back(stack.top().top());
+            } else {
+              var.front()[instruction.index][0] = stack.top().top();
+            }
           }
         }
+        
         stack.top().pop();
         break;
       case Opcode::STORE_ALL:
-        if (instruction.index < var.size()) {
-          int i = 0;
-          while (!stack.top().empty()) {
-            if (i <= var[instruction.index].size()) {
-              var[instruction.index][i] = stack.top().top();
+        {
+          auto& selectedVar = instruction.state == 0 ? var.back() : var.front();
+        if (instruction.index < selectedVar.size()) {
+          for (int i=0; i < instruction.offset;i++) {
+            if (i < selectedVar[instruction.index].size()) {
+              selectedVar[instruction.index][i] = stack.top().top();
             } else {
-              var[instruction.index].push_back(stack.top().top());
+              selectedVar[instruction.index].push_back(stack.top().top());
             }
             stack.top().pop();
             i++;
@@ -133,9 +185,10 @@ VM::VM(const std::filesystem::path& filePath) {
             temp.push_back(stack.top().top());
             stack.top().pop();
           }
-          var.push_back(temp);
+          selectedVar.push_back(temp);
         }
         stack.top().pop();
+        }
         break;
       case Opcode::LOAD_BOOLCONST:
         stack.top().push(WrappedVar(instruction.boolValue));
@@ -272,9 +325,8 @@ VM::VM(const std::filesystem::path& filePath) {
       case Opcode::RETURN:
         instructionPointer = functionPointers.top();
         functionPointers.pop();
-        if (scopeCounts.top() != var.size()) {
-          var.erase(var.begin() + scopeCounts.top(), var.end());
-        }
+        
+        var.pop_back();
         scopeCounts.pop();
         
         if (stack.size() <= 2) {
@@ -294,7 +346,7 @@ VM::VM(const std::filesystem::path& filePath) {
       case Opcode::CALL:
         functionPointers.push(instructionPointer);
         instructionPointer = instruction.index;
-        scopeCounts.push(var.size());
+        scopeCounts.push(var.back().size());
         {
           std::vector<std::vector<WrappedVar>> temp;
           while (!stack.top().empty()) {
@@ -303,7 +355,8 @@ VM::VM(const std::filesystem::path& filePath) {
             temp.push_back(tmp);
             stack.top().pop();
           }
-          var.insert(var.end(), temp.rbegin(), temp.rend());
+          std::reverse(temp.begin(), temp.end());
+          var.emplace_back(temp);
           stack.emplace();
         }
         continue;

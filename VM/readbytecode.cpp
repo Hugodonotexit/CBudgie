@@ -15,7 +15,7 @@ Instruction readbytecode::read_line(const std::string& line) {
     return Instruction(opcode, parseStringOperand(stream));
   }
 
-  std::array<int, 2> operands = parseIntOperands(stream);
+  std::array<int, 3> operands = parseIntOperands(stream);
   if (opcode == Opcode::LOAD_BOOLCONST || opcode == Opcode::RETURN) {
     return Instruction(opcode, (operands[0] > 0));
   }
@@ -23,6 +23,10 @@ Instruction readbytecode::read_line(const std::string& line) {
     return Instruction(opcode, operands[0]);
   }
   if (opcode <= Opcode::STORE_ALL) {
+    return Instruction(opcode, operands[0], operands[1], operands[2]);
+  }
+
+  if (opcode <= Opcode::STORE_SLOW) {
     return Instruction(opcode, operands[0], operands[1]);
   }
 
@@ -62,8 +66,8 @@ long double readbytecode::parseNumOperand(std::istringstream& stream) {
   return operand;
 }
 
-std::array<int, 2> readbytecode::parseIntOperands(std::istringstream& stream) {
-  std::array<int, 2> operands;
+std::array<int, 3> readbytecode::parseIntOperands(std::istringstream& stream) {
+  std::array<int, 3> operands;
   int operand;
   int index = 0;
   while (stream >> operand) {

@@ -15,7 +15,7 @@ private:
     Opcode parseOpcode(const std::string& str);
     std::string parseStringOperand(std::istringstream& stream);
     long double parseNumOperand(std::istringstream& stream);
-    std::array<int, 2> parseIntOperands(std::istringstream& stream);
+    std::array<int, 3> parseIntOperands(std::istringstream& stream);
 public:
     std::vector<Instruction> read_file(const std::filesystem::path & filename);
 };

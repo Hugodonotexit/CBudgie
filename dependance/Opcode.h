@@ -2,10 +2,11 @@
 #include <string>
 #include <unordered_map>
 enum class Opcode {
-  LOAD,
-
-  STORE,
+  STORE_ALL,
   
+  LOAD,
+  
+  STORE,
 
   LOAD_NUMCONST,
 
@@ -18,10 +19,10 @@ enum class Opcode {
   IF_JUMP,
   JUMP,
   CALL,
-  LOAD_ALL,
-  STORE_ALL,
 
-
+  LOAD_SLOW,
+  STORE_SLOW,
+  
   ADD,
   SUB,
   MUL,
@@ -58,7 +59,6 @@ enum class Opcode {
 static const std::unordered_map<std::string, Opcode> stringToOpcode = {
     {"CALL", Opcode::CALL},
     {"LOAD", Opcode::LOAD},
-    {"LOAD_ALL", Opcode::LOAD_ALL},
     {"STORE", Opcode::STORE},
     {"STORE_ALL", Opcode::STORE_ALL},
     {"LOAD_NUMCONST", Opcode::LOAD_NUMCONST},

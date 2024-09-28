@@ -35,6 +35,8 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
     std::stack<std::pair<int,int>> loopPointer;
     std::vector<Token>::iterator linker;
 
+    int commaCount=0;
+
     variableMapByString.emplace_back();
     variableMapByInt.emplace_back();
   while (true) {
@@ -63,12 +65,12 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                 if (linker != tokens.begin()) {
                   if ((linker-1)->tokenType == TokenType::EQUAL)
                   {
-                    bytecode.push_back("LOAD " + std::to_string(variable->second) + " " + "0");
-                    
+                    bytecode.insert(bytecode.end()-2,"TO_NUM");
+                    break;
                   }
                 }
                 bytecode.push_back("TO_NUM");
-                bytecode.push_back("STORE " + std::to_string(variable->second) + " " + "0");
+                bytecode.push_back((bytecode.rbegin()-1)->replace(0,4,"STORE"));;
                 
             } else if (linker->tokenType == TokenType::READ) {
                 bytecode.push_back("TO_NUM");
@@ -81,12 +83,12 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                 if (linker != tokens.begin()) {
                   if ((linker-1)->tokenType == TokenType::EQUAL)
                   {
-                    bytecode.push_back("LOAD " + std::to_string(variable->second) + " " + "0");
-                    
+                    bytecode.insert(bytecode.end()-2,"TO_STRING");
+                    break;
                   }
                 }
                 bytecode.push_back("TO_STRING");
-                bytecode.push_back("STORE " + std::to_string(variable->second) + " " + "0");
+                bytecode.push_back((bytecode.rbegin()-1)->replace(0,4,"STORE"));;
                 
             } else if (linker->tokenType == TokenType::READ) {
                 bytecode.push_back("TO_STRING");
@@ -99,12 +101,12 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                 if (linker != tokens.begin()) {
                   if ((linker-1)->tokenType == TokenType::EQUAL)
                   {
-                    bytecode.push_back("LOAD " + std::to_string(variable->second) + " " + "0");
-                    
+                    bytecode.insert(bytecode.end()-2,"TO_BOOL");
+                    break;
                   }
                 }
                 bytecode.push_back("TO_BOOL");
-                bytecode.push_back( "STORE " + std::to_string(variable->second) + " " + "0");
+                bytecode.push_back((bytecode.rbegin()-1)->replace(0,4,"STORE"));;
                 
             } else if (linker->tokenType == TokenType::READ) {
                 bytecode.push_back("TO_BOOL");
@@ -276,16 +278,36 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                 } 
           } break; 
           case TokenType::VARIABLE: {
+            int lookup = 0;
             auto variable = variableMapByString.back().find(it->code);
-            if (variable == variableMapByString.back().end()) {
-              variable = variableMapByString.front().find(it->code);
-              if (variable == variableMapByString.front().end()) {
-                variableMapByString.back().emplace(it->code, variableMapByString.back().size());
-                variableMapByInt.back().emplace(variableMapByInt.back().size(), it->code);
-                variable = variableMapByString.back().find(it->code);
+            if (it != tokens.begin() && (it-1)->tokenType == TokenType::L_SQBACKET)
+            {
+              if (variable == variableMapByString.back().end()) {
+                variable = variableMapByString.front().find(it->code);
+                if (variable == variableMapByString.front().end()) {
+                  variableMapByString.back().emplace(it->code, variableMapByString.back().size());
+                  variableMapByInt.back().emplace(variableMapByInt.back().size(), it->code);
+                  variable = variableMapByString.back().find(it->code);
+                  bytecode.push_back("LOAD_SLOW " + std::to_string(variable->second) + " " + std::to_string(lookup));
+                }
+                lookup = 1;
               }
+              bytecode.push_back("LOAD_SLOW " + std::to_string(variable->second) + " " + std::to_string(lookup));
+            } else {
+              if (variable == variableMapByString.back().end()) {
+                variable = variableMapByString.front().find(it->code);
+                if (variable == variableMapByString.front().end()) {
+                  variableMapByString.back().emplace(it->code, variableMapByString.back().size());
+                  variableMapByInt.back().emplace(variableMapByInt.back().size(), it->code);
+                  variable = variableMapByString.back().find(it->code);
+                  variableMapByString.back().find(it->code);
+                  bytecode.push_back("LOAD " + std::to_string(variable->second) + " " + std::to_string(lookup));
+                }
+                lookup = 1;
+              }
+              bytecode.push_back("LOAD " + std::to_string(variable->second) + " " + std::to_string(lookup));
             }
-            bytecode.push_back("LOAD " + std::to_string(variable->second) + " " + "0");
+              
           } break;
           case TokenType::TRUE:
             bytecode.push_back("LOAD_BOOLCONST 1");
@@ -299,27 +321,58 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
           case TokenType::WORD_CONST:
             bytecode.push_back("LOAD_WORDCONST " + it->code);
             break;
+          case TokenType::COMMA:
+            commaCount++;
+            break;
+          case TokenType::L_SQBACKET:
+            commaCount=0;
+            break;
           case TokenType::EQUAL: {
             it++;
-            if (it->tokenType != TokenType::VARIABLE)
-              throw std::invalid_argument("invalid_argument " + it->code);
-            auto variable = variableMapByString.back().find(it->code);
-            if ((it-2)->tokenType == TokenType::R_SQBACKET)
-            {
-              bytecode.push_back("STORE_ALL " + std::to_string(variableMapByInt.back().size()-1) + " " + "0");
-            } else {
+            int lookup = 0;
+            if (it->tokenType == TokenType::VARIABLE) {
+              auto variable = variableMapByString.back().find(it->code);
+              if ((it-2)->tokenType == TokenType::R_SQBACKET)
+              {
+                bytecode.push_back("STORE_ALL " + std::to_string(variableMapByInt.back().size()-1) + " " + std::to_string(commaCount + 1) + " " + std::to_string(lookup));
+              } else {
+                if (variable == variableMapByString.back().end()) {
+                variable = variableMapByString.front().find(it->code);
+                if (variable == variableMapByString.front().end()) {
+                  variableMapByString.back().emplace(it->code, variableMapByString.back().size());
+                  variableMapByInt.back().emplace(variableMapByInt.back().size(), it->code);
+                  variable = variableMapByString.back().find(it->code);
+                  bytecode.push_back("STORE " + std::to_string(variable->second) + " " + std::to_string(lookup));
+                  break;
+                }    
+                lookup=1;
+              }
+              bytecode.push_back("STORE " + std::to_string(variable->second) + " " + std::to_string(lookup));
+              }
+            } else if (it->tokenType == TokenType::L_SQBACKET) {
+              int i = 0;
+              while ((it+i)->tokenType != TokenType::VARIABLE)
+              {
+                i++;
+                if (it+i == tokens.end()) throw std::invalid_argument("Missing variable");
+              }
+              auto variable = variableMapByString.back().find((it+i)->code);
               if (variable == variableMapByString.back().end()) {
-              variable = variableMapByString.front().find(it->code);
-              if (variable == variableMapByString.front().end()) {
-                variableMapByString.back().emplace(it->code, variableMapByString.back().size());
-                variableMapByInt.back().emplace(variableMapByInt.back().size(), it->code);
-                bytecode.push_back("STORE " + std::to_string(variableMapByInt.back().size()-1) + " " + "0");
-              }    
-              break;
-            }
-            bytecode.push_back("STORE " + std::to_string(variable->second) + " " + "0");
-            }
-          } break;
+                variable = variableMapByString.front().find((it+i)->code);
+                if (variable == variableMapByString.front().end()) {
+                  variableMapByString.back().emplace((it+i)->code, variableMapByString.back().size());
+                  variableMapByInt.back().emplace(variableMapByInt.back().size(), (it+i)->code);
+                  variable = variableMapByString.back().find(it->code);
+                  bytecode.push_back("STORE_SLOW " + std::to_string(variable->second) + " " + std::to_string(lookup));
+                  break;
+                }    
+                lookup=1;
+              }
+              bytecode.push_back("STORE_SLOW " + std::to_string(variable->second) + " " + std::to_string(lookup));              
+              
+            } else throw std::invalid_argument("Invalid argument: " + it->code);
+          } 
+            break;
           case TokenType::PLUS:
             bytecode.push_back("ADD");
             break;
@@ -369,7 +422,7 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
             bytecode.push_back("NOT_EQUAL");
             break;
           case TokenType::READ:
-            bytecode.push_back("PRINT");
+            bytecode.push_back("READ");
             break;
           case TokenType::PRINT:
             bytecode.push_back("PRINT");
