@@ -39,6 +39,7 @@ void Lexer::run() {
       char next = line[i+1];
       // Determine if the current charater could be the start of a keyword
       if (isIdentifierStart(current, next)) {
+        char charAfterIdentifier = line[i];
         // Collect token type and string of identifier
         Token temp = readIdentifierOrKeyword(line, i);
         // Check if token is a non return keyword or built in function
@@ -48,7 +49,7 @@ void Lexer::run() {
         else if (temp.tokenType == TokenType::RETURN) {
           return_swap_op = tokenized_line.size();
         }
-        else if (temp.tokenType == TokenType::VARIABLE && next == '[') {
+        else if (temp.tokenType == TokenType::VARIABLE && charAfterIdentifier == '[') {
           //Addtoken string object to converted line
           list_swap_op.push_back(tokenized_line.size());
         }
