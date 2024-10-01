@@ -90,6 +90,7 @@
         "__mutex_base": "cpp",
         "__string": "cpp",
         "__functional_03": "cpp",
-        "target": "cpp"
+        "target": "cpp",
+        "__config": "cpp"
     }
 }

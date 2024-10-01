@@ -27,7 +27,7 @@ private:
     std::condition_variable& cv_;
     bool& done_;
 
-    void preprocessLine(std::vector<Token>& tokenized_line, std::vector<int>& math_op, int equal_op, int swap_op, int return_swap_op);
+    std::vector<Token> preprocessLine(std::string line);
     Token readIdentifierOrKeyword(const std::string& line, int& i);
     Token readNumber(const std::string& line, int& i);
     bool isIdentifierStart(char c, char next);

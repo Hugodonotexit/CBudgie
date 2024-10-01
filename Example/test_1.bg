@@ -1,6 +1,8 @@
 main()
 
-def main() 
+def main()
+    name =  ["Tom", "Tim"] 
+    name[0] = "Hugo"
     diameter = read("Enter the diameter: ").toNum()
     radius = getRadius(diameter)
     area = getArea(radius)
@@ -14,6 +16,10 @@ def main()
        print("it is big") 
     } else if (radius < 5) {
         print("it has a good personality ") 
+    }
+
+    for (i=0:2:1) {
+        print(f"Your name is {name[i]}")
     }
 
 return 
