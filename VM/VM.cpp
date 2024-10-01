@@ -67,30 +67,7 @@ VM::VM(const std::filesystem::path& filePath) {
         }
         break;
       case Opcode::TO_NUM:
-        if (std::holds_alternative<std::string>(stack.top().top().value)) {
-          try {
-            size_t pos;
-            std::string str = std::get<std::string>(stack.top().top().value);
-            long double temp = std::stold(str, &pos);
-
-            // Check if the entire string was converted
-            if (pos != str.length()) {
-              throw std::invalid_argument("Extra characters after number");
-            }
-            stack.top().pop();
-            stack.top().push(WrappedVar(temp));
-          } catch (const std::invalid_argument&) {
-            std::cerr << "Invalid argument: not a valid long double"
-                      << std::endl;
-          } catch (const std::out_of_range&) {
-            std::cerr << "Out of range: number too large" << std::endl;
-          }
-        } else if (std::holds_alternative<long double>(
-                       stack.top().top().value)) {
-          long double temp = std::get<bool>(stack.top().top().value);
-          stack.top().pop();
-          stack.top().push(WrappedVar(temp));
-        }
+          stack.top().top().toNum();
         break;
       case Opcode::LOAD_SLOW:
       {

@@ -308,7 +308,7 @@ std::vector<Token> Lexer::preprocessLine(std::string line) {
             
             tokenized_line.erase(tokenized_line.begin() + (op + j), tokenized_line.begin() + op + 1);
             
-            //if (swap_op != -1 && swap_op > op) swap_op -= (2+j);
+            if (swap_op != -1 && swap_op > op) swap_op -= (1-j);
             for (auto c:tokenized_line)
             {
                 std::cout << "!!!" << c.code << " ";
@@ -365,7 +365,7 @@ std::vector<Token> Lexer::preprocessLine(std::string line) {
     std::vector<int> list_swap_op;
     for (int i = 1; i < tokenized_line.size(); i++)
     {
-        if (tokenized_line[i].tokenType == TokenType::L_SQBACKET && tokenized_line[i-1].tokenType == TokenType::VARIABLE) list_swap_op.push_back(i-1);
+      if (tokenized_line[i].tokenType == TokenType::L_SQBACKET && tokenized_line[i-1].tokenType == TokenType::VARIABLE) list_swap_op.push_back(i-1);
     }
     
     for (auto it:list_swap_op)
