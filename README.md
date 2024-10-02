@@ -73,7 +73,15 @@ After these steps, the `cbudgie` executable will be installed to the system-wide
 
 This setup allows you to compile and install the `cbudgie` interpreter, enabling you to use it without needing to specify the relative path.
 
+## Grammar
+
+[Refer to Documents](./docs/)
+
 ## Contributing
+
+Great thanks to the follow Contributer:
+
+@Barry-B-Benson6 
 
 Contributions are welcome! If you have a useful snippet or improvement, feel free to fork the repository and submit a pull request.
 

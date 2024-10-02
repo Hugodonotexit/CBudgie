@@ -1,0 +1,19 @@
+main()
+
+def main() 
+    diameter = read("Enter the diameter: ").toNum()
+    radius = diameter/2 
+    area = radius ** 2 * 3.14159265
+    circ = diameter * 3.14159265
+    print("Radius: " + radius + " cm")
+    print("Area: " + area + " cm^2")
+    print("Circumference: " + circ + " cm")
+    if (radius == 5) {
+        print("it is average") 
+    } else if (radius > 5) {
+       print("it is big") 
+    } else if (radius < 5) {
+        print("it has a good personality ") 
+    }
+
+return

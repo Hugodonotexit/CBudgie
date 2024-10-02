@@ -1,0 +1,10 @@
+main()
+
+def main() 
+    age=16
+    name = ["Tommy", "H.", "Smithy"]
+    fullName=f"{name[0]} {name[1]} {name[2]}"
+    print("Hello!")
+    print(f"Hello! My name is {fullName}. I am {age}")
+    
+return

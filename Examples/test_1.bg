@@ -1,0 +1,62 @@
+naturalNum = 2.71
+
+main()
+
+def main()
+
+    while (naturalNum == 2.71) {
+        print(naturalNum)
+        naturalNum.numeric("floor", 1)
+        print(naturalNum)
+    }
+
+    name =  ["Tom", "Tim"] 
+    name[1] = "Hugo"
+    fullName = name[0] + name[1]
+    diameter = read("Enter the diameter: ").toNum()
+    radius = getRadius(diameter)
+    area = getArea(radius)
+    circ = getCirc(diameter)
+    print("Radius: " + radius + " cm")
+    print("Area: " + area + " cm^2")
+    print("Circumference: " + circ + " cm")
+
+    if (radius == 5) {
+        print("it is average") 
+    } else if (radius > 5) {
+       print("it is big") 
+    } else if (radius < 5) {
+        print("it has a good personality ") 
+    }
+
+    print(f"Your Full name is {fullName}")
+
+    for (i=0:2:1) {
+        print(f"Your name is {name[i]}")
+    }
+
+    PI = 3.141592
+    PI.numeric("ceil", -1)
+    print(f"Pi is equal to {PI}")
+
+    PI = 3.141592
+    PI.numeric("floor", 3)
+    print(f"Pi is equal to {PI}")
+
+    PI = 3.141592
+    PI.numeric("round", 4)
+    print(f"Pi is equal to {PI}")
+
+return 
+
+def getRadius(diameter)
+    radius = diameter / 2
+return radius
+
+def getArea(radius)
+    area =  3.14159265 * radius ** 2
+return area
+
+def getCirc(diameter)
+    circ = diameter * 3.14159265
+return circ

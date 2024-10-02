@@ -1,8 +1,0 @@
-def main() {
-    let a = 10
-    let b = 20
-    let c = 5
-    for (let i = a:b:c) {
-        cout(i)
-    }
-}

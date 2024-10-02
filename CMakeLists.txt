@@ -9,16 +9,16 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Set compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -Ofast -fopenmp")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -Ofast -fopenmp -fsanitize=address")
 
 # Include directories
 include_directories(depen lexer parser)
 
 # Source files
 file(GLOB SRCS
-    "${CMAKE_SOURCE_DIR}/interpreter/*.cpp"
-    "${CMAKE_SOURCE_DIR}/interpreter/lexer/*.cpp"
-    "${CMAKE_SOURCE_DIR}/interpreter/parser/*.cpp"
+    "${CMAKE_SOURCE_DIR}/Interpreter/*.cpp"
+    "${CMAKE_SOURCE_DIR}/Main/*.cpp"
+    "${CMAKE_SOURCE_DIR}/VM/*.cpp"
 )
 
 # Check if SRCS variable is empty
@@ -42,7 +42,7 @@ set_target_properties(cbudgie PROPERTIES
 target_compile_options(cbudgie PRIVATE -march=native -Ofast -fopenmp)
 
 # Include directories (similar to CXXFLAGS -I)
-target_include_directories(cbudgie PRIVATE ${CMAKE_SOURCE_DIR}/interpreter/depen ${CMAKE_SOURCE_DIR}/interpreter/lexer ${CMAKE_SOURCE_DIR}/interpreter/parser)
+target_include_directories(cbudgie PRIVATE ${CMAKE_SOURCE_DIR}/VM ${CMAKE_SOURCE_DIR}/dependance ${CMAKE_SOURCE_DIR}/Interpreter)
 
 # Installation rules
 install(TARGETS cbudgie

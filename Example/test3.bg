@@ -1,7 +1,0 @@
-def main() {
-    let a = 10
-    while (a<=50) {
-        cout(a)
-        a = a + 1
-    }
-}
