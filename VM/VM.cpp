@@ -139,33 +139,37 @@ VM::VM(const std::filesystem::path& filePath) {
         }
         break;
       case Opcode::LOAD:
-      if (instruction.offset == 0) {
-        stack.top().push(var.back()[instruction.index][0]);
+      if (instruction.state == 0) {
+        if (instruction.offset >= var.back()[instruction.index].size()) throw std::out_of_range("Attempted to load an undefined element");
+        stack.top().push(var.back()[instruction.index][instruction.offset]);
       } else {
-        stack.top().push(var.front()[instruction.index][0]);
+        if (instruction.offset >= var.front()[instruction.index].size()) throw std::out_of_range("Attempted to load an undefined element");
+        stack.top().push(var.front()[instruction.index][instruction.offset]);
       }
         break;
       case Opcode::STORE:
-        if (instruction.offset == 0) {
+        if (instruction.state == 0) {
           if (instruction.index >= var.back().size()) {
+            if (instruction.offset != 0) throw std::out_of_range("Attempted to load an undefined element");
             std::vector<WrappedVar> a = {WrappedVar(stack.top().top())};
             var.back().push_back(a);
           } else {
-            if (var.back()[instruction.index].empty()) {
+            if (instruction.offset >= var.back()[instruction.index].size()) {
               var.back()[instruction.index].push_back(stack.top().top());
             } else {
-              var.back()[instruction.index][0] = stack.top().top();
+              var.back()[instruction.index][instruction.offset] = stack.top().top();
             }
           }
         } else {
           if (instruction.index >= var.front().size()) {
+            if (instruction.offset != 0) throw std::out_of_range("Attempted to load an undefined element");
             std::vector<WrappedVar> a = {WrappedVar(stack.top().top())};
             var.front().push_back(a);
           } else {
-            if (var.front()[instruction.index].empty()) {
+            if (instruction.offset >= var.front()[instruction.index].size()) {
               var.front()[instruction.index].push_back(stack.top().top());
             } else {
-              var.front()[instruction.index][0] = stack.top().top();
+              var.front()[instruction.index][instruction.offset] = stack.top().top();
             }
           }
         }

@@ -3,11 +3,12 @@
 #include <unordered_map>
 enum class Opcode {
   
-  LOAD,
-  STORE,
+  
   LOAD_SLOW,
   STORE_SLOW,
 
+  LOAD,
+  STORE,
   STORE_ALL,
 
   LOAD_NUMCONST,

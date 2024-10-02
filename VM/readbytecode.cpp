@@ -23,7 +23,7 @@ Instruction readbytecode::read_line(const std::string& line) {
     return Instruction(opcode, operands[0], operands[1]);
   }
 
-  if (opcode == Opcode::STORE_ALL) {
+  if (opcode <= Opcode::STORE_ALL) {
     return Instruction(opcode, operands[0], operands[1], operands[2]);
   }
 
