@@ -45,7 +45,7 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
         case TokenType::NUM:
           if (linker->tokenType == TokenType::VARIABLE) {
             std::string opcode = "STORE ";
-            int offset = -1;
+            int offset = 0;
             if (linker != tokens.begin()) {
               if ((linker - 1)->tokenType == TokenType::EQUAL) {
                 bytecode.insert(bytecode.end() - 2, "NUM");
@@ -65,8 +65,7 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
               throw std::runtime_error("Invaild usage of numeric()!!");
 
             bytecode.push_back("NUM");
-            bytecode.push_back(opcode + std::to_string(variable->second) +
-                              (offset==-1 ? " " : (" " + std::to_string(offset) + " ")) + std::to_string(lookup));
+            bytecode.push_back(opcode + std::to_string(variable->second) + " " + std::to_string(offset) + " " + std::to_string(lookup));
           } else if (linker->tokenType == TokenType::READ) {
             bytecode.push_back("NUM");
           } else
@@ -78,7 +77,7 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
         case TokenType::TO_NUM:
           if (linker->tokenType == TokenType::VARIABLE) {
             std::string opcode = "STORE ";
-            int offset = -1;
+            int offset = 0;
             if (linker != tokens.begin()) {
               if ((linker - 1)->tokenType == TokenType::EQUAL) {
                 bytecode.insert(bytecode.end() - 2, "TO_NUM");
@@ -98,8 +97,7 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
               throw std::runtime_error("Invaild usage of toNum()!!");
 
             bytecode.push_back("TO_NUM");
-            bytecode.push_back(opcode + std::to_string(variable->second) +
-                              (offset==-1 ? " " : (" " + std::to_string(offset) + " ")) + std::to_string(lookup));
+            bytecode.push_back(opcode + std::to_string(variable->second) + " " + std::to_string(offset) + " " + std::to_string(lookup));
           } else if (linker->tokenType == TokenType::READ) {
             bytecode.push_back("TO_NUM");
           } else
@@ -108,7 +106,7 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
         case TokenType::TO_STRING:
           if (linker->tokenType == TokenType::VARIABLE) {
             std::string opcode = "STORE ";
-            int offset = -1;
+            int offset = 0;
             if (linker != tokens.begin()) {
               if ((linker - 1)->tokenType == TokenType::EQUAL) {
                 bytecode.insert(bytecode.end() - 2, "TO_STRING");
@@ -128,8 +126,7 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
               throw std::runtime_error("Invaild usage of toString()!!");
 
             bytecode.push_back("TO_STRING");
-            bytecode.push_back(opcode + std::to_string(variable->second) +
-                              (offset==-1 ? " " : (" " + std::to_string(offset) + " ")) + std::to_string(lookup));
+            bytecode.push_back(opcode + std::to_string(variable->second) + " " + std::to_string(offset) + " " + std::to_string(lookup));
           } else if (linker->tokenType == TokenType::READ) {
             bytecode.push_back("TO_STRING");
           } else
@@ -138,7 +135,7 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
         case TokenType::TO_BOOL:
           if (linker->tokenType == TokenType::VARIABLE) {
             std::string opcode = "STORE ";
-            int offset = -1;
+            int offset = 0;
             if (linker != tokens.begin()) {
               if ((linker - 1)->tokenType == TokenType::EQUAL) {
                 bytecode.insert(bytecode.end() - 2, "TO_BOOL");
@@ -158,8 +155,7 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
               throw std::runtime_error("Invaild usage of toBool()!!");
 
             bytecode.push_back("TO_BOOL");
-            bytecode.push_back(opcode + std::to_string(variable->second) +
-                              (offset==-1 ? " " : (" " + std::to_string(offset) + " ")) + std::to_string(lookup));
+            bytecode.push_back(opcode + std::to_string(variable->second) + " " + std::to_string(offset) + " " + std::to_string(lookup));
           } else if (linker->tokenType == TokenType::READ) {
             bytecode.push_back("TO_BOOL");
           } else

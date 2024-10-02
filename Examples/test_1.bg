@@ -1,6 +1,15 @@
+naturalNum = 2.71
+
 main()
 
 def main()
+
+    while (naturalNum == 2.71) {
+        print(naturalNum)
+        naturalNum.numeric("floor", 1)
+        print(naturalNum)
+    }
+
     name =  ["Tom", "Tim"] 
     name[1] = "Hugo"
     fullName = name[0] + name[1]
@@ -11,6 +20,7 @@ def main()
     print("Radius: " + radius + " cm")
     print("Area: " + area + " cm^2")
     print("Circumference: " + circ + " cm")
+
     if (radius == 5) {
         print("it is average") 
     } else if (radius > 5) {
