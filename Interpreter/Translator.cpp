@@ -4,15 +4,11 @@ Translator::Translator(std::filesystem::path newFilePath,std::filesystem::path d
     : filePath(newFilePath) {
   std::vector<std::vector<Token>> tokenized_code;
   std::vector<std::string> bytecode;
-  Lexer lexer(filePath, tokenized_code, lexerMutex_, lexerCv_, lexingDone);
+  Lexer lexer(filePath, tokenized_code);
 
-  std::thread lexerThread(&Lexer::run, &lexer);
-  std::thread translatorThread(&Translator::translate, this, std::ref(tokenized_code), std::ref(bytecode));
-
-  lexerThread.join();
-  translatorThread.join();
-  //lexer.run();
-  //translate(tokenized_code,bytecode);
+  lexer.run();
+  
+  translate(tokenized_code,bytecode);
   
   writeToFile(bytecode, destination);
 }
@@ -39,18 +35,8 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
 
     variableMapByString.emplace_back();
     variableMapByInt.emplace_back();
-  while (true) {
-    std::unique_lock<std::mutex> lock(lexerMutex_);
-    // Wait until either there is another line to translate or the lexer indicated no more lines are coming
-    lexerCv_.wait(lock, [&tokenized_code, this]() { return !tokenized_code.empty() || lexingDone; });
-    // If there is a line ready for translation then translate it
-    if (!tokenized_code.empty()) {
-      // Take the next line and remove it from the tokenized code
-      std::vector<Token> tokens = tokenized_code.front();
-      if (!tokenized_code.empty()) {
-        tokenized_code.erase(tokenized_code.begin());
-      }
-
+  for (auto tokens:tokenized_code) {
+      
       // Go through each token in the line and translate it to bytecode
       int start = bytecode.size();
       for (auto it = tokens.begin(); it < tokens.end(); ++it) {
@@ -274,13 +260,13 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                 bytecode.push_back("CALL ");
                 undefinedFunctionMap.emplace(it->code, bytecode.size()-1);
             } else {
-                bytecode.push_back("CALL " + std::to_string(function->second) + " " + "0");
+                bytecode.push_back("CALL " + std::to_string(function->second));
                 } 
           } break; 
           case TokenType::VARIABLE: {
             int lookup = 0;
             auto variable = variableMapByString.back().find(it->code);
-            if (it != tokens.begin() && (it-1)->tokenType == TokenType::L_SQBACKET)
+            if (it != tokens.begin() && (it-1)->tokenType == TokenType::R_SQBACKET)
             {
               if (variable == variableMapByString.back().end()) {
                 variable = variableMapByString.front().find(it->code);
@@ -289,6 +275,7 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                   variableMapByInt.back().emplace(variableMapByInt.back().size(), it->code);
                   variable = variableMapByString.back().find(it->code);
                   bytecode.push_back("LOAD_SLOW " + std::to_string(variable->second) + " " + std::to_string(lookup));
+                  break;
                 }
                 lookup = 1;
               }
@@ -302,6 +289,7 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
                   variable = variableMapByString.back().find(it->code);
                   variableMapByString.back().find(it->code);
                   bytecode.push_back("LOAD " + std::to_string(variable->second) + " " + std::to_string(lookup));
+                  break;
                 }
                 lookup = 1;
               }
@@ -333,43 +321,50 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
             if (it->tokenType == TokenType::VARIABLE) {
               auto variable = variableMapByString.back().find(it->code);
               if ((it-2)->tokenType == TokenType::R_SQBACKET)
-              {
-                bytecode.push_back("STORE_ALL " + std::to_string(variableMapByInt.back().size()-1) + " " + std::to_string(commaCount + 1) + " " + std::to_string(lookup));
+              { 
+                if (commaCount == 0) {
+                  auto variable = variableMapByString.back().find(it->code);
+                  if (variable == variableMapByString.back().end()) {
+                    variable = variableMapByString.front().find(it->code);
+                    if (variable == variableMapByString.front().end()) {
+                      variableMapByString.back().emplace(it->code, variableMapByString.back().size());
+                      variableMapByInt.back().emplace(variableMapByInt.back().size(), it->code);
+                      variable = variableMapByString.back().find(it->code);
+                      bytecode.push_back("STORE_SLOW " + std::to_string(variable->second) + " " + std::to_string(lookup));
+                    
+                    break;
+                  }    
+                lookup=1;
+              }
+              bytecode.push_back("STORE_SLOW " + std::to_string(variable->second) + " " + std::to_string(lookup));
+                } else {
+                if (variable == variableMapByString.back().end()) {
+                  variable = variableMapByString.front().find(it->code);
+                  if (variable == variableMapByString.front().end()) {
+                    variableMapByString.back().emplace(it->code, variableMapByString.back().size());
+                    variableMapByInt.back().emplace(variableMapByInt.back().size(), it->code);
+                    variable = variableMapByString.back().find(it->code);
+                    bytecode.push_back("STORE_ALL " + std::to_string(variable->second) + " " + std::to_string(commaCount + 1) + " " + std::to_string(lookup));
+                    break;
+                  }    
+                  lookup=1;
+                }
+                bytecode.push_back("STORE_ALL " + std::to_string(variable->second) + " " + std::to_string(commaCount + 1) + " " + std::to_string(lookup));
+                }
               } else {
                 if (variable == variableMapByString.back().end()) {
-                variable = variableMapByString.front().find(it->code);
-                if (variable == variableMapByString.front().end()) {
-                  variableMapByString.back().emplace(it->code, variableMapByString.back().size());
-                  variableMapByInt.back().emplace(variableMapByInt.back().size(), it->code);
-                  variable = variableMapByString.back().find(it->code);
-                  bytecode.push_back("STORE " + std::to_string(variable->second) + " " + std::to_string(lookup));
-                  break;
-                }    
-                lookup=1;
-              }
+                  variable = variableMapByString.front().find(it->code);
+                  if (variable == variableMapByString.front().end()) {
+                    variableMapByString.back().emplace(it->code, variableMapByString.back().size());
+                    variableMapByInt.back().emplace(variableMapByInt.back().size(), it->code);
+                    variable = variableMapByString.back().find(it->code);
+                    bytecode.push_back("STORE " + std::to_string(variable->second) + " " + std::to_string(lookup));
+                    break;
+                  }    
+                  lookup=1;
+                }
               bytecode.push_back("STORE " + std::to_string(variable->second) + " " + std::to_string(lookup));
               }
-            } else if (it->tokenType == TokenType::L_SQBACKET) {
-              int i = 0;
-              while ((it+i)->tokenType != TokenType::VARIABLE)
-              {
-                i++;
-                if (it+i == tokens.end()) throw std::invalid_argument("Missing variable");
-              }
-              auto variable = variableMapByString.back().find((it+i)->code);
-              if (variable == variableMapByString.back().end()) {
-                variable = variableMapByString.front().find((it+i)->code);
-                if (variable == variableMapByString.front().end()) {
-                  variableMapByString.back().emplace((it+i)->code, variableMapByString.back().size());
-                  variableMapByInt.back().emplace(variableMapByInt.back().size(), (it+i)->code);
-                  variable = variableMapByString.back().find(it->code);
-                  bytecode.push_back("STORE_SLOW " + std::to_string(variable->second) + " " + std::to_string(lookup));
-                  break;
-                }    
-                lookup=1;
-              }
-              bytecode.push_back("STORE_SLOW " + std::to_string(variable->second) + " " + std::to_string(lookup));              
-              
             } else throw std::invalid_argument("Invalid argument: " + it->code);
           } 
             break;
@@ -432,9 +427,6 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code, std:
         }
         translationCount=bytecode.size()-1;
       }
-    } else if (lexingDone) {
-      break;
-    }
   }
 
   //main function is the entry point and required for a program to run

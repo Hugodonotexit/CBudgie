@@ -17,10 +17,7 @@ class Translator
 {
 private:
     std::filesystem::path filePath;
-    std::mutex lexerMutex_;
-    std::condition_variable lexerCv_;
-    bool lexingDone = false;
-
+    
     void translate(std::vector<std::vector<Token>>& tokenized_code, std::vector<std::string>& bytecode);
 
     void writeToFile(std::vector<std::string>& bytecode, const std::filesystem::path& outputPath);

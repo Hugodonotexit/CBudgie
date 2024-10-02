@@ -3,7 +3,7 @@ main()
 def main()
     name =  ["Tom", "Tim"] 
     name[1] = "Hugo"
-    fullName = name[0] + name [1]
+    fullName = name[0] + name[1]
     diameter = read("Enter the diameter: ").toNum()
     radius = getRadius(diameter)
     area = getArea(radius)
