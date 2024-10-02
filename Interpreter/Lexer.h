@@ -18,7 +18,7 @@ private:
         {"while", TokenType::WHILE}, {"true", TokenType::TRUE},
         {"false", TokenType::FALSE}, {"break", TokenType::BREAK}, {"continue", TokenType::CONTINUE},
         {"toSting", TokenType::TO_STRING}, {"toBool", TokenType::TO_BOOL}, {"toNum", TokenType::TO_NUM},
-        {"return", TokenType::RETURN}
+        {"numeric", TokenType::NUM}, {"return", TokenType::RETURN}
     };
     std::filesystem::path filePath;
     std::vector<std::vector<Token>>& tokenized_code;

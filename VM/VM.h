@@ -8,7 +8,7 @@
 #include <cmath>
 #include <array>
 #include "WrappedVar.h"
-
+#include "../dependance/math.h"
 class VM
 {
 private:

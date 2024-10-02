@@ -42,6 +42,8 @@ enum class Opcode {
   LESS_THAN_EQUAL,
   GREATER_THAN_EQUAL,
 
+  NUM,
+
   AND,
   OR,
   XOR,
@@ -75,6 +77,7 @@ static const std::unordered_map<std::string, Opcode> stringToOpcode = {
     {"POW", Opcode::POW},
     {"MOD", Opcode::MOD},
     {"POP", Opcode::POP},
+    {"NUM", Opcode::NUM},
     {"POP_ALL", Opcode::POP_ALL},
     {"TO_STRING", Opcode::TO_STRING},
     {"TO_BOOL", Opcode::TO_BOOL},

@@ -42,6 +42,8 @@ enum class TokenType {
     XOR,
     EQUIVALENT,
     NOT_EQUIVALENT,
+    
+    NUM,
 
     COMMA,
     COLON,

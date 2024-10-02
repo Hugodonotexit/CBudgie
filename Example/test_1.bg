@@ -25,6 +25,18 @@ def main()
         print(f"Your name is {name[i]}")
     }
 
+    PI = 3.141592
+    PI.numeric("ceil", -1)
+    print(f"Pi is equal to {PI}")
+
+    PI = 3.141592
+    PI.numeric("floor", 3)
+    print(f"Pi is equal to {PI}")
+
+    PI = 3.141592
+    PI.numeric("round", 4)
+    print(f"Pi is equal to {PI}")
+
 return 
 
 def getRadius(diameter)

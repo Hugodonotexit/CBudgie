@@ -11,6 +11,35 @@ VM::VM(const std::filesystem::path& filePath) {
   while (instructionPointer < instructions.size() && run) {
     Instruction& instruction = instructions[instructionPointer];
     switch (instruction.opcode) {
+      case Opcode::NUM:
+      {
+        WrappedVar instruction = stack.top().top();
+        stack.top().pop();
+        if (instruction == WrappedVar("max"))
+        {
+          stack.top().push(WrappedVar(std::numeric_limits<long double>::max()));
+        } else if (instruction == WrappedVar("min")) {
+          stack.top().push(WrappedVar(std::numeric_limits<long double>::min()));
+        } else if (instruction == WrappedVar("abs")) {
+          WrappedVar value = stack.top().top();
+          stack.top().pop();
+          stack.top().push(WrappedVar(budgieMath::abs(value.toNum())));
+        } else if (std::holds_alternative<long double>(instruction.value)) {
+          WrappedVar instruction2 = stack.top().top();
+          stack.top().pop();
+          WrappedVar value = stack.top().top();
+          stack.top().pop();
+          if (instruction2 == WrappedVar("round")) {
+            value = WrappedVar(budgieMath::round(value.toNum(), instruction.toNum()));
+          } else if (instruction2 == WrappedVar("floor")) {
+            value = WrappedVar(budgieMath::floor(value.toNum(), instruction.toNum()));
+          } else if (instruction2 == WrappedVar("ceil")) {
+            value = WrappedVar(budgieMath::ceil(value.toNum(), instruction.toNum()));
+          } 
+          stack.top().push(value);
+        } else throw std::invalid_argument("Illegal use of numeric()!");
+      } 
+        break;
       case Opcode::POP_ALL:
         if (stack.empty()) break;
         while (!stack.top().empty())
