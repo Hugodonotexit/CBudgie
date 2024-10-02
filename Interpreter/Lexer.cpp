@@ -3,13 +3,9 @@
 #include <iostream>
 
 Lexer::Lexer(const std::filesystem::path& filePath,
-             std::vector<std::vector<Token>>& tokenized_code, std::mutex& mtx,
-             std::condition_variable& cv, bool& done)
+             std::vector<std::vector<Token>>& tokenized_code)
     : filePath(filePath),
-      tokenized_code(tokenized_code),
-      mutex_(mtx),
-      cv_(cv),
-      done_(done) {}
+      tokenized_code(tokenized_code){}
 
 void Lexer::run() {
   std::ifstream file(filePath);
@@ -19,18 +15,30 @@ void Lexer::run() {
     throw std::runtime_error("Unable to open file: " + filePath.filename().string());
   }
 
-  int lexerCount = 0;
-  std::string line;
-
+  std::string strline;
+  std::vector<std::string> lines;
   // Loop through each line of the file and convert to tokens
-  while (std::getline(file, line)) {
+  while (std::getline(file, strline)) {
+    lines.push_back(strline);
+  }
 
+  file.close();
+
+  tokenized_code.resize(lines.size());
+
+  #pragma omp parallel for
+  for (int i = 0; i < lines.size(); ++i) {
+      tokenized_code[i] = Lexer::preprocessLine(lines[i]);
+  }
+
+}
+
+std::vector<Token> Lexer::preprocessLine(std::string line) {
     std::vector<Token> tokenized_line;
     std::vector<int> math_op;
     std::vector<int> equal_op;
     int swap_op = -1;
     int return_swap_op = -1;
-    std::vector<int> list_swap_op;
     bool skip = false;
 
     // Sweep through each char in the line
@@ -48,10 +56,6 @@ void Lexer::run() {
         else if (temp.tokenType == TokenType::RETURN) {
           return_swap_op = tokenized_line.size();
         }
-        else if (temp.tokenType == TokenType::VARIABLE && next == '[') {
-          //Addtoken string object to converted line
-          list_swap_op.push_back(tokenized_line.size());
-        }
         //Add token,string object to converted line
         tokenized_line.push_back(temp);
       } 
@@ -61,6 +65,7 @@ void Lexer::run() {
         tokenized_line.push_back(readNumber(line, i));
       } 
 
+      if (i >= line.size()) break;
       // reset current
       current = line[i];
       next = line[i+1];
@@ -94,6 +99,7 @@ void Lexer::run() {
                   // String escape not closed (note strings cannot be multi line)
                   throw std::invalid_argument("Missing } at: " + line);
               }
+              std::vector<Token> fstringVar = preprocessLine(str.substr(start+1,j-start-1));
               if (lastEnd != -1) {
                 tokenized_line.emplace_back(TokenType::PLUS, "+");
                 math_op.push_back(tokenized_line.size() - 1);
@@ -105,7 +111,7 @@ void Lexer::run() {
               tokenized_line.emplace_back(TokenType::PLUS, "+");
               math_op.push_back(tokenized_line.size() - 1);
               
-              tokenized_line.emplace_back(TokenType::VARIABLE, str.substr(start+1, j - start - 1));
+              tokenized_line.insert(tokenized_line.end(), fstringVar.begin(), fstringVar.end());
               lastEnd = j+1;
               if (j == str.size()-1 && lastEnd < j) {
                 tokenized_line.emplace_back(TokenType::PLUS, "+");
@@ -239,21 +245,6 @@ void Lexer::run() {
       }
     }
 
-    for (auto it:list_swap_op)
-    {
-      int count = 1;
-      int i = 1;
-      while (count != 0 && it + i < tokenized_line.size()) {
-        i++;
-        if (tokenized_line[it + i].tokenType == TokenType::L_SQBACKET) count++;
-        if (tokenized_line[it + i].tokenType == TokenType::R_SQBACKET) count--;
-      }
-      //move bracketed stuff to the front of the queue
-      tokenized_line.insert(tokenized_line.begin() + it + i + 1, tokenized_line[it]);
-      tokenized_line.erase(tokenized_line.begin() + it, tokenized_line.begin() + it + 1);
-    }
-    
-
     // loop through all math operations
     for (auto it : math_op) {
       if (tokenized_line[it + 1].tokenType == TokenType::L_RBACKET) {
@@ -269,32 +260,70 @@ void Lexer::run() {
         tokenized_line.insert(tokenized_line.begin() + it + i + 1, tokenized_line[it]);
         tokenized_line.erase(tokenized_line.begin() + it, tokenized_line.begin() + it + 1);
         
+      } else if (tokenized_line[it + 2].tokenType == TokenType::L_SQBACKET) {
+        // otherwise collect rest of the bracket including sub brackets
+        int count = 1;
+        int i = 2;
+        while (count != 0 && it + i < tokenized_line.size()) {
+          i++;
+          if (tokenized_line[it + i].tokenType == TokenType::L_SQBACKET) count++;
+          if (tokenized_line[it + i].tokenType == TokenType::R_SQBACKET) count--;
+        }
+        //move bracketed stuff to the front of the queue
+        tokenized_line.insert(tokenized_line.begin() + it + i + 1, tokenized_line[it]);
+        tokenized_line.erase(tokenized_line.begin() + it, tokenized_line.begin() + it + 1);
+        
       } else {
         // if math operation is not next to a bracket arrange the tokens so the order goes from num,op,num to num,num,op
         std::swap(tokenized_line[it], tokenized_line[it + 1]);
       }
     }
-
+    
     //loop through all comparasion operations
     for (auto op : equal_op) {
-        bool done = false;
-
+        std::vector<Token>::iterator colonIndex = tokenized_line.end();
         for (auto i = tokenized_line.begin() + op + 1; i < tokenized_line.end();i++) {
           if (i->tokenType == TokenType::COLON) {
-            auto it = tokenized_line.begin() + op;
-            tokenized_line.insert(i, *it);
-            tokenized_line.insert(i+1, *(it - 1));
-            done = true;
+            colonIndex = i;
             break;
           }
         }
-
-        if (!done) {
+        if (tokenized_line[op-1].tokenType != TokenType::VARIABLE)
+        {
+            int count = 1;
+            int j = -1;
+            while (count != 0 && tokenized_line.begin() + (op + j)!= tokenized_line.begin()) {
+                j--;
+                if ((tokenized_line.begin() + (op + j))->tokenType == TokenType::L_SQBACKET) count--;
+                if ((tokenized_line.begin() + (op + j))->tokenType == TokenType::R_SQBACKET) count++;
+            }
+            j--;
+            if ((tokenized_line.begin() + (op + j))->tokenType != TokenType::VARIABLE) throw std::invalid_argument("Missing variable");
+            if (colonIndex !=  tokenized_line.end()) {
+                tokenized_line.insert(colonIndex, *(tokenized_line.begin() + op));
+                tokenized_line.insert(colonIndex+1, tokenized_line.begin() + (op + j), tokenized_line.begin() + op);
+            } else {
+                tokenized_line.push_back(*(tokenized_line.begin() + op));
+                std::vector<Token> temp;
+                temp.insert(temp.end(), tokenized_line.begin() + (op + j), tokenized_line.begin() + op);
+                tokenized_line.insert(tokenized_line.end(), temp.begin(), temp.end());
+            }
+            
+            tokenized_line.erase(tokenized_line.begin() + (op + j), tokenized_line.begin() + op + 1);
+            
+            if (swap_op != -1 && swap_op > op) swap_op -= (1-j);
+            continue;
+        }
+            
+        if (colonIndex !=  tokenized_line.end()) {
+          auto it = tokenized_line.begin() + op;
+          tokenized_line.insert(colonIndex, *it);
+          tokenized_line.insert(colonIndex+1, *(it - 1));
+        } else {
           tokenized_line.push_back(tokenized_line[op]);
           tokenized_line.push_back(tokenized_line[op - 1]);
         }
-        tokenized_line.erase(tokenized_line.begin() + op);
-        tokenized_line.erase(tokenized_line.begin() + (op - 1));
+        tokenized_line.erase(tokenized_line.begin() + (op - 1), tokenized_line.begin() + op + 1);
 
         if (swap_op != -1 && swap_op > op) swap_op -= 2;
     }
@@ -331,30 +360,37 @@ void Lexer::run() {
       tokenized_line.erase(tokenized_line.begin() + return_swap_op);
     }
 
-    for (auto c:tokenized_line)
+    std::vector<int> list_swap_op;
+    for (int i = 1; i < tokenized_line.size(); i++)
     {
-      std::cout << c.code << std::endl;
+      if (tokenized_line[i].tokenType == TokenType::L_SQBACKET && tokenized_line[i-1].tokenType == TokenType::VARIABLE) list_swap_op.push_back(i-1);
+    }
+
+    for (auto it:list_swap_op)
+    {
+      int count = 1;
+      int i = 1;
+      while (count != 0 && it + i < tokenized_line.size()) {
+        i++;
+        if (tokenized_line[it + i].tokenType == TokenType::L_SQBACKET) count++;
+        else if (tokenized_line[it + i].tokenType == TokenType::R_SQBACKET) count--;
+      }
+      //move bracketed stuff to the front of the queue
+      if (it - 1 >= 0 && tokenized_line[it - 1].tokenType == TokenType::EQUAL)
+      {
+        tokenized_line.insert(tokenized_line.begin() + it + i + 1, tokenized_line.begin() + it - 1, tokenized_line.begin() + it + 1);
+        tokenized_line.erase(tokenized_line.begin() + it - 1, tokenized_line.begin() + it + 1);
+      } else {
+        tokenized_line.insert(tokenized_line.begin() + it + i + 1, tokenized_line[it]);
+        tokenized_line.erase(tokenized_line.begin() + it);
+      }
+      
+      
     }
 
     tokenized_line = reorderExpression(tokenized_line);
-    
-    //add tokenized line to rest of tokenized code
-    {
-      std::lock_guard<std::mutex> lock(mutex_);
-      tokenized_code.push_back(tokenized_line);
-    }
-  }
 
-  lexerCount++;
-  if (lexerCount >= 10) {
-    cv_.notify_one();
-  }
-  {
-    std::lock_guard<std::mutex> lock(mutex_);
-    done_ = true;
-  }
-  cv_.notify_all();
-  file.close();
+    return tokenized_line;
 }
 
 Token Lexer::readIdentifierOrKeyword(const std::string& line, int& i) {

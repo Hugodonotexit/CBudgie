@@ -1,6 +1,9 @@
 main()
 
-def main() 
+def main()
+    name =  ["Tom", "Tim"] 
+    name[1] = "Hugo"
+    fullName = name[0] + name[1]
     diameter = read("Enter the diameter: ").toNum()
     radius = getRadius(diameter)
     area = getArea(radius)
@@ -16,10 +19,16 @@ def main()
         print("it has a good personality ") 
     }
 
+    print(f"Your Full name is {fullName}")
+
+    for (i=0:2:1) {
+        print(f"Your name is {name[i]}")
+    }
+
 return 
 
 def getRadius(diameter)
-    radius = diameter/2
+    radius = diameter / 2
 return radius
 
 def getArea(radius)

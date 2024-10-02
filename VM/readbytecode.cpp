@@ -1,10 +1,8 @@
 #include "readbytecode.h"
-
 Instruction readbytecode::read_line(const std::string& line) {
   std::istringstream stream(line);
   std::string opcodeStr;
   stream >> opcodeStr;
-
   Opcode opcode = parseOpcode(opcodeStr);
   if (opcode >= Opcode::ADD) return Instruction(opcode);
 
@@ -16,18 +14,21 @@ Instruction readbytecode::read_line(const std::string& line) {
   }
 
   std::array<int, 3> operands = parseIntOperands(stream);
+
   if (opcode == Opcode::LOAD_BOOLCONST || opcode == Opcode::RETURN) {
     return Instruction(opcode, (operands[0] > 0));
-  }
-  if (opcode >= Opcode::IF_JUMP) {
-    return Instruction(opcode, operands[0]);
-  }
-  if (opcode <= Opcode::STORE_ALL) {
-    return Instruction(opcode, operands[0], operands[1], operands[2]);
   }
 
   if (opcode <= Opcode::STORE_SLOW) {
     return Instruction(opcode, operands[0], operands[1]);
+  }
+
+  if (opcode == Opcode::STORE_ALL) {
+    return Instruction(opcode, operands[0], operands[1], operands[2]);
+  }
+
+  if (opcode >= Opcode::IF_JUMP && opcode <= Opcode::CALL) {
+    return Instruction(opcode, operands[0]);
   }
 
   throw std::runtime_error("Invalid line: " + line);

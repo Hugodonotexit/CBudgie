@@ -67,30 +67,7 @@ VM::VM(const std::filesystem::path& filePath) {
         }
         break;
       case Opcode::TO_NUM:
-        if (std::holds_alternative<std::string>(stack.top().top().value)) {
-          try {
-            size_t pos;
-            std::string str = std::get<std::string>(stack.top().top().value);
-            long double temp = std::stold(str, &pos);
-
-            // Check if the entire string was converted
-            if (pos != str.length()) {
-              throw std::invalid_argument("Extra characters after number");
-            }
-            stack.top().pop();
-            stack.top().push(WrappedVar(temp));
-          } catch (const std::invalid_argument&) {
-            std::cerr << "Invalid argument: not a valid long double"
-                      << std::endl;
-          } catch (const std::out_of_range&) {
-            std::cerr << "Out of range: number too large" << std::endl;
-          }
-        } else if (std::holds_alternative<long double>(
-                       stack.top().top().value)) {
-          long double temp = std::get<bool>(stack.top().top().value);
-          stack.top().pop();
-          stack.top().push(WrappedVar(temp));
-        }
+          stack.top().top() = WrappedVar(stack.top().top().toNum());
         break;
       case Opcode::LOAD_SLOW:
       {
@@ -111,7 +88,7 @@ VM::VM(const std::filesystem::path& filePath) {
             if (instruction.index >= var.back().size()) {
               throw std::out_of_range("Attempt to store an element to an list");
             } else {
-              if (index == var.back()[instruction.index].size()) {
+              if (index >= var.back()[instruction.index].size()) {
                 var.back()[instruction.index].push_back(stack.top().top());
               } else {
                 var.back()[instruction.index][index] = stack.top().top();
@@ -121,7 +98,7 @@ VM::VM(const std::filesystem::path& filePath) {
             if (instruction.index >= var.front().size()) {
               throw std::out_of_range("Attempt to store an element to an list");
             } else {
-              if (index == var.front()[instruction.index].empty()) {
+              if (index >= var.front()[instruction.index].empty()) {
                 var.front()[instruction.index].push_back(stack.top().top());
               } else {
                 var.front()[instruction.index][index] = stack.top().top();
@@ -167,8 +144,8 @@ VM::VM(const std::filesystem::path& filePath) {
         stack.top().pop();
         break;
       case Opcode::STORE_ALL:
-        {
-          auto& selectedVar = instruction.state == 0 ? var.back() : var.front();
+      {
+        auto& selectedVar = instruction.state == 0 ? var.back() : var.front();
         if (instruction.index < selectedVar.size()) {
           for (int i=0; i < instruction.offset;i++) {
             if (i < selectedVar[instruction.index].size()) {
@@ -177,7 +154,6 @@ VM::VM(const std::filesystem::path& filePath) {
               selectedVar[instruction.index].push_back(stack.top().top());
             }
             stack.top().pop();
-            i++;
           }
         } else {
           std::vector<WrappedVar> temp;
@@ -187,8 +163,7 @@ VM::VM(const std::filesystem::path& filePath) {
           }
           selectedVar.push_back(temp);
         }
-        stack.top().pop();
-        }
+      }
         break;
       case Opcode::LOAD_BOOLCONST:
         stack.top().push(WrappedVar(instruction.boolValue));
