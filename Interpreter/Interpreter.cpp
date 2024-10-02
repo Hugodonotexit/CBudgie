@@ -20,4 +20,10 @@ Interpreter::Interpreter(std::filesystem::path file){
     
     VM vm(destination);
 
+    try {
+        std::filesystem::remove_all(directory);
+    } catch (const std::filesystem::filesystem_error& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
 }

@@ -45,7 +45,10 @@ public:
             } else if constexpr (std::is_same_v<T, std::string> && std::is_same_v<U, bool>) {
                 return lhs + (rhs ? "True" : "False");
             } else if constexpr (std::is_same_v<T, std::string> && std::is_same_v<U, long double>) {
-                return lhs + std::to_string(rhs);
+                std::ostringstream oss;
+                oss << std::defaultfloat << rhs;
+                std::string strValue = oss.str();
+                return lhs + strValue;
             } else if constexpr (std::is_same_v<T, std::string> && std::is_same_v<U, std::string>) {
                 return lhs + rhs;
             } else {
@@ -270,7 +273,12 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const WrappedVar& wrappedVar) {
         std::visit([&os](auto&& val) {
-            os << val;
+            using T = std::decay_t<decltype(val)>;
+            if constexpr (std::is_same_v<T, long double>) {
+                os << std::defaultfloat << val;
+            } else {
+                os << val;
+            }
         }, wrappedVar.value);
         return os;
     }

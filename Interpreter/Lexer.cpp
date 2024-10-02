@@ -447,6 +447,7 @@ bool Lexer::isKewordOrInBuiltFunction(TokenType type){
   return    type == TokenType::PRINT ||
             type == TokenType::READ ||
             type == TokenType::FUNCTION ||
+            type == TokenType::NUM ||
             type == TokenType::IF ||
             type == TokenType::WHILE ||
             type == TokenType::FOR;

@@ -11,6 +11,35 @@ VM::VM(const std::filesystem::path& filePath) {
   while (instructionPointer < instructions.size() && run) {
     Instruction& instruction = instructions[instructionPointer];
     switch (instruction.opcode) {
+      case Opcode::NUM:
+      {
+        WrappedVar instruction = stack.top().top();
+        stack.top().pop();
+        if (instruction == WrappedVar("max"))
+        {
+          stack.top().push(WrappedVar(std::numeric_limits<long double>::max()));
+        } else if (instruction == WrappedVar("min")) {
+          stack.top().push(WrappedVar(std::numeric_limits<long double>::min()));
+        } else if (instruction == WrappedVar("abs")) {
+          WrappedVar value = stack.top().top();
+          stack.top().pop();
+          stack.top().push(WrappedVar(budgieMath::abs(value.toNum())));
+        } else if (std::holds_alternative<long double>(instruction.value)) {
+          WrappedVar instruction2 = stack.top().top();
+          stack.top().pop();
+          WrappedVar value = stack.top().top();
+          stack.top().pop();
+          if (instruction2 == WrappedVar("round")) {
+            value = WrappedVar(budgieMath::round(value.toNum(), instruction.toNum()));
+          } else if (instruction2 == WrappedVar("floor")) {
+            value = WrappedVar(budgieMath::floor(value.toNum(), instruction.toNum()));
+          } else if (instruction2 == WrappedVar("ceil")) {
+            value = WrappedVar(budgieMath::ceil(value.toNum(), instruction.toNum()));
+          } 
+          stack.top().push(value);
+        } else throw std::invalid_argument("Illegal use of numeric()!");
+      } 
+        break;
       case Opcode::POP_ALL:
         if (stack.empty()) break;
         while (!stack.top().empty())
@@ -110,33 +139,37 @@ VM::VM(const std::filesystem::path& filePath) {
         }
         break;
       case Opcode::LOAD:
-      if (instruction.offset == 0) {
-        stack.top().push(var.back()[instruction.index][0]);
+      if (instruction.state == 0) {
+        if (instruction.offset >= var.back()[instruction.index].size()) throw std::out_of_range("Attempted to load an undefined element");
+        stack.top().push(var.back()[instruction.index][instruction.offset]);
       } else {
-        stack.top().push(var.front()[instruction.index][0]);
+        if (instruction.offset >= var.front()[instruction.index].size()) throw std::out_of_range("Attempted to load an undefined element");
+        stack.top().push(var.front()[instruction.index][instruction.offset]);
       }
         break;
       case Opcode::STORE:
-        if (instruction.offset == 0) {
+        if (instruction.state == 0) {
           if (instruction.index >= var.back().size()) {
+            if (instruction.offset != 0) throw std::out_of_range("Attempted to load an undefined element");
             std::vector<WrappedVar> a = {WrappedVar(stack.top().top())};
             var.back().push_back(a);
           } else {
-            if (var.back()[instruction.index].empty()) {
+            if (instruction.offset >= var.back()[instruction.index].size()) {
               var.back()[instruction.index].push_back(stack.top().top());
             } else {
-              var.back()[instruction.index][0] = stack.top().top();
+              var.back()[instruction.index][instruction.offset] = stack.top().top();
             }
           }
         } else {
           if (instruction.index >= var.front().size()) {
+            if (instruction.offset != 0) throw std::out_of_range("Attempted to load an undefined element");
             std::vector<WrappedVar> a = {WrappedVar(stack.top().top())};
             var.front().push_back(a);
           } else {
-            if (var.front()[instruction.index].empty()) {
+            if (instruction.offset >= var.front()[instruction.index].size()) {
               var.front()[instruction.index].push_back(stack.top().top());
             } else {
-              var.front()[instruction.index][0] = stack.top().top();
+              var.front()[instruction.index][instruction.offset] = stack.top().top();
             }
           }
         }

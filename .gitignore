@@ -34,3 +34,4 @@
 #vscode
 .vscode/
 build/
+.__bgCache__/
