@@ -1,5 +1,5 @@
 #pragma once
-#include "Translator.h"
+#include "Parser.h"
 #include "../VM/VM.h"
 #include <filesystem>
 class Interpreter

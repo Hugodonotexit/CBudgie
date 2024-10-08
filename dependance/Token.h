@@ -1,5 +1,5 @@
 #pragma once
-
+#include <string>
 enum class TokenType {
     DEF,
 
@@ -49,12 +49,12 @@ enum class TokenType {
     COLON,
     LINKER,
 
-    L_RBACKET,
-    R_RBACKET,
-    L_SQBACKET,
-    R_SQBACKET,
-    L_SBACKET,
-    R_SBACKET,
+    L_RBRACKET,
+    R_RBRACKET,
+    L_SQBRACKET,
+    R_SQBRACKET,
+    L_SBRACKET,
+    R_SBRACKET,
 
     TO_STRING,
     TO_BOOL,

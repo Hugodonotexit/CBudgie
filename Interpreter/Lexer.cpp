@@ -219,22 +219,22 @@ std::vector<Token> Lexer::preprocessLine(std::string line) {
           tokenized_line.emplace_back(TokenType::COMMA, ",");
           continue;
         case '[':
-          tokenized_line.emplace_back(TokenType::L_SQBACKET, "[");
+          tokenized_line.emplace_back(TokenType::L_SQBRACKET, "[");
           continue;
         case ']':
-          tokenized_line.emplace_back(TokenType::R_SQBACKET, "]");
+          tokenized_line.emplace_back(TokenType::R_SQBRACKET, "]");
           continue;
         case '(':
-          tokenized_line.emplace_back(TokenType::L_RBACKET, "(");
+          tokenized_line.emplace_back(TokenType::L_RBRACKET, "(");
           continue;
         case ')':
-          tokenized_line.emplace_back(TokenType::R_RBACKET, ")");
+          tokenized_line.emplace_back(TokenType::R_RBRACKET, ")");
           continue;
         case '{':
-          tokenized_line.emplace_back(TokenType::L_SBACKET, "{");
+          tokenized_line.emplace_back(TokenType::L_SBRACKET, "{");
           continue;
         case '}':
-          tokenized_line.emplace_back(TokenType::R_SBACKET, "}");
+          tokenized_line.emplace_back(TokenType::R_SBRACKET, "}");
           continue;
         case ' ':
           continue;
@@ -247,27 +247,27 @@ std::vector<Token> Lexer::preprocessLine(std::string line) {
 
     // loop through all math operations
     for (auto it : math_op) {
-      if (tokenized_line[it + 1].tokenType == TokenType::L_RBACKET) {
+      if (tokenized_line[it + 1].tokenType == TokenType::L_RBRACKET) {
         // otherwise collect rest of the bracket including sub brackets
         int count = 1;
         int i = 1;
         while (count != 0 && it + i < tokenized_line.size()) {
           i++;
-          if (tokenized_line[it + i].tokenType == TokenType::L_RBACKET) count++;
-          if (tokenized_line[it + i].tokenType == TokenType::R_RBACKET) count--;
+          if (tokenized_line[it + i].tokenType == TokenType::L_RBRACKET) count++;
+          if (tokenized_line[it + i].tokenType == TokenType::R_RBRACKET) count--;
         }
         //move bracketed stuff to the front of the queue
         tokenized_line.insert(tokenized_line.begin() + it + i + 1, tokenized_line[it]);
         tokenized_line.erase(tokenized_line.begin() + it, tokenized_line.begin() + it + 1);
         
-      } else if (tokenized_line[it + 2].tokenType == TokenType::L_SQBACKET) {
+      } else if (tokenized_line[it + 2].tokenType == TokenType::L_SQBRACKET) {
         // otherwise collect rest of the bracket including sub brackets
         int count = 1;
         int i = 2;
         while (count != 0 && it + i < tokenized_line.size()) {
           i++;
-          if (tokenized_line[it + i].tokenType == TokenType::L_SQBACKET) count++;
-          if (tokenized_line[it + i].tokenType == TokenType::R_SQBACKET) count--;
+          if (tokenized_line[it + i].tokenType == TokenType::L_SQBRACKET) count++;
+          if (tokenized_line[it + i].tokenType == TokenType::R_SQBRACKET) count--;
         }
         //move bracketed stuff to the front of the queue
         tokenized_line.insert(tokenized_line.begin() + it + i + 1, tokenized_line[it]);
@@ -294,8 +294,8 @@ std::vector<Token> Lexer::preprocessLine(std::string line) {
             int j = -1;
             while (count != 0 && tokenized_line.begin() + (op + j)!= tokenized_line.begin()) {
                 j--;
-                if ((tokenized_line.begin() + (op + j))->tokenType == TokenType::L_SQBACKET) count--;
-                if ((tokenized_line.begin() + (op + j))->tokenType == TokenType::R_SQBACKET) count++;
+                if ((tokenized_line.begin() + (op + j))->tokenType == TokenType::L_SQBRACKET) count--;
+                if ((tokenized_line.begin() + (op + j))->tokenType == TokenType::R_SQBRACKET) count++;
             }
             j--;
             if ((tokenized_line.begin() + (op + j))->tokenType != TokenType::VARIABLE) throw std::invalid_argument("Missing variable");
@@ -335,9 +335,9 @@ std::vector<Token> Lexer::preprocessLine(std::string line) {
       int end = -1;
       // Identify end of bracket
       while (swap_op + index < tokenized_line.size()) {
-        if (tokenized_line[swap_op + index].tokenType == TokenType::R_RBACKET)
+        if (tokenized_line[swap_op + index].tokenType == TokenType::R_RBRACKET)
           r_rbacket++;
-        if (tokenized_line[swap_op + index].tokenType == TokenType::L_RBACKET)
+        if (tokenized_line[swap_op + index].tokenType == TokenType::L_RBRACKET)
           l_rbacket++;
         if (l_rbacket == r_rbacket && l_rbacket > 0) {
           end = swap_op + index + 1;
@@ -363,7 +363,7 @@ std::vector<Token> Lexer::preprocessLine(std::string line) {
     std::vector<int> list_swap_op;
     for (int i = 1; i < tokenized_line.size(); i++)
     {
-      if (tokenized_line[i].tokenType == TokenType::L_SQBACKET && tokenized_line[i-1].tokenType == TokenType::VARIABLE) list_swap_op.push_back(i-1);
+      if (tokenized_line[i].tokenType == TokenType::L_SQBRACKET && tokenized_line[i-1].tokenType == TokenType::VARIABLE) list_swap_op.push_back(i-1);
     }
 
     for (auto it:list_swap_op)
@@ -372,8 +372,8 @@ std::vector<Token> Lexer::preprocessLine(std::string line) {
       int i = 1;
       while (count != 0 && it + i < tokenized_line.size()) {
         i++;
-        if (tokenized_line[it + i].tokenType == TokenType::L_SQBACKET) count++;
-        else if (tokenized_line[it + i].tokenType == TokenType::R_SQBACKET) count--;
+        if (tokenized_line[it + i].tokenType == TokenType::L_SQBRACKET) count++;
+        else if (tokenized_line[it + i].tokenType == TokenType::R_SQBRACKET) count--;
       }
       //move bracketed stuff to the front of the queue
       if (it - 1 >= 0 && tokenized_line[it - 1].tokenType == TokenType::EQUAL)
@@ -544,16 +544,16 @@ std::vector<Token> Lexer::reorderExpression(const std::vector<Token>& vec) {
               (getPrecedence(operatorStack.top().tokenType) ==
                    getPrecedence(token.tokenType) &&
                isLeftAssociative(token.tokenType))) &&
-             operatorStack.top().tokenType != TokenType::L_RBACKET) {
+             operatorStack.top().tokenType != TokenType::L_RBRACKET) {
         outputQueue.push_back(operatorStack.top());
         operatorStack.pop();
       }
       operatorStack.push(token);
-    } else if (token.tokenType == TokenType::L_RBACKET) {
+    } else if (token.tokenType == TokenType::L_RBRACKET) {
       operatorStack.push(token);
-    } else if (token.tokenType == TokenType::R_RBACKET) {
+    } else if (token.tokenType == TokenType::R_RBRACKET) {
       while (!operatorStack.empty() &&
-             operatorStack.top().tokenType != TokenType::L_RBACKET) {
+             operatorStack.top().tokenType != TokenType::L_RBRACKET) {
         outputQueue.push_back(operatorStack.top());
         operatorStack.pop();
       }
@@ -578,8 +578,8 @@ std::vector<Token> Lexer::reorderExpression(const std::vector<Token>& vec) {
   finalOutput.erase(
       std::remove_if(finalOutput.begin(), finalOutput.end(),
                      [](const Token& token) {
-                       return token.tokenType == TokenType::L_RBACKET ||
-                              token.tokenType == TokenType::R_RBACKET;
+                       return token.tokenType == TokenType::L_RBRACKET ||
+                              token.tokenType == TokenType::R_RBRACKET;
                      }),
       finalOutput.end());
 

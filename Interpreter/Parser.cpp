@@ -1,6 +1,6 @@
-#include "Translator.h"
+#include "Parser.h"
 
-Translator::Translator(std::filesystem::path newFilePath,
+Parser::Parser(std::filesystem::path newFilePath,
                        std::filesystem::path destination)
     : filePath(newFilePath) {
   std::vector<std::vector<Token>> tokenized_code;
@@ -9,18 +9,18 @@ Translator::Translator(std::filesystem::path newFilePath,
 
   lexer.run();
 
-  translate(tokenized_code, bytecode);
+  parsing(tokenized_code, bytecode);
 
   writeToFile(bytecode, destination);
 }
 
-Translator::Translator(std::filesystem::path newFilePath) {
+Parser::Parser(std::filesystem::path newFilePath) {
   std::filesystem::path destination = newFilePath;
   destination.replace_extension(".bbg");
-  Translator(newFilePath, destination);
+  Parser(newFilePath, destination);
 }
 
-void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
+void Parser::parsing(std::vector<std::vector<Token>>& tokenized_code,
                            std::vector<std::string>& bytecode) {
   std::deque<std::unordered_map<std::string, int>> variableMapByString;
   std::deque<std::unordered_map<int, std::string>> variableMapByInt;
@@ -50,8 +50,8 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
               if ((linker - 1)->tokenType == TokenType::EQUAL) {
                 bytecode.insert(bytecode.end() - 2, "NUM");
                 break;
-              } else if ((linker - 1)->tokenType == TokenType::R_SQBACKET) {
-                if (std::distance(tokens.begin(), linker) >= 3 && (linker - 3)->tokenType == TokenType::L_SQBACKET && (linker - 2)->tokenType == TokenType::NUM_CONST) {
+              } else if ((linker - 1)->tokenType == TokenType::R_SQBRACKET) {
+                if (std::distance(tokens.begin(), linker) >= 3 && (linker - 3)->tokenType == TokenType::L_SQBRACKET && (linker - 2)->tokenType == TokenType::NUM_CONST) {
                   offset = std::stoi((linker - 2)->code);
                 } else opcode = "STORE_SLOW ";
               }
@@ -82,8 +82,8 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
               if ((linker - 1)->tokenType == TokenType::EQUAL) {
                 bytecode.insert(bytecode.end() - 2, "TO_NUM");
                 break;
-              } else if ((linker - 1)->tokenType == TokenType::R_SQBACKET) {
-                if (std::distance(tokens.begin(), linker) >= 3 && (linker - 3)->tokenType == TokenType::L_SQBACKET && (linker - 2)->tokenType == TokenType::NUM_CONST) {
+              } else if ((linker - 1)->tokenType == TokenType::R_SQBRACKET) {
+                if (std::distance(tokens.begin(), linker) >= 3 && (linker - 3)->tokenType == TokenType::L_SQBRACKET && (linker - 2)->tokenType == TokenType::NUM_CONST) {
                   offset = std::stoi((linker - 2)->code);
                 } else opcode = "STORE_SLOW ";
               }
@@ -111,8 +111,8 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
               if ((linker - 1)->tokenType == TokenType::EQUAL) {
                 bytecode.insert(bytecode.end() - 2, "TO_STRING");
                 break;
-              } else if ((linker - 1)->tokenType == TokenType::R_SQBACKET) {
-                if (std::distance(tokens.begin(), linker) >= 3 && (linker - 3)->tokenType == TokenType::L_SQBACKET && (linker - 2)->tokenType == TokenType::NUM_CONST) {
+              } else if ((linker - 1)->tokenType == TokenType::R_SQBRACKET) {
+                if (std::distance(tokens.begin(), linker) >= 3 && (linker - 3)->tokenType == TokenType::L_SQBRACKET && (linker - 2)->tokenType == TokenType::NUM_CONST) {
                   offset = std::stoi((linker - 2)->code);
                 } else opcode = "STORE_SLOW ";
               }
@@ -140,8 +140,8 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
               if ((linker - 1)->tokenType == TokenType::EQUAL) {
                 bytecode.insert(bytecode.end() - 2, "TO_BOOL");
                 break;
-              } else if ((linker - 1)->tokenType == TokenType::R_SQBACKET) {
-                if (std::distance(tokens.begin(), linker) >= 3 && (linker - 3)->tokenType == TokenType::L_SQBACKET && (linker - 2)->tokenType == TokenType::NUM_CONST) {
+              } else if ((linker - 1)->tokenType == TokenType::R_SQBRACKET) {
+                if (std::distance(tokens.begin(), linker) >= 3 && (linker - 3)->tokenType == TokenType::L_SQBRACKET && (linker - 2)->tokenType == TokenType::NUM_CONST) {
                   offset = std::stoi((linker - 2)->code);
                 } else opcode = "STORE_SLOW ";
               }
@@ -267,11 +267,11 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
             bytecode[temp] += (std::to_string(function->second));
           }
         } break;
-        case TokenType::L_SBACKET:
+        case TokenType::L_SBRACKET:
           bytecode.push_back("NEWSCOPE");
           scopeCounts.push(variableMapByString.back().size());
           break;
-        case TokenType::R_SBACKET: {
+        case TokenType::R_SBRACKET: {
           bytecode.push_back("ENDSCOPE");
           if (scopeCounts.top() != variableMapByString.back().size()) {
             for (int i = scopeCounts.top(); i < variableMapByInt.back().size();
@@ -339,8 +339,8 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
           int lookup = 0;
           auto variable = variableMapByString.back().find(it->code);
           if (it != tokens.begin() &&
-              (it - 1)->tokenType == TokenType::R_SQBACKET) {
-                if (std::distance(tokens.begin(), it) >= 3 && (it - 3)->tokenType == TokenType::L_SQBACKET && (it - 2)->tokenType == TokenType::NUM_CONST)
+              (it - 1)->tokenType == TokenType::R_SQBRACKET) {
+                if (std::distance(tokens.begin(), it) >= 3 && (it - 3)->tokenType == TokenType::L_SQBRACKET && (it - 2)->tokenType == TokenType::NUM_CONST)
                 {
                   bytecode.pop_back();
                   if (variable == variableMapByString.back().end()) {
@@ -415,7 +415,7 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
         case TokenType::COMMA:
           commaCount++;
           break;
-        case TokenType::L_SQBACKET:
+        case TokenType::L_SQBRACKET:
           commaCount = 0;
           break;
         case TokenType::EQUAL: {
@@ -423,7 +423,7 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
           int lookup = 0;
           if (it->tokenType == TokenType::VARIABLE) {
             auto variable = variableMapByString.back().find(it->code);
-            if ((it - 2)->tokenType == TokenType::R_SQBACKET) {
+            if ((it - 2)->tokenType == TokenType::R_SQBRACKET) {
               if (commaCount == 0) {
                 auto variable = variableMapByString.back().find(it->code);
                 if (variable == variableMapByString.back().end()) {
@@ -556,7 +556,7 @@ void Translator::translate(std::vector<std::vector<Token>>& tokenized_code,
     throw std::invalid_argument("Missing main() function!");
 }
 
-void Translator::writeToFile(std::vector<std::string>& bytecode,
+void Parser::writeToFile(std::vector<std::string>& bytecode,
                              const std::filesystem::path& outputPath) {
   std::ofstream outFile(outputPath);
   for (auto line : bytecode) {

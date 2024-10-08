@@ -13,15 +13,15 @@
 #include "../dependance/Token.h"
 #include "../dependance/Opcode.h"
 #include <deque>
-class Translator
+class Parser
 {
 private:
     std::filesystem::path filePath;
     
-    void translate(std::vector<std::vector<Token>>& tokenized_code, std::vector<std::string>& bytecode);
+    void parsing(std::vector<std::vector<Token>>& tokenized_code, std::vector<std::string>& bytecode);
 
     void writeToFile(std::vector<std::string>& bytecode, const std::filesystem::path& outputPath);
 public:
-    Translator(std::filesystem::path file);
-    Translator(std::filesystem::path file, std::filesystem::path destination);
+    Parser(std::filesystem::path file);
+    Parser(std::filesystem::path file, std::filesystem::path destination);
 };

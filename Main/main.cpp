@@ -4,7 +4,7 @@
 
 #include "../VM/VM.h"
 #include "../Interpreter/Interpreter.h"
-#include "../Interpreter/Translator.h"
+#include "../Interpreter/Parser.h"
 
 //#include <chrono>
 int main(int argc, char* argv[]) {
@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
             return 1;
         }
         //////std::cout << "Translating " << file.filename().string() << " to bytecode.\n";
-        Translator translator(file);
+        Parser translator(file);
 
     } else if (option == "-b" || option == "--bytecode") {
         if (argc < 3) {
