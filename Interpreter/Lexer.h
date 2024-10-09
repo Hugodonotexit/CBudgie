@@ -28,11 +28,7 @@ private:
     Token readNumber(const std::string& line, int& i);
     bool isIdentifierStart(char c, char next);
     bool isIdentifierPart(char c);
-    bool isLeftAssociative(TokenType type);
-    bool isKewordOrInBuiltFunction(TokenType type);
     bool isNumberStart(char current,char next);
-    int getPrecedence(TokenType type);
-    std::vector<Token> reorderExpression(const std::vector<Token>& vec);
 public:
     Lexer(const std::filesystem::path& filePath, std::vector<std::vector<Token>>& tokenized_code);
     void run();

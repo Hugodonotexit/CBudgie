@@ -18,8 +18,7 @@ enum class TokenType {
     WORD_CONST,
 
     VARIABLE,
-    FUNCTION,
-
+    
     BREAK,
     CONTINUE,
     RETURN,
