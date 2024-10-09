@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
         }
         file = argv[2];
         if (file.extension().string() != ".bbg") {
-            std::cerr << "Error: Expecting a bytecode file (.bbg).\n";
+            std::cerr << "Error: Expecting a cbudgie bytecode file (.bbg).\n";
             return 1;
         }
         //////std::cout << "Running bytecode script " << file.filename().string() << ".\n";
