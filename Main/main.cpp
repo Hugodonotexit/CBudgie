@@ -6,6 +6,12 @@
 #include "../Interpreter/Interpreter.h"
 #include "../Interpreter/Parser.h"
 
+#define VERSION_MAJOR 0
+#define VERSION_MINOR 3
+#define VERSION_PATCH 0
+#define VERSION_PRE_RELEASE "alpha"
+
+
 //#include <chrono>
 int main(int argc, char* argv[]) {
     //auto start = std::chrono::high_resolution_clock::now();
@@ -15,8 +21,9 @@ int main(int argc, char* argv[]) {
                   << "Usage: cbudgie [options] <file_path>\n"
                   << "Options:\n"
                   << "  -h, --help                   Show this help message\n"
+                  << "  -b, --bytecode <file.bbg>    Run a bytecode script\n"
                   << "  -t, --translate <file.bg>    Output bytecode\n"
-                  << "  -b, --bytecode <file.bbg>    Run a bytecode script\n";
+                  << "  -v, --version                Output version\n";
         return 1;
     }
 
@@ -30,6 +37,15 @@ int main(int argc, char* argv[]) {
                   << "  -h, --help                   Show this help message\n"
                   << "  -t, --translate <file.bg>    Output bytecode\n"
                   << "  -b, --bytecode <file.bbg>    Run a bytecode script\n";
+    } else if (option == "-v" || option == "--version") {
+        std::cout << "cbudgie " << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_PATCH;
+
+        #if defined(VERSION_PRE_RELEASE)
+
+            std::cout << "-" << VERSION_PRE_RELEASE;
+        #endif
+
+        std::cout << std::endl;
     } else if (option == "-t" || option == "--translate") {
         if (argc < 3) {
             std::cerr << "Error: Missing file path for translation.\n";
