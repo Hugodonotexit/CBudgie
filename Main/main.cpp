@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <string>
 
-#include "../VM/VM.h"
+#include "../VirtualMachine/VirtualMachine.h"
 #include "../Interpreter/Interpreter.h"
 #include "../Interpreter/Parser.h"
 
@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
             return 1;
         }
         //////std::cout << "Translating " << file.filename().string() << " to bytecode.\n";
-        Parser translator(file);
+        Parser parser(file);
 
     } else if (option == "-b" || option == "--bytecode") {
         if (argc < 3) {
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
             return 1;
         }
         //////std::cout << "Running bytecode script " << file.filename().string() << ".\n";
-        VM vm(file);
+        VirtualMachine vm(file);
     } else if (option == "crazy" || option == "Crazy") {
         std::ios::sync_with_stdio(false);
         for (unsigned long long i = 0; i < std::numeric_limits<unsigned long long>::max(); i++)

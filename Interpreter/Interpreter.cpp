@@ -18,7 +18,7 @@ Interpreter::Interpreter(std::filesystem::path file){
     }
     Parser translator(file,destination);
     
-    VM vm(destination);
+    VirtualMachine vm(destination);
 
     try {
         std::filesystem::remove_all(directory);

@@ -18,7 +18,7 @@ include_directories(depen lexer parser)
 file(GLOB SRCS
     "${CMAKE_SOURCE_DIR}/Interpreter/*.cpp"
     "${CMAKE_SOURCE_DIR}/Main/*.cpp"
-    "${CMAKE_SOURCE_DIR}/VM/*.cpp"
+    "${CMAKE_SOURCE_DIR}/VirtualMachine/*.cpp"
 )
 
 # Check if SRCS variable is empty
@@ -42,7 +42,7 @@ set_target_properties(cbudgie PROPERTIES
 target_compile_options(cbudgie PRIVATE -march=native -Ofast -fopenmp)
 
 # Include directories (similar to CXXFLAGS -I)
-target_include_directories(cbudgie PRIVATE ${CMAKE_SOURCE_DIR}/VM ${CMAKE_SOURCE_DIR}/dependance ${CMAKE_SOURCE_DIR}/Interpreter)
+target_include_directories(cbudgie PRIVATE ${CMAKE_SOURCE_DIR}/VirtualMachine ${CMAKE_SOURCE_DIR}/dependance ${CMAKE_SOURCE_DIR}/Interpreter)
 
 # Installation rules
 install(TARGETS cbudgie

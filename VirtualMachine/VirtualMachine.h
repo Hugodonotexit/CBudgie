@@ -9,7 +9,7 @@
 #include <array>
 #include "WrappedVar.h"
 #include "../dependance/math.h"
-class VM
+class VirtualMachine
 {
 private:
     std::stack<std::stack<WrappedVar>> stack;
@@ -20,5 +20,5 @@ private:
 
     std::stack<int> functionPointers;
 public:
-    VM(const std::filesystem::path &filePath);
+    VirtualMachine(const std::filesystem::path &filePath);
 };

@@ -1,6 +1,7 @@
 #pragma once
 #include "Parser.h"
-#include "../VM/VM.h"
+#include "Translator.h"
+#include "../VirtualMachine/VirtualMachine.h"
 #include <filesystem>
 class Interpreter
 {
