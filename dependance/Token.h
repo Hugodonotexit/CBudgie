@@ -2,7 +2,8 @@
 #include <string>
 enum class TokenType {
     DEF,
-
+    CLASS,
+    
     READ,
     PRINT,
 
@@ -58,6 +59,8 @@ enum class TokenType {
     TO_STRING,
     TO_BOOL,
     TO_NUM,
+
+    Program,
 };
 
 struct Token

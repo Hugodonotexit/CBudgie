@@ -1,38 +1,34 @@
 #pragma once
-#include "Token.h"
 #include <vector>
 
-class ASTNode 
-{
-protected:
-    Token tok;
-    std::vector<ASTNode*>* children;
-public:
-    ASTNode() {}
-    ASTNode(const Token& tok) : tok(tok) {
-        children = new std::vector<ASTNode*>;
+#include "Token.h"
+
+class AST : private Token {
+ private:
+  Token token;
+  std::vector<AST*> children;
+
+ public:
+    AST(TokenType type, std::string code) {
+        token = {type,code};
     };
-    virtual std::vector<ASTNode*>* arrTok() {
-        return children;
-    };
-    virtual ASTNode* arrTok_back() {
-        return children->back();
-    };
-    virtual void arrTok_push_back(const Token& tok) {
-        ASTNode* node = new ASTNode(tok);
-        children->push_back(node);
-    }
-    virtual void setToken(const Token& tok) {
-        this->tok=tok;
-    };
-    virtual Token getToken() {
-        return tok;
-    };
-    ~ASTNode() {
-        for (int i = 0; i < children->size(); i++)
+    
+    ~AST() {
+        for (size_t i = 0; i < children.size(); i++)
         {
-            delete children->at(i);
+            if (children[i] != nullptr) {
+                delete children[i];
+            }
         }
-         delete children;
     };
+
+    void addChild(AST* child) {
+        children.push_back(child);
+    };
+
+    std::vector<AST*>& getChildren() {return children;};
+
+    TokenType& getType() {return token.tokenType;};
+
+    std::string& getValue(){return token.code;};
 };
