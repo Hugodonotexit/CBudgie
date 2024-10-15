@@ -2,12 +2,24 @@
 
 #include <iostream>
 
-Lexer::Lexer(const std::filesystem::path& filePath,
-             std::vector<std::vector<Token>>& tokenized_code)
-    : filePath(filePath),
-      tokenized_code(tokenized_code){}
+Lexer::Lexer(const std::filesystem::path& filePath, std::vector<std::vector<Token>>& tokenized_code) : _tokenized_code_(tokenized_code) {
+      run(filePath, _tokenized_code_);
+}
 
-void Lexer::run() {
+void Lexer::run(const std::filesystem::path& filePath, std::vector<std::vector<Token>>& tokenized_code) {
+  
+  std::vector<std::string> lines = openfile(filePath);
+
+  tokenized_code.resize(lines.size());
+
+  #pragma omp parallel for
+  for (int i = 0; i < lines.size(); ++i) {
+    tokenized_code[i] = Lexer::preprocessLine(lines[i]);
+  }
+
+}
+
+std::vector<std::string> Lexer::openfile(const std::filesystem::path& filePath) {
   std::ifstream file(filePath);
 
   // Attempt to open file
@@ -24,13 +36,7 @@ void Lexer::run() {
 
   file.close();
 
-  tokenized_code.resize(lines.size());
-
-  #pragma omp parallel for
-  for (int i = 0; i < lines.size(); ++i) {
-      tokenized_code[i] = Lexer::preprocessLine(lines[i]);
-  }
-
+  return lines;
 }
 
 std::vector<Token> Lexer::preprocessLine(std::string line) {
@@ -45,8 +51,19 @@ std::vector<Token> Lexer::preprocessLine(std::string line) {
       if (isIdentifierStart(current, next)) {
         // Collect token type and string of identifier
         Token temp = readIdentifierOrKeyword(line, i);
-        //Add token,string object to converted line
-        tokenized_line.push_back(temp);
+        if (temp.getType() == TokenType::IMPORT) {
+          if (line[i++] != '\"') throw std::invalid_argument("missing \"");
+          std::string subStr;
+          while (i < line.size() - 1 && line[i] != '\"') subStr.push_back(line[i++]);
+          if (line[i] != '\"') throw std::invalid_argument("missing \"");
+          std::vector<std::vector<Token>> included_file_tokens;
+          run(subStr, included_file_tokens);
+          {
+            std::lock_guard<std::mutex> lock(_mutex);
+            _tokenized_code_.insert(_tokenized_code_.end(), included_file_tokens.begin(), included_file_tokens.end());
+          }
+        } else tokenized_line.push_back(temp); //Add token,string object to converted line
+        
       } 
       // Determine if the current charater could be the start of a number
       else if (isNumberStart(current, next)) {

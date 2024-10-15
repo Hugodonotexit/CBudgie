@@ -16,7 +16,7 @@ Interpreter::Interpreter(std::filesystem::path file){
     } catch (const std::filesystem::filesystem_error& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
-    Parser translator(file,destination);
+    Parser parser(file,destination);
     
     VirtualMachine vm(destination);
 

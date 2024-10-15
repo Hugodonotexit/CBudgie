@@ -1,6 +1,9 @@
 #pragma once
 #include <string>
+
 enum class TokenType {
+    IMPORT,
+
     DEF,
     CLASS,
     
@@ -60,14 +63,7 @@ enum class TokenType {
     TO_BOOL,
     TO_NUM,
 
-    Program,
+    Program, Class, Function, SubroutineBody, ParameterList
 };
 
-struct Token
-{
-    TokenType tokenType;
-    std::string code;
 
-    Token(TokenType tokenType, std::string code) : tokenType(tokenType), code(code) {}
-    Token() {}
-};

@@ -22,8 +22,10 @@ private:
 
     AST* parseClass();
     AST* parseClassVarDec();
-    AST* parseSubroutine();
+    AST* parseFunction();
+    AST* parseMethod();
     AST* parseParameterList();
+    AST* parseClassSubroutineBody();
     AST* parseSubroutineBody();
     AST* parseVarDec();
 
@@ -42,6 +44,7 @@ private:
     bool have(TokenType expectedType, std::string expectedValue);
     bool have(TokenType expectedType);
     Token* mustBe(TokenType expectedType, std::string expectedValue);
+    Token* mustBe(TokenType expectedType);
 public:
     Parser(std::filesystem::path file);
     Parser(std::filesystem::path file, std::filesystem::path destination);

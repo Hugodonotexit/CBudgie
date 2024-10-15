@@ -3,32 +3,33 @@
 
 #include "Token.h"
 
-class AST : private Token {
+class AST {
  private:
-  Token token;
+  TokenType tokenType;
+  std::string code;
   std::vector<AST*> children;
 
  public:
-    AST(TokenType type, std::string code) {
-        token = {type,code};
-    };
-    
-    ~AST() {
-        for (size_t i = 0; i < children.size(); i++)
-        {
-            if (children[i] != nullptr) {
-                delete children[i];
-            }
-        }
-    };
+  AST(TokenType type, std::string code) : tokenType(type), code(code) {};
 
-    void addChild(AST* child) {
-        children.push_back(child);
-    };
+  ~AST() {
+    for (size_t i = 0; i < children.size(); i++) {
+      if (children[i] != nullptr) {
+        delete children[i];
+      }
+    }
+  };
 
-    std::vector<AST*>& getChildren() {return children;};
+  void addChild(AST* child) { children.push_back(child); };
 
-    TokenType& getType() {return token.tokenType;};
+  const std::vector<AST*>& getChildren() const { return children; };
 
-    std::string& getValue(){return token.code;};
+  const TokenType& getType() const { return tokenType; };
+
+  const std::string& getValue() const { return code; };
+};
+
+class Token : public AST {
+ public:
+  Token(TokenType tokenType, std::string code) : AST(tokenType, code) {}
 };

@@ -6,8 +6,6 @@ Parser::Parser(std::filesystem::path newFilePath,
   AST* tree;
   Lexer lexer(filePath, tokenized_code);
 
-  lexer.run();
-
   index_token = 0;
   token = tokenized_code[index_token].begin();
 
@@ -31,7 +29,7 @@ void Parser::parsing(std::vector<std::vector<Token>>& tokenized_code, AST* tree)
   {
     if (have(TokenType::DEF, "def"))
     {
-      tree->addChild(parseSubroutine());
+      tree->addChild(parseFunction());
     } 
     else if (have(TokenType::CLASS, "class")) 
     {
@@ -41,9 +39,68 @@ void Parser::parsing(std::vector<std::vector<Token>>& tokenized_code, AST* tree)
     {
       tree->addChild(parseExpression());
     }
-    else throw cbg::ParserError("Invalid token at global scope: " + token->code);  
+    else throw cbg::ParserError("Invalid token at global scope: " + token->getValue());  
+  } 
+}
+
+AST* Parser::parseFunction() { 
+  AST* tree = new AST(TokenType::Function, "");
+  tree->addChild(mustBe(TokenType::DEF, "def"));
+  tree->addChild(mustBe(TokenType::VARIABLE));
+  tree->addChild(parseParameterList());
+  tree->addChild(parseSubroutineBody());
+  return tree;
+}
+
+AST* Parser::parseClass() { 
+  AST* tree = new AST(TokenType::Class, "");
+  tree->addChild(mustBe(TokenType::CLASS, "class"));
+  tree->addChild(mustBe(TokenType::VARIABLE));
+  tree->addChild(parseClassSubroutineBody());
+  return tree;
+}
+
+AST* Parser::parseParameterList() { 
+  AST* tree = new AST(TokenType::ParameterList, "");
+  tree->addChild(mustBe(TokenType::L_RBRACKET, "("));
+  if (have(TokenType::VARIABLE))
+  {
+    tree->addChild(mustBe(TokenType::VARIABLE));
   }
-  
+  while (!have(TokenType::R_RBRACKET, ")")) {
+    tree->addChild(mustBe(TokenType::COMMA, ","));
+    tree->addChild(mustBe(TokenType::VARIABLE));
+  }
+  tree->addChild(mustBe(TokenType::R_RBRACKET, ")"));
+  return tree;
+}
+
+AST* Parser::parseClassSubroutineBody() { 
+  AST* tree = new AST(TokenType::SubroutineBody, "");
+  tree->addChild(mustBe(TokenType::L_SBRACKET, "{"));
+  while (!have(TokenType::R_SBRACKET, "}")) {
+    if (have(TokenType::VARIABLE))
+    {
+      tree->addChild(parseClassVarDec());
+    }
+    else if (have(TokenType::DEF)) {
+      tree->addChild(parseMethod());
+    } 
+    else throw cbg::ParserError("Invalid");
+    
+  }
+  tree->addChild(mustBe(TokenType::R_SBRACKET, "}"));
+  return tree;
+}
+
+AST* Parser::parseSubroutineBody() { 
+  AST* tree = new AST(TokenType::SubroutineBody, "");
+  tree->addChild(mustBe(TokenType::L_SBRACKET, "{"));
+  while (!have(TokenType::R_SBRACKET, "}")) {
+
+  }
+  tree->addChild(mustBe(TokenType::R_SBRACKET, "}"));
+  return tree;
 }
 
 bool Parser::next() {
@@ -64,19 +121,23 @@ Token* Parser::current() {
 }
   
 bool Parser::have(TokenType expectedType, std::string expectedValue) {
-    if (current()->tokenType == expectedType && current()->code == expectedValue) return true;
+    if (current()->getType() == expectedType && current()->getValue() == expectedValue) return true;
     return false;
 }
 bool Parser::have(TokenType expectedType) {
-    return have(expectedType, current()->code);
+    return have(expectedType, current()->getValue());
 }
+Token* Parser::mustBe(TokenType expectedType) {
+  return mustBe(expectedType, current()->getValue());
+}
+
 Token* Parser::mustBe(TokenType expectedType, std::string expectedValue) {
-    if (current()->tokenType == expectedType && current()->code == expectedValue) {
+    if (current()->getType() == expectedType && current()->getValue() == expectedValue) {
         Token* temp = current();
         next();
         return temp;
     }
-    throw std::invalid_argument("Parserazer");
+    throw cbg::ParserError("Invalid");
     return nullptr;
 };
 
