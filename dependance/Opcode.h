@@ -3,7 +3,6 @@
 #include <unordered_map>
 enum class Opcode {
   
-  
   LOAD_SLOW,
   STORE_SLOW,
 

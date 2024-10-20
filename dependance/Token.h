@@ -13,6 +13,7 @@ enum class TokenType {
     IF,
     ELSE,
 
+    DO,
     WHILE,
     FOR,
 
@@ -63,7 +64,9 @@ enum class TokenType {
     TO_BOOL,
     TO_NUM,
 
-    Program, Class, Function, SubroutineBody, ParameterList
+    nop,
+
+    Program, Class, Function, SubroutineBody, ParameterList, ReturnStatement, DoWhileStatement, WhileStatement, Condition, IfStatement, FunctionCall, ArgumentList
 };
 
 

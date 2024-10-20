@@ -8,8 +8,10 @@
 class Translator
 {
 private:
-    void writeToFile(std::vector<std::string>& bytecode, const std::filesystem::path& outputPath);
-    void translate(std::vector<std::string>& bytecode, AST* tree);
+
 public:
-    Translator(AST* tree, std::filesystem::path destination);
+    AST* tree;
+    Translator(AST* tree);
+    std::vector<std::string> run();
+    
 };

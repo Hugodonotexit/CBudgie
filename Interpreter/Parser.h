@@ -16,36 +16,44 @@ private:
     int index_token;
     std::filesystem::path filePath;
     std::vector<std::vector<Token>> tokenized_code;
-    std::vector<Token>::iterator token;
-
-    void parsing(std::vector<std::vector<Token>>& tokenized_code, AST* bytecode);
+    int lineIndex;
+    int tokenIndex;
 
     AST* parseClass();
-    AST* parseClassVarDec();
     AST* parseFunction();
-    AST* parseMethod();
     AST* parseParameterList();
     AST* parseClassSubroutineBody();
     AST* parseSubroutineBody();
-    AST* parseVarDec();
 
     AST* parseStatements();
-    AST* parseLet();
     AST* parseIf();
     AST* parseWhile();
     AST* parseDo();
     AST* parseReturn();
+    
+    AST* parseCondition();
 
     AST* parseExpression();
-    AST* parseTerm();
+    AST* parseAssignment();
+    AST* parseEqualityExpression();
+    AST* parseAdditiveExpression();
+    AST* parseMultiplicativeExpression();
+    AST* parseUnaryExpression();
+    AST* parsePrimaryExpression();
+    AST* parseLogicalOrExpression();
+    AST* parseLogicalAndExpression();
+    AST* parseRelationalExpression();
+    AST* parseArgumentList();
 
     bool next();
     Token* current();
-    bool have(TokenType expectedType, std::string expectedValue);
+    bool have(TokenType expectedType, const std::string& expectedValue);
     bool have(TokenType expectedType);
-    Token* mustBe(TokenType expectedType, std::string expectedValue);
+    Token* mustBe(TokenType expectedType, const std::string& expectedValue);
     Token* mustBe(TokenType expectedType);
+
+    bool isAtEndOfLine();
 public:
-    Parser(std::filesystem::path file);
-    Parser(std::filesystem::path file, std::filesystem::path destination);
+    Parser(std::vector<std::vector<Token>>& tokenized_code);
+    AST* run();
 };

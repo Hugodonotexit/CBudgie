@@ -2,14 +2,10 @@
 
 #include <iostream>
 
-Lexer::Lexer(const std::filesystem::path& filePath, std::vector<std::vector<Token>>& tokenized_code) : _tokenized_code_(tokenized_code) {
-      run(filePath, _tokenized_code_);
-}
+Lexer::Lexer(std::vector<std::string>& lines) : lines(lines) {}
 
-void Lexer::run(const std::filesystem::path& filePath, std::vector<std::vector<Token>>& tokenized_code) {
-  
-  std::vector<std::string> lines = openfile(filePath);
-
+std::vector<std::vector<Token>> Lexer::run() {
+  std::vector<std::vector<Token>> tokenized_code;
   tokenized_code.resize(lines.size());
 
   #pragma omp parallel for
@@ -17,27 +13,9 @@ void Lexer::run(const std::filesystem::path& filePath, std::vector<std::vector<T
     tokenized_code[i] = Lexer::preprocessLine(lines[i]);
   }
 
+  return tokenized_code;
 }
 
-std::vector<std::string> Lexer::openfile(const std::filesystem::path& filePath) {
-  std::ifstream file(filePath);
-
-  // Attempt to open file
-  if (!file.is_open()) {
-    throw std::runtime_error("Unable to open file: " + filePath.filename().string());
-  }
-
-  std::string strline;
-  std::vector<std::string> lines;
-  // Loop through each line of the file and convert to tokens
-  while (std::getline(file, strline)) {
-    lines.push_back(strline);
-  }
-
-  file.close();
-
-  return lines;
-}
 
 std::vector<Token> Lexer::preprocessLine(std::string line) {
     std::vector<Token> tokenized_line;
@@ -56,14 +34,17 @@ std::vector<Token> Lexer::preprocessLine(std::string line) {
           std::string subStr;
           while (i < line.size() - 1 && line[i] != '\"') subStr.push_back(line[i++]);
           if (line[i] != '\"') throw std::invalid_argument("missing \"");
-          std::vector<std::vector<Token>> included_file_tokens;
-          run(subStr, included_file_tokens);
-          {
-            std::lock_guard<std::mutex> lock(_mutex);
-            _tokenized_code_.insert(_tokenized_code_.end(), included_file_tokens.begin(), included_file_tokens.end());
-          }
-        } else tokenized_line.push_back(temp); //Add token,string object to converted line
-        
+          std::filesystem::path path = subStr;
+
+          auto future = std::async(std::launch::async, [subStr]() {
+            Interpreter interpreter(subStr, true);
+          });
+
+          Token temp2(TokenType::WORD_CONST, path.filename().c_str());
+          tokenized_line.push_back(temp);
+          tokenized_line.push_back(temp2);
+        } else tokenized_line.push_back(temp);
+        tokenized_line.push_back(temp); //Add token,string object to converted line
       } 
       // Determine if the current charater could be the start of a number
       else if (isNumberStart(current, next)) {

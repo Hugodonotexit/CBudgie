@@ -15,15 +15,15 @@
 //#include <chrono>
 int main(int argc, char* argv[]) {
     //auto start = std::chrono::high_resolution_clock::now();
-
+    
     if (argc < 2) {
-        std::cerr << "Usage: cbudgie <file_path>     Run a cbudgie script\n"
+        std::cerr << "Usage: cbudgie <file_path>                Run a cbudgie script\n"
                   << "Usage: cbudgie [options] <file_path>\n"
                   << "Options:\n"
-                  << "  -h, --help                   Show this help message\n"
-                  << "  -b, --bytecode <file.bbg>    Run a bytecode script\n"
-                  << "  -t, --translate <file.bg>    Output bytecode\n"
-                  << "  -v, --version                Output version\n";
+                  << "  -h, --help                              Show this help message\n"
+                  << "  -t, --translate <file.bg> [destination] Output bytecode, destination default \"./\"\n"
+                  << "  -b, --bytecode <file.bbg>               Run a bytecode script\n"
+                  << "  -v, --version                           Output version\n";
         return 1;
     }
 
@@ -31,12 +31,13 @@ int main(int argc, char* argv[]) {
     std::filesystem::path file;
 
     if (option == "-h" || option == "--help") {
-        std::cout << "Usage: cbudgie <file_path>     Run a cbudgie script\n"
+        std::cout << "Usage: cbudgie <file_path>                Run a cbudgie script\n"
                   << "Usage: cbudgie [options] <file_path>\n"
                   << "Options:\n"
-                  << "  -h, --help                   Show this help message\n"
-                  << "  -t, --translate <file.bg>    Output bytecode\n"
-                  << "  -b, --bytecode <file.bbg>    Run a bytecode script\n";
+                  << "  -h, --help                              Show this help message\n"
+                  << "  -t, --translate <file.bg> [destination] Output bytecode, destination default \"./\"\n"
+                  << "  -b, --bytecode <file.bbg>               Run a bytecode script\n"
+                  << "  -v, --version                           Output version\n";
     } else if (option == "-v" || option == "--version") {
         std::cout << "cbudgie " << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_PATCH;
 
@@ -56,8 +57,14 @@ int main(int argc, char* argv[]) {
             std::cerr << "Error: Expecting a cbudgie file (.bg).\n";
             return 1;
         }
+        std::filesystem::path path;
+        if (argc > 3) {
+            path = argv[3];
+        } else {
+            path = "./";
+        }
         //////std::cout << "Translating " << file.filename().string() << " to bytecode.\n";
-        Parser parser(file);
+        Interpreter interpreter(file, path);
 
     } else if (option == "-b" || option == "--bytecode") {
         if (argc < 3) {
