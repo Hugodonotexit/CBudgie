@@ -30,19 +30,35 @@ std::vector<Token> Lexer::preprocessLine(std::string line) {
         // Collect token type and string of identifier
         Token temp = readIdentifierOrKeyword(line, i);
         if (temp.getType() == TokenType::IMPORT) {
+
           if (line[i++] != '\"') throw std::invalid_argument("missing \"");
+
           std::string subStr;
+
           while (i < line.size() - 1 && line[i] != '\"') subStr.push_back(line[i++]);
+
           if (line[i] != '\"') throw std::invalid_argument("missing \"");
+
           std::filesystem::path path = subStr;
+
           if (path.extension() != ".bg") throw std::invalid_argument(".bg");
-          auto future = std::async(std::launch::async, [path]() {
-            Interpreter interpreter(path, true);
+
+          std::filesystem::path flattened;
+          for (const auto& part : path) {
+              if (!flattened.empty() && flattened != ".") {
+                  flattened += '-';
+              }
+              if(part != ".") flattened += part.string();
+          }
+
+          std::filesystem::path carchePath = path.parent_path() / "__bgCache__" / flattened;
+
+          auto future = std::async(std::launch::async, [path, carchePath]() {
+            Interpreter interpreter(path, carchePath);
           });
 
-          std::filesystem::path file = path.filename();
-          file.replace_extension("bbg");
-          Token temp2(TokenType::WORD_CONST, file.c_str());
+          flattened.replace_extension("bbg");
+          Token temp2(TokenType::WORD_CONST, flattened.c_str());
           tokenized_line.push_back(temp);
           tokenized_line.push_back(temp2);
         } else tokenized_line.push_back(temp);  //Add token,string object to converted line
@@ -56,7 +72,7 @@ std::vector<Token> Lexer::preprocessLine(std::string line) {
       if (i >= line.size()) break;
       // reset current
       current = line[i];
-      next = line[i+1];
+      
       // Pretty much same as before but looking at all single char identifiers
       switch (current) {
         case 'f': {
