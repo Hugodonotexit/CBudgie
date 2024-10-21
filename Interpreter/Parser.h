@@ -29,11 +29,13 @@ private:
 
     AST* parseStatements();
     AST* parseIf();
+    AST* parseFor();
     AST* parseWhile();
     AST* parseDo();
     AST* parseReturn();
     
     AST* parseCondition();
+    AST* parseForCondition();
 
     AST* parseExpression();
     AST* parseAssignment();

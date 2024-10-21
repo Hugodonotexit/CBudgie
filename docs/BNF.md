@@ -1,7 +1,7 @@
 ```bnf
 <program> ::= <function>*
 
-<function> ::= "def" <identifier> "(" <parameter_list>* ")" <statement>* <return_statement>
+<function> ::= "def" <identifier> "(" <parameter_list>* ")" "{" <statement>* <return_statement>* "}"
 
 <block> ::= "{" <statement>* "}"
 
@@ -17,7 +17,7 @@
                 | "if" "(" <expression> ")" <block> "else" "if" "(" <expression> ")" <block>
 
 <loop> ::= "while" "(" <expression> ")" <block>
-         | "for" "(" <identifier> "=" <expression> ":" <expression> ":" <expression> ")" <block>
+         | "for" "(" <identifier> "=" <expression> ":" <expression> (: <expression>)* ")" <block>
 
 <function_call> ::= <identifier> "(" <argument_list>* ")"
 

@@ -51,7 +51,7 @@ std::string Parser::tokenTypeToString(TokenType type) {
 
         case TokenType::COMMA: return ",";
         case TokenType::COLON: return ":";
-        case TokenType::DOT: return "->";
+        case TokenType::DOT: return ".";
 
         case TokenType::L_RBRACKET: return "(";
         case TokenType::R_RBRACKET: return ")";
@@ -140,7 +140,6 @@ AST* Parser::run() {
       } else {
           throw cbg::ParserError("Invalid token at global scope: " + current()->getValue());
       }  
-      next();
     }
     return tree;
 }
@@ -263,6 +262,8 @@ AST* Parser::parseSubroutineBody() {
 AST* Parser::parseStatements() {
     if (have(TokenType::IF, "if")) {
         return parseIf();
+    } else if (have(TokenType::FOR, "for")) {
+        return parseFor();
     } else if (have(TokenType::WHILE, "while")) {
         return parseWhile();
     } else if (have(TokenType::DO, "do")) {
@@ -344,6 +345,46 @@ AST* Parser::parseIf() {
     return ifNode;
 }
 
+AST* Parser::parseFor() {  
+  Token* forToken = mustBe(TokenType::FOR, "for");
+  AST* condition = parseForCondition();
+  AST* body = parseSubroutineBody();
+
+  AST* forNode = new AST(TokenType::ForStatement, "");
+  forNode->addChild(forToken);
+  forNode->addChild(condition);
+  forNode->addChild(body);
+
+  return forNode;
+}
+AST* Parser::parseForCondition() {
+  Token* lParen = mustBe(TokenType::L_RBRACKET, "(");
+  AST* expr = parseExpression();
+  Token* lCol = mustBe(TokenType::COLON, ":");
+  AST* max = parseExpression();
+  Token* rCol = nullptr;
+  AST* inc = nullptr;
+  if (have(TokenType::COLON, ":")) {
+    rCol = mustBe(TokenType::COLON, ":");
+    inc = parseExpression();
+  } else {
+    rCol = new Token(TokenType::COLON, ":");
+    inc =  new Token(TokenType::NUM_CONST, "1");
+  }
+  
+  Token* rParen = mustBe(TokenType::R_RBRACKET, ")");
+
+  AST* conditionNode = new AST(TokenType::Condition, "");
+  conditionNode->addChild(lParen);
+  conditionNode->addChild(expr);
+  conditionNode->addChild(lCol);
+  conditionNode->addChild(max);
+  conditionNode->addChild(rCol);
+  conditionNode->addChild(inc);
+  conditionNode->addChild(rParen);
+
+  return conditionNode;
+}
 // Function to parse a while statement
 AST* Parser::parseWhile() {
     Token* whileToken = mustBe(TokenType::WHILE, "while");
@@ -561,13 +602,16 @@ AST* Parser::parseExponentiationExpression() {
 
 AST* Parser::parseDot(AST* node) {
   // Member access or method call
-  mustBe(TokenType::DOT);
+  AST* _ = mustBe(TokenType::DOT);
+  delete _;
   //built-in method
   if(have(TokenType::TO_BOOL) || have(TokenType::TO_NUM) || have(TokenType::TO_STRING)) {
     Token* memberName = mustBe(current()->getType());
     AST* methodCallNode = new AST(TokenType::MethodCall, "");
-    mustBe(TokenType::L_RBRACKET, "(");
-    mustBe(TokenType::R_RBRACKET, ")");
+    _ = mustBe(TokenType::L_RBRACKET, "(");
+    delete _;
+    _ = mustBe(TokenType::R_RBRACKET, ")");
+    delete _;
     methodCallNode->addChild(node);
     methodCallNode->addChild(memberName);       
     return methodCallNode;

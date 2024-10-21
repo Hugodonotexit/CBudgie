@@ -68,7 +68,7 @@ enum class TokenType {
 
 
     //AST Token
-    Program, Class, Function, Method, MethodCall, MemberAccess, VariableDeclaration, SubroutineBody, ParameterList, ReturnStatement, DoWhileStatement, WhileStatement, Condition, IfStatement, BuiltInFunctionCall, FunctionCall, ArgumentList
+    Program, Class, Function, Method, MethodCall, MemberAccess, VariableDeclaration, SubroutineBody, ParameterList, ReturnStatement, DoWhileStatement, ForStatement, WhileStatement, Condition, IfStatement, BuiltInFunctionCall, FunctionCall, ArgumentList
 };
 
 

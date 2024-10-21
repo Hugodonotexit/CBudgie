@@ -19,7 +19,7 @@ private:
         {"if", TokenType::IF}, {"else", TokenType::ELSE}, {"for", TokenType::FOR},
         {"while", TokenType::WHILE}, {"true", TokenType::TRUE},
         {"false", TokenType::FALSE}, {"break", TokenType::BREAK}, {"continue", TokenType::CONTINUE},
-        {"toSting", TokenType::TO_STRING}, {"toBool", TokenType::TO_BOOL}, {"toNum", TokenType::TO_NUM},
+        {"toString", TokenType::TO_STRING}, {"toBool", TokenType::TO_BOOL}, {"toNum", TokenType::TO_NUM},
         {"numeric", TokenType::NUMERIC}, {"return", TokenType::RETURN}, {"import", TokenType::IMPORT}
     };
 
