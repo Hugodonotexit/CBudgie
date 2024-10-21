@@ -1,8 +1,8 @@
-main()
-def main()
+def main() {
     i=10
     while (i < 20) {
         print(i)
         i = i + 5
     }
 return
+}

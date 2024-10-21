@@ -47,11 +47,11 @@ enum class TokenType {
     EQUIVALENT,
     NOT_EQUIVALENT,
     
-    NUM,
+    NUMERIC,
 
     COMMA,
     COLON,
-    LINKER,
+    DOT,
 
     L_RBRACKET,
     R_RBRACKET,
@@ -66,7 +66,10 @@ enum class TokenType {
 
     nop,
 
-    Program, Class, Function, SubroutineBody, ParameterList, ReturnStatement, DoWhileStatement, WhileStatement, Condition, IfStatement, FunctionCall, ArgumentList
+
+    //AST Token
+    Program, Class, Function, Method, MethodCall, MemberAccess, VariableDeclaration, SubroutineBody, ParameterList, ReturnStatement, DoWhileStatement, WhileStatement, Condition, IfStatement, BuiltInFunctionCall, FunctionCall, ArgumentList
 };
+
 
 

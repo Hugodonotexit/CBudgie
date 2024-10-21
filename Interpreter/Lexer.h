@@ -20,7 +20,7 @@ private:
         {"while", TokenType::WHILE}, {"true", TokenType::TRUE},
         {"false", TokenType::FALSE}, {"break", TokenType::BREAK}, {"continue", TokenType::CONTINUE},
         {"toSting", TokenType::TO_STRING}, {"toBool", TokenType::TO_BOOL}, {"toNum", TokenType::TO_NUM},
-        {"numeric", TokenType::NUM}, {"return", TokenType::RETURN}, {"import", TokenType::IMPORT}
+        {"numeric", TokenType::NUMERIC}, {"return", TokenType::RETURN}, {"import", TokenType::IMPORT}
     };
 
     std::vector<std::string> openfile(const std::filesystem::path& filePath);

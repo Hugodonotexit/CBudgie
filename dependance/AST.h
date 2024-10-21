@@ -12,10 +12,10 @@ class AST {
  public:
   AST(TokenType type, std::string code) : tokenType(type), code(code) {};
 
-  ~AST() {
-    for (size_t i = 0; i < children.size(); i++) {
-      if (children[i] != nullptr) {
-        delete children[i];
+  virtual ~AST() {
+    for (auto child : children) {
+      if (child != nullptr) {
+        delete  child;
       }
     }
   };
@@ -32,4 +32,5 @@ class AST {
 class Token : public AST {
  public:
   Token(TokenType tokenType, std::string code) : AST(tokenType, code) {}
+  ~Token() override = default;
 };

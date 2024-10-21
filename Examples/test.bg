@@ -1,6 +1,5 @@
-main()
-
 def main() 
+{
     diameter = read("Enter the diameter: ").toNum()
     radius = diameter/2 
     area = radius ** 2 * 3.14159265
@@ -17,3 +16,4 @@ def main()
     }
 
 return
+}

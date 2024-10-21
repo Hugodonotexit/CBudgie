@@ -1,22 +1,22 @@
 #include "Interpreter.h"
 
 Interpreter::Interpreter(std::filesystem::path file, bool translate_only){
-    std::filesystem::path directory = file.parent_path() / "__bgCache__";
-    file.replace_extension(".bbg");
-    std::filesystem::path path = directory / file.filename();
+    std::filesystem::path path = file.parent_path() / "__bgCache__" / file.filename();
+    path.replace_extension(".bbg");
     run(file, path, translate_only);
 }
 
 Interpreter::Interpreter(std::filesystem::path file, std::filesystem::path path){
-    file.replace_extension(".bbg");
+    path = path / file.filename();
+    path.replace_extension(".bbg");
     run(file, path, true);
 }
 
 void Interpreter::run(std::filesystem::path file, std::filesystem::path path, bool translate_only) {
     try {
         // Create directory if it doesn't exist
-        if (!std::filesystem::exists(path)) {
-            std::filesystem::create_directory(path);
+        if (!std::filesystem::exists(path.parent_path())) {
+            std::filesystem::create_directory(path.parent_path());
             //////std::cout << "Directory created: " << path << std::endl;
         }
     } catch (const std::filesystem::filesystem_error& e) {
@@ -30,24 +30,29 @@ void Interpreter::run(std::filesystem::path file, std::filesystem::path path, bo
 
     Parser parser(tokenized);
     AST* tree = parser.run();
-
+    parser.printAST(tree);
     Translator translator(tree);
     std::vector<std::string> bytecode = translator.run();
 
     writeToFile(bytecode, path);
-
+    
     if (!translate_only)
     {
+        auto future = std::async(std::launch::async, [path]() {
         VirtualMachine vm(path);
-
         try {
             std::filesystem::remove_all(path.parent_path());
         } catch (const std::filesystem::filesystem_error& e) {
             std::cerr << "Error: " << e.what() << std::endl;
         }
+    });
+
+        
     }
+
     
     
+    delete tree;
 }
 
 std::vector<std::string> Interpreter::openfile(const std::filesystem::path& filePath) {

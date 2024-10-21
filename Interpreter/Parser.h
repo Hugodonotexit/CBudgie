@@ -13,14 +13,16 @@
 class Parser
 {
 private:
-    int index_token;
     std::filesystem::path filePath;
     std::vector<std::vector<Token>> tokenized_code;
-    int lineIndex;
-    int tokenIndex;
+    size_t lineIndex;
+    size_t tokenIndex;
+
+    AST* parseVariableDeclaration();
 
     AST* parseClass();
     AST* parseFunction();
+    AST* parseMethod();
     AST* parseParameterList();
     AST* parseClassSubroutineBody();
     AST* parseSubroutineBody();
@@ -39,14 +41,20 @@ private:
     AST* parseAdditiveExpression();
     AST* parseMultiplicativeExpression();
     AST* parseUnaryExpression();
+    AST* parseExponentiationExpression();
     AST* parsePrimaryExpression();
     AST* parseLogicalOrExpression();
+    AST* parseLogicalXorExpression();
     AST* parseLogicalAndExpression();
     AST* parseRelationalExpression();
     AST* parseArgumentList();
 
+    AST* parseBuiltInFunctionCall();
+    AST* parseDot(AST* node);
+
     bool next();
     Token* current();
+    Token* lookahead(int offset);
     bool have(TokenType expectedType, const std::string& expectedValue);
     bool have(TokenType expectedType);
     Token* mustBe(TokenType expectedType, const std::string& expectedValue);
@@ -54,6 +62,9 @@ private:
 
     bool isAtEndOfLine();
 public:
+    std::string tokenTypeToString(TokenType type);
+    void printAST(AST* node, int indent = 0);
+
     Parser(std::vector<std::vector<Token>>& tokenized_code);
     AST* run();
 };

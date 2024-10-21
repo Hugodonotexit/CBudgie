@@ -35,16 +35,15 @@ std::vector<Token> Lexer::preprocessLine(std::string line) {
           while (i < line.size() - 1 && line[i] != '\"') subStr.push_back(line[i++]);
           if (line[i] != '\"') throw std::invalid_argument("missing \"");
           std::filesystem::path path = subStr;
-
-          auto future = std::async(std::launch::async, [subStr]() {
-            Interpreter interpreter(subStr, true);
+          if (path.extension() != ".bg") throw std::invalid_argument(".bg");
+          auto future = std::async(std::launch::async, [path]() {
+            Interpreter interpreter(path, true);
           });
 
           Token temp2(TokenType::WORD_CONST, path.filename().c_str());
           tokenized_line.push_back(temp);
           tokenized_line.push_back(temp2);
-        } else tokenized_line.push_back(temp);
-        tokenized_line.push_back(temp); //Add token,string object to converted line
+        } else tokenized_line.push_back(temp);  //Add token,string object to converted line
       } 
       // Determine if the current charater could be the start of a number
       else if (isNumberStart(current, next)) {
@@ -121,7 +120,7 @@ std::vector<Token> Lexer::preprocessLine(std::string line) {
           skip = true;
           break;
         case '.':
-          tokenized_line.emplace_back(TokenType::LINKER, ".");
+          tokenized_line.emplace_back(TokenType::DOT, ".");
           continue;
         case '+':
           tokenized_line.emplace_back(TokenType::PLUS, "+");

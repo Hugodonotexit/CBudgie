@@ -1,8 +1,6 @@
 naturalNum = 2.71
 
-main()
-
-def main()
+def main() {
 
     while (naturalNum == 2.71) {
         print(naturalNum)
@@ -48,15 +46,17 @@ def main()
     print(f"Pi is equal to {PI}")
 
 return 
+}
 
-def getRadius(diameter)
+def getRadius(diameter) {
     radius = diameter / 2
 return radius
-
-def getArea(radius)
+}
+def getArea(radius) {
     area =  3.14159265 * radius ** 2
 return area
-
-def getCirc(diameter)
+}
+def getCirc(diameter) {
     circ = diameter * 3.14159265
 return circ
+}

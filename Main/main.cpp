@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
         if (argc > 3) {
             path = argv[3];
         } else {
-            path = "./";
+            path = ".";
         }
         //////std::cout << "Translating " << file.filename().string() << " to bytecode.\n";
         Interpreter interpreter(file, path);
