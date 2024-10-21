@@ -40,7 +40,9 @@ std::vector<Token> Lexer::preprocessLine(std::string line) {
             Interpreter interpreter(path, true);
           });
 
-          Token temp2(TokenType::WORD_CONST, path.filename().c_str());
+          std::filesystem::path file = path.filename();
+          file.replace_extension("bbg");
+          Token temp2(TokenType::WORD_CONST, file.c_str());
           tokenized_line.push_back(temp);
           tokenized_line.push_back(temp2);
         } else tokenized_line.push_back(temp);  //Add token,string object to converted line

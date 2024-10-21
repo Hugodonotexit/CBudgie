@@ -2,13 +2,13 @@
 
 Interpreter::Interpreter(std::filesystem::path file, bool translate_only){
     std::filesystem::path path = file.parent_path() / "__bgCache__" / file.filename();
-    path.replace_extension(".bbg");
+    path.replace_extension("bbg");
     run(file, path, translate_only);
 }
 
 Interpreter::Interpreter(std::filesystem::path file, std::filesystem::path path){
     path = path / file.filename();
-    path.replace_extension(".bbg");
+    path.replace_extension("bbg");
     run(file, path, true);
 }
 
@@ -48,8 +48,6 @@ void Interpreter::run(std::filesystem::path file, std::filesystem::path path, bo
         });
     }
 
-    
-    
     delete tree;
 }
 

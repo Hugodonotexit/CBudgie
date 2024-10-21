@@ -20,5 +20,5 @@ private:
 
     std::stack<int> functionPointers;
 public:
-    VirtualMachine(const std::filesystem::path &filePath);
+    VirtualMachine(std::filesystem::path filePath);
 };

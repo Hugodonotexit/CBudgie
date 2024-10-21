@@ -124,6 +124,7 @@ Parser::Parser(std::vector<std::vector<Token>>& tokenized_code) : tokenized_code
     // Initialize token traversal indices
     lineIndex = 0;
     tokenIndex = 0;
+    mainFuncFound = false;
 }
 
 // The main parsing function
@@ -139,11 +140,23 @@ AST* Parser::run() {
           tree->addChild(parseClass());
       } else if (have(TokenType::VARIABLE)) {
           tree->addChild(parseExpression());
+      } else if (have(TokenType::IMPORT)) {
+          tree->addChild(parseImport());
       } else {
           throw cbg::ParserError("Invalid token at global scope: " + current()->getValue());
       }  
     }
+    if (!mainFuncFound) throw cbg::ParserError("Missing main function!");
     return tree;
+}
+
+AST* Parser::parseImport() {
+    // Create the root of the AST
+    mustBePrime(TokenType::IMPORT, "import");
+    Token* path = mustBe(TokenType::WORD_CONST);
+    AST* node = new AST(TokenType::IMPORT, path->getValue());
+    delete path;
+    return node;
 }
 
 // Function to parse a function definition
@@ -166,6 +179,7 @@ AST* Parser::parseFunction() {
 AST* Parser::parseClass() {
     mustBePrime(TokenType::CLASS, "class");
     Token* nameToken = mustBe(TokenType::VARIABLE);
+    if (!mainFuncFound && nameToken->getValue() == "main") mainFuncFound = true;
     AST* body = parseClassSubroutineBody();
 
     // Create a class AST node and add children

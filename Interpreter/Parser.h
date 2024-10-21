@@ -13,6 +13,7 @@
 class Parser
 {
 private:
+    bool mainFuncFound;
     std::filesystem::path filePath;
     std::vector<std::vector<Token>> tokenized_code;
     size_t lineIndex;
@@ -20,6 +21,7 @@ private:
 
     AST* parseVariableDeclaration();
 
+    AST* parseImport();
     AST* parseClass();
     AST* parseFunction();
     AST* parseMethod();

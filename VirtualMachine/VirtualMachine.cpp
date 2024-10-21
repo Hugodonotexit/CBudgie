@@ -1,6 +1,6 @@
 #include "VirtualMachine.h"
 
-VirtualMachine::VirtualMachine(const std::filesystem::path& filePath) {
+VirtualMachine::VirtualMachine(std::filesystem::path filePath) {
   readbytecode file;
   instructions = file.read_file(filePath);
   int instructionPointer = 0;
