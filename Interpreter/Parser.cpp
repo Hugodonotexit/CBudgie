@@ -73,13 +73,15 @@ std::string Parser::tokenTypeToString(TokenType type) {
         case TokenType::SubroutineBody: return "SubroutineBody";
         case TokenType::ParameterList: return "ParameterList";
         case TokenType::ReturnStatement: return "ReturnStatement";
+        case TokenType::ForStatement: return "ForStatement";
         case TokenType::DoWhileStatement: return "DoWhileStatement";
         case TokenType::WhileStatement: return "WhileStatement";
         case TokenType::Condition: return "Condition";
         case TokenType::IfStatement: return "IfStatement";
         case TokenType::FunctionCall: return "FunctionCall";
         case TokenType::ArgumentList: return "ArgumentList";
-
+        case TokenType::ListLiteral: return "ListLiteral";
+        case TokenType::ListVariable: return "ListVariable";
         case TokenType::Method: return "Method";
         case TokenType::VariableDeclaration: return "VariableDeclaration";
         case TokenType::MemberAccess: return "MemberAccess";
@@ -146,14 +148,13 @@ AST* Parser::run() {
 
 // Function to parse a function definition
 AST* Parser::parseFunction() {
-    Token* defToken = mustBe(TokenType::DEF, "def");
+    mustBePrime(TokenType::DEF, "def");
     Token* nameToken = mustBe(TokenType::VARIABLE);
     AST* params = parseParameterList();
     AST* body = parseSubroutineBody();
 
     // Create a function AST node and add children
     AST* funcNode = new AST(TokenType::Function, "");
-    funcNode->addChild(defToken);    // 'def' token
     funcNode->addChild(nameToken);   // Function name
     funcNode->addChild(params);      // Parameters
     funcNode->addChild(body);        // Body
@@ -163,13 +164,12 @@ AST* Parser::parseFunction() {
 
 // Function to parse a class definition
 AST* Parser::parseClass() {
-    Token* classToken = mustBe(TokenType::CLASS, "class");
+    mustBePrime(TokenType::CLASS, "class");
     Token* nameToken = mustBe(TokenType::VARIABLE);
     AST* body = parseClassSubroutineBody();
 
     // Create a class AST node and add children
     AST* classNode = new AST(TokenType::Class, "");
-    classNode->addChild(classToken);   // 'class' token
     classNode->addChild(nameToken);    // Class name
     classNode->addChild(body);         // Body
 
@@ -178,9 +178,8 @@ AST* Parser::parseClass() {
 
 // Function to parse parameter list
 AST* Parser::parseParameterList() {
-    Token* lParen = mustBe(TokenType::L_RBRACKET, "(");
+    mustBePrime(TokenType::L_RBRACKET, "(");
     AST* params = new AST(TokenType::ParameterList, "");
-    params->addChild(lParen);
 
     // Parse parameters if any
     if (!have(TokenType::R_RBRACKET, ")")) {
@@ -189,23 +188,21 @@ AST* Parser::parseParameterList() {
             params->addChild(param);
 
             if (have(TokenType::COMMA, ",")) {
-                mustBe(TokenType::COMMA, ",");
+                mustBePrime(TokenType::COMMA, ",");
             } else {
                 break;
             }
         } while (true);
     }
 
-    Token* rParen = mustBe(TokenType::R_RBRACKET, ")");
-    params->addChild(rParen);
+    mustBePrime(TokenType::R_RBRACKET, ")");
     return params;
 }
 
 // Function to parse a class subroutine body
 AST* Parser::parseClassSubroutineBody() {
-    Token* lBrace = mustBe(TokenType::L_SBRACKET, "{");
+    mustBePrime(TokenType::L_SBRACKET, "{");
     AST* body = new AST(TokenType::SubroutineBody, "");
-    body->addChild(lBrace);
 
     while (!have(TokenType::R_SBRACKET, "}")) {
         if (have(TokenType::DEF, "def")) {
@@ -219,19 +216,17 @@ AST* Parser::parseClassSubroutineBody() {
         }
     }
 
-    Token* rBrace = mustBe(TokenType::R_SBRACKET, "}");
-    body->addChild(rBrace);
+    mustBePrime(TokenType::R_SBRACKET, "}");
     return body;
 }
 
 AST* Parser::parseMethod() {
-    Token* defToken = mustBe(TokenType::DEF, "def");
+    mustBePrime(TokenType::DEF, "def");
     Token* methodName = mustBe(TokenType::VARIABLE);
     AST* params = parseParameterList();
     AST* body = parseSubroutineBody();
 
     AST* methodNode = new AST(TokenType::Method, "");
-    methodNode->addChild(defToken);
     methodNode->addChild(methodName);
     methodNode->addChild(params);
     methodNode->addChild(body);
@@ -241,9 +236,8 @@ AST* Parser::parseMethod() {
 
 // Function to parse a subroutine body
 AST* Parser::parseSubroutineBody() {
-    Token* lBrace = mustBe(TokenType::L_SBRACKET, "{");
+    mustBePrime(TokenType::L_SBRACKET, "{");
     AST* body = new AST(TokenType::SubroutineBody, "");
-    body->addChild(lBrace);
 
     while (!have(TokenType::R_SBRACKET, "}")) {
         if (have(TokenType::VARIABLE) || have(TokenType::NUM_CONST)) {
@@ -253,8 +247,7 @@ AST* Parser::parseSubroutineBody() {
         }
     }
 
-    Token* rBrace = mustBe(TokenType::R_SBRACKET, "}");
-    body->addChild(rBrace);
+    mustBePrime(TokenType::R_SBRACKET, "}");
     return body;
 }
 
@@ -321,24 +314,22 @@ AST* Parser::parseVariableDeclaration() {
 
 // Function to parse an if statement
 AST* Parser::parseIf() {
-    Token* ifToken = mustBe(TokenType::IF, "if");
+    mustBePrime(TokenType::IF, "if");
     AST* condition = parseCondition();
     AST* body = parseSubroutineBody();
 
     AST* ifNode = new AST(TokenType::IfStatement, "");
-    ifNode->addChild(ifToken);
     ifNode->addChild(condition);
     ifNode->addChild(body);
 
     if (have(TokenType::ELSE, "else")) {
-        Token* elseToken = mustBe(TokenType::ELSE, "else");
+        mustBePrime(TokenType::ELSE, "else");
         AST* elseBody = nullptr;
         if (have(TokenType::IF, "if")) {
             elseBody = parseIf(); // Else if
         } else {
             elseBody = parseSubroutineBody(); // Else
         }
-        ifNode->addChild(elseToken);
         ifNode->addChild(elseBody);
     }
 
@@ -346,53 +337,45 @@ AST* Parser::parseIf() {
 }
 
 AST* Parser::parseFor() {  
-  Token* forToken = mustBe(TokenType::FOR, "for");
+  mustBePrime(TokenType::FOR, "for");
   AST* condition = parseForCondition();
   AST* body = parseSubroutineBody();
 
   AST* forNode = new AST(TokenType::ForStatement, "");
-  forNode->addChild(forToken);
   forNode->addChild(condition);
   forNode->addChild(body);
 
   return forNode;
 }
 AST* Parser::parseForCondition() {
-  Token* lParen = mustBe(TokenType::L_RBRACKET, "(");
+  mustBePrime(TokenType::L_RBRACKET, "(");
   AST* expr = parseExpression();
-  Token* lCol = mustBe(TokenType::COLON, ":");
+  mustBePrime(TokenType::COLON, ":");
   AST* max = parseExpression();
-  Token* rCol = nullptr;
   AST* inc = nullptr;
   if (have(TokenType::COLON, ":")) {
-    rCol = mustBe(TokenType::COLON, ":");
+    mustBePrime(TokenType::COLON, ":");
     inc = parseExpression();
   } else {
-    rCol = new Token(TokenType::COLON, ":");
     inc =  new Token(TokenType::NUM_CONST, "1");
   }
   
-  Token* rParen = mustBe(TokenType::R_RBRACKET, ")");
+  mustBePrime(TokenType::R_RBRACKET, ")");
 
   AST* conditionNode = new AST(TokenType::Condition, "");
-  conditionNode->addChild(lParen);
   conditionNode->addChild(expr);
-  conditionNode->addChild(lCol);
   conditionNode->addChild(max);
-  conditionNode->addChild(rCol);
   conditionNode->addChild(inc);
-  conditionNode->addChild(rParen);
 
   return conditionNode;
 }
 // Function to parse a while statement
 AST* Parser::parseWhile() {
-    Token* whileToken = mustBe(TokenType::WHILE, "while");
+    mustBePrime(TokenType::WHILE, "while");
     AST* condition = parseCondition();
     AST* body = parseSubroutineBody();
 
     AST* whileNode = new AST(TokenType::WhileStatement, "");
-    whileNode->addChild(whileToken);
     whileNode->addChild(condition);
     whileNode->addChild(body);
 
@@ -401,15 +384,13 @@ AST* Parser::parseWhile() {
 
 // Function to parse a do-while statement
 AST* Parser::parseDo() {
-    Token* doToken = mustBe(TokenType::DO, "do");
+    mustBePrime(TokenType::DO, "do");
     AST* body = parseSubroutineBody();
-    Token* whileToken = mustBe(TokenType::WHILE, "while");
+    mustBePrime(TokenType::WHILE, "while");
     AST* condition = parseCondition();
 
     AST* doWhileNode = new AST(TokenType::DoWhileStatement, "");
-    doWhileNode->addChild(doToken);
     doWhileNode->addChild(body);
-    doWhileNode->addChild(whileToken);
     doWhileNode->addChild(condition);
 
     return doWhileNode;
@@ -417,23 +398,20 @@ AST* Parser::parseDo() {
 
 // Function to parse a condition
 AST* Parser::parseCondition() {
-    Token* lParen = mustBe(TokenType::L_RBRACKET, "(");
+    mustBePrime(TokenType::L_RBRACKET, "(");
     AST* expr = parseExpression();
-    Token* rParen = mustBe(TokenType::R_RBRACKET, ")");
+    mustBePrime(TokenType::R_RBRACKET, ")");
 
     AST* conditionNode = new AST(TokenType::Condition, "");
-    conditionNode->addChild(lParen);
     conditionNode->addChild(expr);
-    conditionNode->addChild(rParen);
 
     return conditionNode;
 }
 
 // Function to parse a return statement
 AST* Parser::parseReturn() {
-    Token* returnToken = mustBe(TokenType::RETURN, "return");
+    mustBePrime(TokenType::RETURN, "return");
     AST* returnNode = new AST(TokenType::ReturnStatement, "");
-    returnNode->addChild(returnToken);
 
     // Return expression is optional
     if (!have(TokenType::R_SBRACKET, "}") && !isAtEndOfLine()) {
@@ -452,17 +430,29 @@ AST* Parser::parseExpression() {
 
 // Function to parse assignments
 AST* Parser::parseAssignment() {
-    AST* left = parseLogicalOrExpression();
+    AST* lhs = parseLogicalOrExpression();
 
     if (have(TokenType::EQUAL, "=")) {
-        Token* opToken = mustBe(TokenType::EQUAL, "="); // Consume '='
-        AST* right = parseAssignment(); // Right side may be another assignment
-        opToken->addChild(left);
-        opToken->addChild(right);
+        // Left-hand side must be an assignment target
+        if (!isAssignmentTarget(lhs)) {
+            throw cbg::ParserError("Invalid assignment target");
+        }
+
+        Token* opToken = mustBe(TokenType::EQUAL, "=");
+        AST* rhs = parseAssignment(); // Support chaining assignments
+        opToken->addChild(lhs);
+        opToken->addChild(rhs);
         return opToken;
     }
 
-    return left;
+    return lhs;
+}
+
+bool Parser::isAssignmentTarget(AST* node) {
+    TokenType type = node->getType();
+    return (type == TokenType::VARIABLE ||
+            type == TokenType::MemberAccess ||
+            type == TokenType::ListVariable);
 }
 
 // Function to parse logical OR expressions (you can extend this based on your language)
@@ -602,16 +592,13 @@ AST* Parser::parseExponentiationExpression() {
 
 AST* Parser::parseDot(AST* node) {
   // Member access or method call
-  AST* _ = mustBe(TokenType::DOT);
-  delete _;
+  mustBePrime(TokenType::DOT);
   //built-in method
   if(have(TokenType::TO_BOOL) || have(TokenType::TO_NUM) || have(TokenType::TO_STRING)) {
     Token* memberName = mustBe(current()->getType());
     AST* methodCallNode = new AST(TokenType::MethodCall, "");
-    _ = mustBe(TokenType::L_RBRACKET, "(");
-    delete _;
-    _ = mustBe(TokenType::R_RBRACKET, ")");
-    delete _;
+    mustBePrime(TokenType::L_RBRACKET, "(");
+    mustBePrime(TokenType::R_RBRACKET, ")");
     methodCallNode->addChild(node);
     methodCallNode->addChild(memberName);       
     return methodCallNode;
@@ -622,6 +609,7 @@ AST* Parser::parseDot(AST* node) {
     methodCallNode->addChild(node);       // Object
     methodCallNode->addChild(memberName); // Method name
     methodCallNode->addChild(args);
+    return methodCallNode;
   } else {
     Token* memberName = mustBe(TokenType::VARIABLE);
     if (have(TokenType::L_RBRACKET, "(")) {
@@ -656,11 +644,14 @@ AST* Parser::parsePrimaryExpression() {
         node = mustBe(TokenType::WORD_CONST);
     } else if (have(TokenType::READ) /* ... other built-in functions ... */) {
         node = parseBuiltInFunctionCall();
+    } else if (have(TokenType::L_SQBRACKET, "[")) {
+        // List literal
+        node = parseListLiteral();
     } else if (have(TokenType::VARIABLE)) {
         // Variables, function calls, method calls, member access
         node = mustBe(TokenType::VARIABLE);
 
-        while (have(TokenType::DOT) || have(TokenType::L_RBRACKET, "(")) {
+        while (have(TokenType::DOT) || have(TokenType::L_RBRACKET, "(") || have(TokenType::L_SQBRACKET, "[")) {
             if (have(TokenType::DOT)) {
                 node = parseDot(node);
             } else if (have(TokenType::L_RBRACKET, "(")) {
@@ -671,13 +662,23 @@ AST* Parser::parsePrimaryExpression() {
                 functionCallNode->addChild(node);  // Function name
                 functionCallNode->addChild(args);
                 node = functionCallNode;
+            } else if (have(TokenType::L_SQBRACKET, "[")) {
+                // Index expression
+                mustBePrime(TokenType::L_SQBRACKET, "[");
+                AST* indexExpr = parseExpression();
+                mustBePrime(TokenType::R_SQBRACKET, "]");
+
+                AST* indexAccessNode = new AST(TokenType::ListVariable, "");
+                indexAccessNode->addChild(node);      // List or array variable
+                indexAccessNode->addChild(indexExpr); // Index expression
+                node = indexAccessNode;
             }
         }
     } else if (have(TokenType::L_RBRACKET, "(")) {
         // Parenthesized expression
-        mustBe(TokenType::L_RBRACKET, "(");
+        mustBePrime(TokenType::L_RBRACKET, "(");
         node = parseExpression();
-        mustBe(TokenType::R_RBRACKET, ")");
+        mustBePrime(TokenType::R_RBRACKET, ")");
     } else {
         throw cbg::ParserError("Expected primary expression, got: " + (current() ? current()->getValue() : "EOF"));
     }
@@ -687,9 +688,8 @@ AST* Parser::parsePrimaryExpression() {
 
 // Function to parse argument list (for function calls)
 AST* Parser::parseArgumentList() {
-    Token* lParen = mustBe(TokenType::L_RBRACKET, "(");
+    mustBePrime(TokenType::L_RBRACKET, "(");
     AST* args = new AST(TokenType::ArgumentList, "");
-    args->addChild(lParen);
 
     // Parse arguments if any
     if (!have(TokenType::R_RBRACKET, ")")) {
@@ -698,16 +698,36 @@ AST* Parser::parseArgumentList() {
             args->addChild(arg);
 
             if (have(TokenType::COMMA, ",")) {
-                mustBe(TokenType::COMMA, ",");
+                mustBePrime(TokenType::COMMA, ",");
             } else {
                 break;
             }
         } while (true);
     }
 
-    Token* rParen = mustBe(TokenType::R_RBRACKET, ")");
-    args->addChild(rParen);
+    mustBePrime(TokenType::R_RBRACKET, ")");
     return args;
+}
+
+AST* Parser::parseListLiteral() {
+    mustBePrime(TokenType::L_SQBRACKET, "[");
+    AST* listNode = new AST(TokenType::ListLiteral, "");
+
+    if (!have(TokenType::R_SQBRACKET, "]")) {
+        do {
+            AST* element = parseExpression();
+            listNode->addChild(element);
+
+            if (have(TokenType::COMMA, ",")) {
+                mustBePrime(TokenType::COMMA, ",");
+            } else {
+                break;
+            }
+        } while (true);
+    }
+
+    mustBePrime(TokenType::R_SQBRACKET, "]");
+    return listNode;
 }
 
 // Function to check if we're at the end of a line (since lines are significant)
@@ -782,6 +802,46 @@ Token* Parser::mustBe(TokenType expectedType) {
         Token* temp = new Token(*current());
         next();
         return temp;
+    }
+    std::string err = (current() ? current()->getValue() : "EOF");
+    std::string str = err;
+    while (next() && err != "EOF")
+    {
+      str.push_back(' ');
+      str += current()->getValue();
+    }
+    std::string errorMsg = "Expected token type " + std::to_string(static_cast<int>(expectedType)) +
+                           ", but got '" + err + "'" + "\n" +
+                           "AT: " + str;;
+    throw cbg::ParserError(errorMsg);
+}
+
+// Function to consume the current token if it matches the expected type and value
+void Parser::mustBePrime(TokenType expectedType, const std::string& expectedValue) {
+    if (have(expectedType, expectedValue)) {
+      next();
+      return;
+    }
+    std::string err = (current() ? current()->getValue() : "EOF");
+    std::string str = err;
+    while (next() && str != "EOF")
+    {
+      str.push_back(' ');
+      str += current()->getValue();
+    }
+    
+    std::string errorMsg = "Expected token type " + std::to_string(static_cast<int>(expectedType)) +
+                           " with value '" + expectedValue + "', but got '" +
+                           err + "\n" +
+                           "AT:" + str;
+    throw cbg::ParserError(errorMsg);
+}
+
+// Function to consume the current token if it matches the expected type
+void Parser::mustBePrime(TokenType expectedType) {
+    if (have(expectedType)) {
+      next();
+      return;
     }
     std::string err = (current() ? current()->getValue() : "EOF");
     std::string str = err;

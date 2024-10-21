@@ -39,15 +39,13 @@ void Interpreter::run(std::filesystem::path file, std::filesystem::path path, bo
     if (!translate_only)
     {
         auto future = std::async(std::launch::async, [path]() {
-        VirtualMachine vm(path);
-        try {
-            std::filesystem::remove_all(path.parent_path());
-        } catch (const std::filesystem::filesystem_error& e) {
-            std::cerr << "Error: " << e.what() << std::endl;
-        }
-    });
-
-        
+            VirtualMachine vm(path);
+            try {
+                std::filesystem::remove_all(path.parent_path());
+            } catch (const std::filesystem::filesystem_error& e) {
+                std::cerr << "Error: " << e.what() << std::endl;
+            }
+        });
     }
 
     

@@ -39,6 +39,7 @@ private:
 
     AST* parseExpression();
     AST* parseAssignment();
+    bool isAssignmentTarget(AST* node);
     AST* parseEqualityExpression();
     AST* parseAdditiveExpression();
     AST* parseMultiplicativeExpression();
@@ -54,6 +55,8 @@ private:
     AST* parseBuiltInFunctionCall();
     AST* parseDot(AST* node);
 
+    AST* parseListLiteral();
+
     bool next();
     Token* current();
     Token* lookahead(int offset);
@@ -61,6 +64,8 @@ private:
     bool have(TokenType expectedType);
     Token* mustBe(TokenType expectedType, const std::string& expectedValue);
     Token* mustBe(TokenType expectedType);
+    void mustBePrime(TokenType expectedType, const std::string& expectedValue);
+    void mustBePrime(TokenType expectedType);
 
     bool isAtEndOfLine();
 public:
